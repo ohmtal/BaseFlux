@@ -54,6 +54,8 @@ add_library(LibImGui
     ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp
 )
 
+target_link_libraries(LibImGui PRIVATE SDL3::SDL3-static)
+
 target_include_directories(LibImGui PUBLIC
     ${imgui_SOURCE_DIR}
     ${imgui_SOURCE_DIR}/backends
@@ -79,6 +81,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    SDL3::SDL3
+    SDL3::SDL3-static
     LibImGui
 )
