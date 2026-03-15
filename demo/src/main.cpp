@@ -15,11 +15,11 @@
 
 BaseFlux::Main baseFluxMain;
 BaseFluxDemo::Myst mystObj;
-SDL_Texture* backGround = nullptr;
+SDL_Texture* backGroundTex = nullptr;
 
 void OnRender(SDL_Renderer* renderer) {
-    if (backGround) {
-        SDL_RenderTexture(renderer, backGround, NULL, NULL);
+    if (backGroundTex) {
+        SDL_RenderTexture(renderer, backGroundTex, NULL, NULL);
     }
 
     ImGui::SetNextWindowSize(ImVec2(600.f,400.f), ImGuiCond_FirstUseEver);
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     if ( !baseFluxMain.InitSDL() ) return 1;
     baseFluxMain.initImGui();
 
-    if (!baseFluxMain.loadTexture("back.bmp", backGround))
+    if (!baseFluxMain.loadTexture("back.bmp", backGroundTex))
         SDL_Log("Error failed to load background texture!");
 
     baseFluxMain.OnRender = [&](SDL_Renderer* renderer) { OnRender(renderer);};
@@ -77,5 +77,6 @@ int main(int argc, char* argv[]) {
 
     baseFluxMain.Execute();
 
+    if (backGroundTex) SDL_DestroyTexture(backGroundTex);
     return 0;
 }
