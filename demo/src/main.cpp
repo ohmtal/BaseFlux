@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
         // IconFilename is append to .AssetsPath
         .IconFilename = "icon.bmp",
         // IniFileName : you may also use something like: "pref:/appgui.ini"
-        //               where pref:// is replaced with your prefs path build be
+        //               where pref:/ is replaced with your prefs path build be
         //               Company and Caption
         //               If empty no ini file is written
         .IniFileName = "BaseFluxDemo.ini",
