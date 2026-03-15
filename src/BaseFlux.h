@@ -19,7 +19,9 @@
 
 namespace BaseFlux {
 
-    //--------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
+    // Settings
+    //-----------------------------------------------------------------------------
     inline std::string sanitizeFilenameWithUnderScores(std::string name)
     {
         std::string result;
@@ -34,69 +36,39 @@ namespace BaseFlux {
         return result;
     }
     //--------------------------------------------------------------------------
-    inline bool loadTexture(SDL_Renderer* renderer, const char* fileName, SDL_Texture*& texture) {
-        SDL_Log("Loading image: %s", fileName);
-        const char* basePath = SDL_GetBasePath();
-        if (!basePath) {
-            SDL_Log("Could not get base path: %s", SDL_GetError());
-            return false;
-        }
-        char pathBuff[256];
-        snprintf(pathBuff, sizeof(pathBuff), "%s/%s", basePath, fileName);
-        SDL_Surface* surface = SDL_LoadBMP(pathBuff);
-        if (!surface) {
-            SDL_Log("Failed to load BMP at %s: %s", pathBuff, SDL_GetError());
-            return false;
-        }
-        texture = SDL_CreateTextureFromSurface(renderer, surface);
-        SDL_DestroySurface(surface);
-        if (!texture) {
-            SDL_Log("Texture Create Error: %s", SDL_GetError());
-            return false;
-        }
-        return true;
-    }
-    //--------------------------------------------------------------------------
-    // Helper function to set the window icon
-    inline bool setWindowIcon(SDL_Window* window, const char* fileName) {
-        const char* basePath = SDL_GetBasePath();
-        if (!basePath) return false;
-        char pathBuff[256];
-        snprintf(pathBuff, sizeof(pathBuff), "%s/%s", basePath, fileName);
-        SDL_Surface* iconSurface = SDL_LoadBMP(pathBuff);
-        if (!iconSurface) {
-            SDL_Log("[warn]Failed to load icon: %s Error:%s",fileName, SDL_GetError());
-            return false;
-        }
-        SDL_SetWindowIcon(window, iconSurface);
-        SDL_DestroySurface(iconSurface);
-        return true;
-    }
-
-    //-----------------------------------------------------------------------------
-    // Settings
-    //-----------------------------------------------------------------------------
     struct Settings {
         std::array<uint16_t, 2> ScreenSize = { 1152, 648};
-        uint16_t  FpsLimit = 0; // not exactly since i use integer and round it.
+        // not the exact fps since i use integer and round it.
+        uint16_t  FpsLimit = 0;
         bool WindowMaximized  = false;
-        bool EnableVSync      = true; //you can set fps limit if you disable it
+        // you also can set FpsLimit
+        bool EnableVSync      = true;
         std::string Company = "BaseFlux Company";
         std::string Caption = "BaseFlux Caption";
         std::string Version = "BaseFlux Version 1";
 
-        std::string IconFilename = "";      // bmp!
+        // your window icon (have to be .bmp)
+        std::string IconFilename = "";
+
+        //pre path for IconFilename and loadTexture
+        // base:/ is replaced with your BasePath
+        std::string AssetPath = "base:/assets/";
 
         //imgui
         bool EnableDockSpace = true;
-        const char* IniFileName = "imGui.ini";
+        // pref:/ is replaced with your pref Path
+        std::string IniFileName = "pref:/appgui.ini";
 
         std::string getPrefsPath() {
+            static std::string cachedPath = "";
+            if (!cachedPath.empty()) return cachedPath;
+
             std::unique_ptr<char, void(*)(void*)> rawPath(
                 SDL_GetPrefPath(getSafeCompany().c_str(), getSafeCaption().c_str()),
                                                           SDL_free
             );
-            return rawPath ? std::string(rawPath.get()) : "";
+            cachedPath = rawPath ? std::string(rawPath.get()) : "";
+            return cachedPath;
         }
 
         std::string getSafeCompany() {
@@ -107,6 +79,29 @@ namespace BaseFlux {
         }
 
     };
+    //--------------------------------------------------------------------------
+    // String replace helper
+    inline std::string string_replace_all(std::string str, const std::string& from, const std::string& to) {
+        size_t start_pos = 0;
+        while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+            str.replace(start_pos, from.length(), to);
+            start_pos += to.length(); // Move past the replaced part
+        }
+        return str;
+    }
+    //--------------------------------------------------------------------------
+    // getBasePath wrapper
+    inline std::string getBasePath() {
+        static std::string cachedPath = "";
+        if (!cachedPath.empty()) return cachedPath;
+
+        const char* rawPath = SDL_GetBasePath();
+        if (rawPath) {
+            cachedPath = rawPath;
+            SDL_free(const_cast<char*>(rawPath));
+        }
+        return cachedPath;
+    }
 
     //-----------------------------------------------------------------------------
     // BaseFlux Main Class
@@ -136,9 +131,60 @@ namespace BaseFlux {
         ImGuiIO*        getImGuiIO()     const { return mImGuiIO; }
         ImGuiID         getDockSpaceId() const { return mDockSpaceId; }
 
-        std::function<void(const SDL_Renderer*)> OnRender = nullptr;
+        std::function<void(SDL_Renderer*)> OnRender = nullptr;
         std::function<void(const SDL_Event)> OnEvent = nullptr;
 
+
+        //--------------------------------------------------------------------------
+        /**
+         * replace a path with full path
+         * %base => SDL_GetBasePath
+         * %pref => Settings::getPrefsPath
+         */
+        void setFullPath(std::string  &path) {
+            if (path.find("base:/", 0) != std::string::npos) {
+                path = string_replace_all(path, "base:/", getBasePath());
+            }
+            if (path.find("pref:/", 0) != std::string::npos) {
+                path = string_replace_all(path, "pref:/", mSettings.getPrefsPath());
+            }
+        }
+        //--------------------------------------------------------------------------
+        // Load a Texture (.bmp) relative to AssetPath
+        bool loadTexture(std::string fileName, SDL_Texture*& texture) {
+            if (!mRenderer) return false;
+            fileName = mSettings.AssetPath + "/" + fileName;
+            setFullPath(fileName);
+            // SDL_Log("[info] Loading image: %s", fileName.c_str());
+            SDL_Surface* surface = SDL_LoadBMP(fileName.c_str());
+            if (!surface) {
+                SDL_Log("[error] Failed to load texture at %s: %s", fileName.c_str(), SDL_GetError());
+                return false;
+            }
+            texture = SDL_CreateTextureFromSurface(mRenderer, surface);
+            SDL_DestroySurface(surface);
+            if (!texture) {
+                SDL_Log("Texture Create Error: %s", SDL_GetError());
+                return false;
+            }
+            return true;
+        }
+        //--------------------------------------------------------------------------
+        // Set the window icon relative to AssetPath
+        bool setWindowIcon(SDL_Window* window, std::string fileName) {
+            fileName = mSettings.AssetPath + "/" + fileName;
+            setFullPath(fileName);
+            // SDL_Log("[info] Loading icon: %s", fileName.c_str());
+
+            SDL_Surface* iconSurface = SDL_LoadBMP(fileName.c_str());
+            if (!iconSurface) {
+                SDL_Log("[warn]Failed to load icon: %s Error:%s",fileName.c_str(), SDL_GetError());
+                return false;
+            }
+            SDL_SetWindowIcon(window, iconSurface);
+            SDL_DestroySurface(iconSurface);
+            return true;
+        }
         //----------------------------------------------------------------------
         bool InitSDL() {
             if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
@@ -183,7 +229,12 @@ namespace BaseFlux {
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
             mImGuiIO = &ImGui::GetIO();
-            mImGuiIO->IniFilename = mSettings.IniFileName;
+            if (!mSettings.IniFileName.empty()) {
+                setFullPath(mSettings.IniFileName);
+                mImGuiIO->IniFilename = mSettings.IniFileName.c_str();
+            } else {
+                mImGuiIO->IniFilename = nullptr;
+            }
             mImGuiIO->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
             mImGuiIO->ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
             ImGui_ImplSDL3_InitForSDLRenderer(mWindow, mRenderer);

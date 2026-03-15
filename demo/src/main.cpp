@@ -15,8 +15,12 @@
 
 BaseFlux::Main baseFluxMain;
 BaseFluxDemo::Myst mystObj;
+SDL_Texture* backGround = nullptr;
 
-void OnRender(const SDL_Renderer* renderer) {
+void OnRender(SDL_Renderer* renderer) {
+    if (backGround) {
+        SDL_RenderTexture(renderer, backGround, NULL, NULL);
+    }
 
     ImGui::SetNextWindowSize(ImVec2(600.f,400.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSizeConstraints(ImVec2(300.f, 300.f), ImVec2(FLT_MAX, FLT_MAX));
@@ -53,13 +57,22 @@ int main(int argc, char* argv[]) {
         .WindowMaximized = true,
         .Company = "The Company",
         .Caption = "BaseFlux Demo",
-        .IconFilename = "assets/icon.bmp",
+        // IconFilename is append to .AssetsPath
+        .IconFilename = "icon.bmp",
+        // IniFileName : you may also use something like: "pref:/appgui.ini"
+        //               where pref:// is replaced with your prefs path build be
+        //               Company and Caption
+        //               If empty no ini file is written
+        .IniFileName = "BaseFluxDemo.ini",
     };
 
     if ( !baseFluxMain.InitSDL() ) return 1;
     baseFluxMain.initImGui();
 
-    baseFluxMain.OnRender = [&](const SDL_Renderer* renderer) { OnRender(renderer);};
+    if (!baseFluxMain.loadTexture("back.bmp", backGround))
+        SDL_Log("Error failed to load background texture!");
+
+    baseFluxMain.OnRender = [&](SDL_Renderer* renderer) { OnRender(renderer);};
     baseFluxMain.OnEvent  = [&](const SDL_Event event) { OnEvent(event);};
 
     baseFluxMain.Execute();
