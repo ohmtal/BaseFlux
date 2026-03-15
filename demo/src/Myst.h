@@ -39,8 +39,8 @@ private:
 
     void init( ImVec2 winSize) {
         for (auto& line : lines) {
-            line.p1.pos = ImVec2(1.0f, 1.0f);
-            line.p2.pos = ImVec2(2.0f, 2.0f);
+            line.p1.pos = ImVec2(5.0f, 5.0f);
+            line.p2.pos = ImVec2(30.0f, 30.0f);
             line.p1.vel = ImVec2(2.0f, 1.5f);
             line.p2.vel = ImVec2(-1.2f, 2.2f);
             line.color = ImColor(255, 255, 255, 255);

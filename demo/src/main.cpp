@@ -19,10 +19,11 @@ BaseFluxDemo::Myst mystObj;
 void OnRender(const SDL_Renderer* renderer) {
 
     ImGui::SetNextWindowSize(ImVec2(600.f,400.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(300.f, 300.f), ImVec2(FLT_MAX, FLT_MAX));
     if (ImGui::Begin("Hello World"))
     {
             ImGui::SetNextItemWidth(80.f);
-            ImGui::SliderInt("History", &mystObj.mMaxHistory, 1,500);
+            ImGui::SliderInt("History", &mystObj.mMaxHistory, 1,1000);
             ImGui::SameLine();
             ImGui::SetNextItemWidth(80.f);
             ImGui::SliderInt("Frameskip", &mystObj.mFrameSkip, 0,10);
@@ -30,6 +31,7 @@ void OnRender(const SDL_Renderer* renderer) {
             mystObj.RenderBouncingLines();
     }
     ImGui::End();
+
 }
 
 void OnEvent(const SDL_Event event) {
