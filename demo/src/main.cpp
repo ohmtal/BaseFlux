@@ -14,14 +14,20 @@
 #include "Myst.h"
 
 BaseFlux::Main baseFluxMain;
+BaseFluxDemo::Myst mystObj;
 
 void OnRender(const SDL_Renderer* renderer) {
 
     ImGui::SetNextWindowSize(ImVec2(600.f,400.f), ImGuiCond_FirstUseEver);
-    if (ImGui::Begin("Hello BaseFlux"))
+    if (ImGui::Begin("Hello World"))
     {
-            ImGui::TextColored(ImVec4(0.3f ,0.3f ,0.9f, 1.0f), "Hello World");
-            BaseFluxDemo::Mysth::RenderBouncingLines();
+            ImGui::SetNextItemWidth(80.f);
+            ImGui::SliderInt("History", &mystObj.mMaxHistory, 1,500);
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(80.f);
+            ImGui::SliderInt("Frameskip", &mystObj.mFrameSkip, 0,10);
+
+            mystObj.RenderBouncingLines();
     }
     ImGui::End();
 }
@@ -42,7 +48,8 @@ void OnEvent(const SDL_Event event) {
 int main(int argc, char* argv[]) {
 
     baseFluxMain.mSettings = {
-        .Company = "Tom's Company",
+        .WindowMaximized = true,
+        .Company = "The Company",
         .Caption = "BaseFlux Demo",
         .IconFilename = "assets/icon.bmp",
     };

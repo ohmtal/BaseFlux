@@ -91,7 +91,6 @@ namespace BaseFlux {
         bool EnableDockSpace = true;
         const char* IniFileName = "imGui.ini";
 
-
         std::string getPrefsPath() {
             std::unique_ptr<char, void(*)(void*)> rawPath(
                 SDL_GetPrefPath(getSafeCompany().c_str(), getSafeCaption().c_str()),
@@ -108,61 +107,6 @@ namespace BaseFlux {
         }
 
     };
-
-    //-----------------------------------------------------------------------------
-    // Pathes
-    //-----------------------------------------------------------------------------
-    inline std::array<std::string, SDL_FOLDER_COUNT> globFolderCache;
-
-    inline std::string getUserFolder(SDL_Folder folder) {
-        // Return cached value if already fetched
-        if (!globFolderCache[folder].empty()) {
-            return globFolderCache[folder];
-        }
-        // SDL_GetUserFolder returns a pointer to internal memory; DO NOT free it
-        const char* rawPath = SDL_GetUserFolder(folder);
-        if (rawPath) {
-            globFolderCache[folder] = rawPath;
-            return globFolderCache[folder];
-        }
-        return "";
-    }
-
-
-    inline std::string getHomePath()      { return getUserFolder( SDL_FOLDER_HOME ) ; }
-    inline std::string getDesktopPath()   { return getUserFolder( SDL_FOLDER_DESKTOP ) ; }
-    inline std::string getDocumentsPath() { return getUserFolder( SDL_FOLDER_DOCUMENTS ) ; }
-    inline std::string getDownloadPath()  { return getUserFolder( SDL_FOLDER_DOWNLOADS ) ; }
-    inline std::string getMusicPath()     { return getUserFolder( SDL_FOLDER_MUSIC ) ; }
-    inline std::string getPicturesPath()  { return getUserFolder( SDL_FOLDER_PICTURES ) ; }
-    inline std::string getVideosPath()    { return getUserFolder( SDL_FOLDER_VIDEOS ) ; }
-
-    inline std::string getGamePath() {
-        static std::string cachedPath = "";
-        if (!cachedPath.empty()) return cachedPath;
-
-        const char* rawPath = SDL_GetBasePath();
-        if (rawPath) {
-            cachedPath = rawPath;
-            SDL_free(const_cast<char*>(rawPath));
-        }
-        return cachedPath;
-    }
-
-    // example: dumpPathes(&game->mSettings);
-    inline void dumpPathes(Settings* settings=nullptr) {
-        if ( settings )
-            SDL_Log("Prefs Path:%s", settings->getPrefsPath().c_str());
-
-        SDL_Log("Game Path:%s", getGamePath().c_str());
-        SDL_Log("Home Path:%s", getHomePath().c_str());
-        SDL_Log("Desktop Path:%s", getDesktopPath().c_str());
-        SDL_Log("Document Path:%s", getDocumentsPath().c_str());
-        SDL_Log("Download Path:%s", getDownloadPath().c_str());
-        SDL_Log("Music Path:%s", getMusicPath().c_str());
-        SDL_Log("Video Path:%s", getVideosPath().c_str());
-    }
-
 
     //-----------------------------------------------------------------------------
     // BaseFlux Main Class

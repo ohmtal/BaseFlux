@@ -2,21 +2,24 @@
 // Copyright (c) 2026 Thomas Hühn (XXTH)
 // SPDX-License-Identifier: MIT
 //-----------------------------------------------------------------------------
-// Myst - only hello world was too booring ;) i may make nicer code later ...
+// Myst - only hello world was too booring ;)
 //-----------------------------------------------------------------------------
 #pragma once
 #include "imgui.h"
 #include <vector>
 #include <deque>
 
-namespace BaseFluxDemo::Mysth {
+namespace BaseFluxDemo {
 
 
+class Myst {
+public:
+    int mMaxHistory  = 20;
+    int mFrameSkip  =  3;
+    Myst() : lines(5) {}
+    ~Myst() = default;
 
-    inline uint8_t mMaxHistory  = 20;
-    inline uint8_t mFrameSkip  =  3;
-
-
+private:
     struct Point {
         ImVec2 pos, vel;
     };
@@ -27,34 +30,40 @@ namespace BaseFluxDemo::Mysth {
         std::deque<std::pair<ImVec2, ImVec2>> history;
     };
 
-    static std::vector<LineGroup> lines(5);
-    static bool initialized = false;
+    std::vector<LineGroup> lines;
+    bool initialized = false;
+    ImVec2 savWinSize;
+    float globalHue = 0.0f;
+    int frameSkipCounter = 0;
 
 
-    void init( ) {
+    void init( ImVec2 winSize) {
         for (auto& line : lines) {
-            line.p1.pos = ImVec2(100.0f, 100.0f);
-            line.p2.pos = ImVec2(200.0f, 200.0f);
+            line.p1.pos = ImVec2(1.0f, 1.0f);
+            line.p2.pos = ImVec2(2.0f, 2.0f);
             line.p1.vel = ImVec2(2.0f, 1.5f);
             line.p2.vel = ImVec2(-1.2f, 2.2f);
             line.color = ImColor(255, 255, 255, 255);
         }
+        savWinSize = winSize;
         initialized = true;
     }
-
+public:
 
     void RenderBouncingLines() {
-        if (!initialized) init();
 
         ImVec2 winPos = ImGui::GetCursorScreenPos();
         ImVec2 winSize = ImGui::GetContentRegionAvail();
         ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-        static float globalHue = 0.0f;
+
+        if (!initialized || winSize != savWinSize) init(winSize);
+
+
         globalHue += 0.0005f;
         if (globalHue > 1.0f) globalHue -= 1.0f;
 
-        static int frameSkipCounter = 0;
+
 
         for (int i = 0; i < lines.size(); i++) {
 
@@ -102,5 +111,8 @@ namespace BaseFluxDemo::Mysth {
             );
         }
     }
+
+}; //class
+
 
 };//namespace
