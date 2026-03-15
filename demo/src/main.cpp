@@ -7,19 +7,21 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include "imgui.h"
-#include "imgui_impl_sdl3.h"
-#include "imgui_impl_sdlrenderer3.h"
+// #include "imgui_impl_sdl3.h"
+// #include "imgui_impl_sdlrenderer3.h"
 
 #include <BaseFlux.h>
+#include "Myst.h"
 
 BaseFlux::Main baseFluxMain;
 
 void OnRender(const SDL_Renderer* renderer) {
 
-    ImGui::SetNextWindowSize(ImVec2(600.f,400.f));
+    ImGui::SetNextWindowSize(ImVec2(600.f,400.f), ImGuiCond_FirstUseEver);
     if (ImGui::Begin("Hello BaseFlux"))
     {
             ImGui::TextColored(ImVec4(0.3f ,0.3f ,0.9f, 1.0f), "Hello World");
+            BaseFluxDemo::Mysth::RenderBouncingLines();
     }
     ImGui::End();
 }
