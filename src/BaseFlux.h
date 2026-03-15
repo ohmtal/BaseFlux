@@ -133,6 +133,7 @@ namespace BaseFlux {
 
         std::function<void(SDL_Renderer*)> OnRender = nullptr;
         std::function<void(const SDL_Event)> OnEvent = nullptr;
+        std::function<void()> OnShutDown = nullptr;
 
 
         //--------------------------------------------------------------------------
@@ -244,11 +245,12 @@ namespace BaseFlux {
         }
         //----------------------------------------------------------------------
         void shutDown() {
+            if (OnShutDown) OnShutDown();
             ImGui_ImplSDLRenderer3_Shutdown();
             ImGui_ImplSDL3_Shutdown();
             ImGui::DestroyContext();
-            if (mRenderer) SDL_DestroyRenderer(mRenderer);
-            if (mWindow) SDL_DestroyWindow(mWindow);
+            if (mRenderer) { SDL_DestroyRenderer(mRenderer); mRenderer = nullptr; }
+            if (mWindow) {SDL_DestroyWindow(mWindow); mWindow = nullptr;}
             SDL_Quit();
         }
         //----------------------------------------------------------------------

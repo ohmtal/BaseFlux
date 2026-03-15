@@ -51,6 +51,11 @@ void OnEvent(const SDL_Event event) {
 
 }
 
+void OnShutDown() {
+    backGroundTex = nullptr;
+}
+
+
 int main(int argc, char* argv[]) {
 
     baseFluxMain.mSettings = {
@@ -74,9 +79,9 @@ int main(int argc, char* argv[]) {
 
     baseFluxMain.OnRender = [&](SDL_Renderer* renderer) { OnRender(renderer);};
     baseFluxMain.OnEvent  = [&](const SDL_Event event) { OnEvent(event);};
+    baseFluxMain.OnShutDown = [&]() { OnShutDown();};
 
     baseFluxMain.Execute();
 
-    if (backGroundTex) SDL_DestroyTexture(backGroundTex);
     return 0;
 }
