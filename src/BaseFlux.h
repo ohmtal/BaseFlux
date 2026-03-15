@@ -86,7 +86,6 @@ namespace BaseFlux {
         std::string Version = "BaseFlux Version 1";
 
         std::string IconFilename = "";      // bmp!
-        std::string CursorFilename = "";;   // bmp!
 
         //imgui
         bool EnableDockSpace = true;
