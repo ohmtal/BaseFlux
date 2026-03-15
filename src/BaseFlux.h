@@ -47,7 +47,7 @@ namespace BaseFlux {
         std::string Caption = "BaseFlux Caption";
         std::string Version = "BaseFlux Version 1";
 
-        // your window icon (have to be .bmp)
+        // your window icon (have to be .bmp or .png)
         std::string IconFilename = "";
 
         //pre path for IconFilename and loadTexture
@@ -85,7 +85,7 @@ namespace BaseFlux {
         size_t start_pos = 0;
         while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
             str.replace(start_pos, from.length(), to);
-            start_pos += to.length(); // Move past the replaced part
+            start_pos += to.length();
         }
         return str;
     }
@@ -114,13 +114,11 @@ namespace BaseFlux {
         ImGuiIO* mImGuiIO = nullptr;
         ImGuiID  mDockSpaceId = -1;
 
-
+        bool mShutDownComplete = false;
+        bool mRunning = false;
 
     public:
         Settings mSettings;
-        bool     mRunning = false;
-
-
 
         Main() = default;
         ~Main()  = default;
@@ -151,13 +149,13 @@ namespace BaseFlux {
             }
         }
         //--------------------------------------------------------------------------
-        // Load a Texture (.bmp) relative to AssetPath
+        // Load a Texture (.bmp,.png) relative to AssetPath
         bool loadTexture(std::string fileName, SDL_Texture*& texture) {
             if (!mRenderer) return false;
             fileName = mSettings.AssetPath + "/" + fileName;
             setFullPath(fileName);
             // SDL_Log("[info] Loading image: %s", fileName.c_str());
-            SDL_Surface* surface = SDL_LoadBMP(fileName.c_str());
+            SDL_Surface* surface = SDL_LoadSurface(fileName.c_str());
             if (!surface) {
                 SDL_Log("[error] Failed to load texture at %s: %s", fileName.c_str(), SDL_GetError());
                 return false;
@@ -165,7 +163,7 @@ namespace BaseFlux {
             texture = SDL_CreateTextureFromSurface(mRenderer, surface);
             SDL_DestroySurface(surface);
             if (!texture) {
-                SDL_Log("Texture Create Error: %s", SDL_GetError());
+                SDL_Log("[error] Texture Create Error: %s", SDL_GetError());
                 return false;
             }
             return true;
@@ -177,9 +175,9 @@ namespace BaseFlux {
             setFullPath(fileName);
             // SDL_Log("[info] Loading icon: %s", fileName.c_str());
 
-            SDL_Surface* iconSurface = SDL_LoadBMP(fileName.c_str());
+            SDL_Surface* iconSurface = SDL_LoadSurface(fileName.c_str());
             if (!iconSurface) {
-                SDL_Log("[warn]Failed to load icon: %s Error:%s",fileName.c_str(), SDL_GetError());
+                SDL_Log("[warn] Failed to load icon: %s Error:%s",fileName.c_str(), SDL_GetError());
                 return false;
             }
             SDL_SetWindowIcon(window, iconSurface);
@@ -212,7 +210,7 @@ namespace BaseFlux {
 
             mRenderer = SDL_CreateRenderer(mWindow, NULL);
             if (!mRenderer) {
-                SDL_Log("SDL_CreateRenderer failed: %s", SDL_GetError());
+                SDL_Log("[error] SDL_CreateRenderer failed: %s", SDL_GetError());
                 return false;
             }
 
@@ -245,6 +243,7 @@ namespace BaseFlux {
         }
         //----------------------------------------------------------------------
         void shutDown() {
+            if (mShutDownComplete) return; //double call safety
             if (OnShutDown) OnShutDown();
             ImGui_ImplSDLRenderer3_Shutdown();
             ImGui_ImplSDL3_Shutdown();
@@ -252,6 +251,7 @@ namespace BaseFlux {
             if (mRenderer) { SDL_DestroyRenderer(mRenderer); mRenderer = nullptr; }
             if (mWindow) {SDL_DestroyWindow(mWindow); mWindow = nullptr;}
             SDL_Quit();
+            mShutDownComplete = true;
         }
         //----------------------------------------------------------------------
         bool Execute() {
@@ -344,8 +344,5 @@ namespace BaseFlux {
             }
             return;
         }
-
     }; //class BaseFlux
-
-
 }; //namespace
