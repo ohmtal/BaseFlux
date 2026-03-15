@@ -62,14 +62,11 @@ namespace BaseFlux {
         std::string getPrefsPath() {
             static std::string cachedPath = "";
             if (!cachedPath.empty()) return cachedPath;
-
-            std::unique_ptr<char, void(*)(void*)> rawPath(
-                SDL_GetPrefPath(getSafeCompany().c_str(), getSafeCaption().c_str()),
-                                                          SDL_free
-            );
-            cachedPath = rawPath ? std::string(rawPath.get()) : "";
+            const char* rawPath = SDL_GetPrefPath(getSafeCompany().c_str(), getSafeCaption().c_str());
+            cachedPath = rawPath ? std::string(rawPath) : "";
             return cachedPath;
         }
+
 
         std::string getSafeCompany() {
             return sanitizeFilenameWithUnderScores(Company);
@@ -98,7 +95,7 @@ namespace BaseFlux {
         const char* rawPath = SDL_GetBasePath();
         if (rawPath) {
             cachedPath = rawPath;
-            SDL_free(const_cast<char*>(rawPath));
+            // NOT! SDL_free(const_cast<char*>(rawPath));
         }
         return cachedPath;
     }
