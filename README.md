@@ -1,6 +1,6 @@
 # BaseFlux - Minimalist SDL3 and ImGui base
 
-Base to build an cross platform Application with SDL3 and ImGui. 
+Base to build an cross platform Application or Prototype with SDL3 and ImGui. 
 
 ---
 
@@ -8,11 +8,11 @@ Base to build an cross platform Application with SDL3 and ImGui.
 
 Only five steps to get it work:
 
-- 1. set your custom settings like Caption, Company .. 
-- 2. InitSDL
-- 3. InitImGui 
-- 4. Setup Render and Event Callback 
-- 5. Execute 
+- set your custom settings like Caption, Company .. 
+- InitSDL
+- InitImGui 
+- Setup Render and Event Callback 
+- Execute 
 
 
 ---
