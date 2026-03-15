@@ -37,7 +37,7 @@ namespace BaseFluxDemo::Mysth {
             line.p2.pos = ImVec2(200.0f, 200.0f);
             line.p1.vel = ImVec2(2.0f, 1.5f);
             line.p2.vel = ImVec2(-1.2f, 2.2f);
-            line.color = ImColor(255, 255, 255, 255); // Startfarbe Weiß
+            line.color = ImColor(255, 255, 255, 255);
         }
         initialized = true;
     }
@@ -51,7 +51,7 @@ namespace BaseFluxDemo::Mysth {
         ImDrawList* drawList = ImGui::GetWindowDrawList();
 
         static float globalHue = 0.0f;
-        globalHue += 0.0005f; // Sehr langsame, weiche Änderung
+        globalHue += 0.0005f;
         if (globalHue > 1.0f) globalHue -= 1.0f;
 
         static int frameSkipCounter = 0;
@@ -70,9 +70,9 @@ namespace BaseFluxDemo::Mysth {
                 frameSkipCounter = 0;
             }
             for (size_t i = 0; i < line.history.size(); i++) {
-                float alpha = 1.0f - ((float)i / mMaxHistory); // Verblassen
+                float alpha = 1.0f - ((float)i / mMaxHistory);
                 ImColor trailColor = line.color;
-                trailColor.Value.w *= alpha; // Alpha-Kanal anpassen
+                trailColor.Value.w *= alpha;
 
                 auto& oldPos = line.history[i];
                 drawList->AddLine(
