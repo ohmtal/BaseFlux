@@ -18,8 +18,10 @@ Only five steps to get it work:
 ---
 # Demo with cmake build system:
 
-- fetch SDL3 and staticly link it 
-- fetch ImGui and add it as lib
+The first cmake take a while because it:
+
+    - fetch SDL3 
+    - fetch ImGui 
 
 Compile and run : 
 ```
