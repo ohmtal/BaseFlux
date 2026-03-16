@@ -20,8 +20,8 @@ Only five steps to get it work:
 
 The first cmake take a while because it:
 
-    - fetch SDL3 
-    - fetch ImGui 
+- fetch SDL3 
+- fetch ImGui 
 
 Compile and run : 
 ```
