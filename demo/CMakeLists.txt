@@ -69,8 +69,8 @@ add_executable(${PROJECT_NAME}
 )
 
 # test memory:
-target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address -g)
-target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
+# target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address -g)
+# target_link_options(${PROJECT_NAME} PRIVATE -fsanitize=address)
 
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
