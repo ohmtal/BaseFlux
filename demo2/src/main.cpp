@@ -15,7 +15,6 @@ int main(int argc, char* argv[]) {
 
     app.mSettings = {
         .ScreenSize = { 300, 300},
-        .Caption = "BaseFlux minimalistic Demo with Fullscreen Window",
         .sdlWindowFlagsOverwrite = SDL_WINDOW_BORDERLESS
     };
     if ( !app.InitSDL() ) return 1;
@@ -24,7 +23,6 @@ int main(int argc, char* argv[]) {
 
     app.OnRender = [&](SDL_Renderer* renderer) {
         // ~~~~ FullscreenWindow ~~~~
-
         const ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
@@ -42,8 +40,6 @@ int main(int argc, char* argv[]) {
             if (ImGui::Button("X")) app.TerminateApplication();
         }
         ImGui::End();
-
-
     };
 
     app.Execute();
