@@ -59,6 +59,9 @@ namespace BaseFlux {
         // pref:/ is replaced with your pref Path
         std::string IniFileName = "pref:/appgui.ini";
 
+        // overwrite SDL FLAGS:
+        SDL_WindowFlags sdlWindowFlagsOverwrite = 0;
+
         std::string getPrefsPath() {
             static std::string cachedPath = "";
             if (!cachedPath.empty()) return cachedPath;
@@ -190,6 +193,9 @@ namespace BaseFlux {
 
             SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE;
             if (mSettings.WindowMaximized)  flags |= SDL_WINDOW_MAXIMIZED;
+
+            if (mSettings.sdlWindowFlagsOverwrite != 0) flags = mSettings.sdlWindowFlagsOverwrite;
+
             mWindow = SDL_CreateWindow(
                 mSettings.Caption.c_str()
                 , mSettings.ScreenSize[0]
