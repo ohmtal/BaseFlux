@@ -8,7 +8,7 @@
 #include <SDL3/SDL_main.h>
 #include "imgui.h"
 
-#include <BaseFlux.h>
+#include "BaseFlux/Main.h"
 #include "Myst.h"
 #include <map>
 #include <vector>
@@ -84,7 +84,7 @@ namespace BaseFluxDemo {
         ~Demo() = default;
 
         bool init() {
-            mBaseFlux.mSettings = {
+            mBaseFlux.getSettings() = {
                 .WindowMaximized = true,
                 .Company = "The Company",
                 .Caption = "BaseFlux Demo",

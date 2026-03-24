@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Thomas Hühn (XXTH)
 // SPDX-License-Identifier: MIT
 //-----------------------------------------------------------------------------
-// BaseFlux Header
+// BaseFlux Main
 //-----------------------------------------------------------------------------
 #pragma once
 #include <SDL3/SDL.h>
@@ -11,6 +11,8 @@
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
 
+#include "Tools.h"
+#include "Settings.h"
 
 #include <string>
 #include <array>
@@ -19,93 +21,6 @@
 
 namespace BaseFlux {
 
-    //-----------------------------------------------------------------------------
-    // Settings
-    //-----------------------------------------------------------------------------
-    inline std::string sanitizeFilenameWithUnderScores(std::string name)
-    {
-        std::string result;
-        for (unsigned char c : name) {
-            if (std::isalnum(c)) {
-                result += c;
-            } else if (std::isspace(c)) {
-                result += '_';
-            }
-            // Special characters (like '.') are ignored/dropped here
-        }
-        return result;
-    }
-    //--------------------------------------------------------------------------
-    struct Settings {
-        std::array<uint16_t, 2> ScreenSize = { 1152, 648};
-        // not the exact fps since i use integer and round it.
-        uint16_t  FpsLimit = 0;
-        bool WindowMaximized  = false;
-        // you also can set FpsLimit
-        bool EnableVSync      = true;
-        std::string Company = "BaseFlux Company";
-        std::string Caption = "BaseFlux Caption";
-        std::string Version = "BaseFlux Version 1";
-
-        // your window icon (have to be .bmp or .png)
-        std::string IconFilename = "";
-
-        //pre path for IconFilename and loadTexture
-        // base:/ is replaced with your BasePath
-        std::string AssetPath = "base:/assets/";
-
-        //imgui
-        bool EnableDockSpace = true;
-        // pref:/ is replaced with your pref Path
-        std::string IniFileName = "pref:/appgui.ini";
-
-        // overwrite SDL FLAGS:
-        SDL_WindowFlags sdlWindowFlagsOverwrite = 0;
-
-        std::string getPrefsPath() {
-            static std::string cachedPath = "";
-            if (!cachedPath.empty()) return cachedPath;
-            const char* rawPath = SDL_GetPrefPath(getSafeCompany().c_str(), getSafeCaption().c_str());
-            cachedPath = rawPath ? std::string(rawPath) : "";
-            return cachedPath;
-        }
-
-
-        std::string getSafeCompany() {
-            return sanitizeFilenameWithUnderScores(Company);
-        }
-        std::string getSafeCaption() {
-            return sanitizeFilenameWithUnderScores(Caption);
-        }
-
-    };
-    //--------------------------------------------------------------------------
-    // String replace helper
-    inline std::string string_replace_all(std::string str, const std::string& from, const std::string& to) {
-        size_t start_pos = 0;
-        while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-            str.replace(start_pos, from.length(), to);
-            start_pos += to.length();
-        }
-        return str;
-    }
-    //--------------------------------------------------------------------------
-    // getBasePath wrapper
-    inline std::string getBasePath() {
-        static std::string cachedPath = "";
-        if (!cachedPath.empty()) return cachedPath;
-
-        const char* rawPath = SDL_GetBasePath();
-        if (rawPath) {
-            cachedPath = rawPath;
-            // NOT! SDL_free(const_cast<char*>(rawPath));
-        }
-        return cachedPath;
-    }
-
-    //-----------------------------------------------------------------------------
-    // BaseFlux Main Class
-    //-----------------------------------------------------------------------------
     class Main {
     protected:
         SDL_Window* mWindow = nullptr;
@@ -118,7 +33,7 @@ namespace BaseFlux {
         bool mRunning = false;
 
     public:
-        Settings mSettings;
+        Settings& getSettings() { return Settings::getInstance(); }
 
         Main() = default;
         ~Main()  = default;
@@ -145,14 +60,14 @@ namespace BaseFlux {
                 path = string_replace_all(path, "base:/", getBasePath());
             }
             if (path.find("pref:/", 0) != std::string::npos) {
-                path = string_replace_all(path, "pref:/", mSettings.getPrefsPath());
+                path = string_replace_all(path, "pref:/", getSettings().getPrefsPath());
             }
         }
         //--------------------------------------------------------------------------
         // Load a Texture (.bmp,.png) relative to AssetPath
         bool loadTexture(std::string fileName, SDL_Texture*& texture) {
             if (!mRenderer) return false;
-            fileName = mSettings.AssetPath + "/" + fileName;
+            fileName = getSettings().AssetPath + "/" + fileName;
             setFullPath(fileName);
             // SDL_Log("[info] Loading image: %s", fileName.c_str());
             SDL_Surface* surface = SDL_LoadSurface(fileName.c_str());
@@ -171,7 +86,7 @@ namespace BaseFlux {
         //--------------------------------------------------------------------------
         // Set the window icon relative to AssetPath
         bool setWindowIcon(SDL_Window* window, std::string fileName) {
-            fileName = mSettings.AssetPath + "/" + fileName;
+            fileName = getSettings().AssetPath + "/" + fileName;
             setFullPath(fileName);
             // SDL_Log("[info] Loading icon: %s", fileName.c_str());
 
@@ -192,14 +107,14 @@ namespace BaseFlux {
             }
 
             SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE;
-            if (mSettings.WindowMaximized)  flags |= SDL_WINDOW_MAXIMIZED;
+            if (getSettings().WindowMaximized)  flags |= SDL_WINDOW_MAXIMIZED;
 
-            if (mSettings.sdlWindowFlagsOverwrite != 0) flags = mSettings.sdlWindowFlagsOverwrite;
+            if (getSettings().sdlWindowFlagsOverwrite != 0) flags = getSettings().sdlWindowFlagsOverwrite;
 
             mWindow = SDL_CreateWindow(
-                mSettings.Caption.c_str()
-                , mSettings.ScreenSize[0]
-                , mSettings.ScreenSize[1]
+                getSettings().Caption.c_str()
+                , getSettings().ScreenSize[0]
+                , getSettings().ScreenSize[1]
                 , flags);
 
             if (!mWindow) {
@@ -207,8 +122,8 @@ namespace BaseFlux {
                 return false;
             }
 
-            if (!mSettings.IconFilename.empty()) {
-                setWindowIcon(mWindow, mSettings.IconFilename.c_str());
+            if (!getSettings().IconFilename.empty()) {
+                setWindowIcon(mWindow, getSettings().IconFilename.c_str());
             }
 
             mRenderer = SDL_CreateRenderer(mWindow, NULL);
@@ -217,7 +132,7 @@ namespace BaseFlux {
                 return false;
             }
 
-            SDL_SetRenderVSync(mRenderer,mSettings.EnableVSync);
+            SDL_SetRenderVSync(mRenderer,getSettings().EnableVSync);
 
             return true;
         }
@@ -231,9 +146,9 @@ namespace BaseFlux {
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
             mImGuiIO = &ImGui::GetIO();
-            if (!mSettings.IniFileName.empty()) {
-                setFullPath(mSettings.IniFileName);
-                mImGuiIO->IniFilename = mSettings.IniFileName.c_str();
+            if (!getSettings().IniFileName.empty()) {
+                setFullPath(getSettings().IniFileName);
+                mImGuiIO->IniFilename = getSettings().IniFileName.c_str();
             } else {
                 mImGuiIO->IniFilename = nullptr;
             }
@@ -268,7 +183,7 @@ namespace BaseFlux {
             Uint32 frameStart, frameTime;
             uint16_t frameLimit = 0;
 
-            if (mSettings.FpsLimit > 0) frameLimit = static_cast<uint16_t>(1000 / mSettings.FpsLimit);
+            if (getSettings().FpsLimit > 0) frameLimit = static_cast<uint16_t>(1000 / getSettings().FpsLimit);
 
             mRunning = true;
 
@@ -298,7 +213,7 @@ namespace BaseFlux {
                     ImGui_ImplSDL3_NewFrame();
                     ImGui::NewFrame();
 
-                    if (mSettings.EnableDockSpace)
+                    if (getSettings().EnableDockSpace)
                     {
                         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode; //<< this makes it transparent
                         mDockSpaceId = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
@@ -326,7 +241,7 @@ namespace BaseFlux {
 
                 frameTime = SDL_GetTicks() - frameStart;
                 // FPS Limiter
-                if ( mSettings.FpsLimit > 0  && frameLimit > 0) {
+                if ( getSettings().FpsLimit > 0  && frameLimit > 0) {
                     if (frameTime < frameLimit) {
                         SDL_Delay(frameLimit - frameTime);
                     }
@@ -347,5 +262,5 @@ namespace BaseFlux {
             }
             return;
         }
-    }; //class BaseFlux
+    }; //class
 }; //namespace

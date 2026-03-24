@@ -8,12 +8,12 @@
 #include <SDL3/SDL_main.h>
 #include "imgui.h"
 
-#include <BaseFlux.h>
+#include "BaseFlux/Main.h"
 
 int main(int argc, char* argv[]) {
     BaseFlux::Main app;
 
-    app.mSettings = {
+    app.getSettings() = {
         .ScreenSize = { 300, 300},
         .sdlWindowFlagsOverwrite = SDL_WINDOW_BORDERLESS
     };

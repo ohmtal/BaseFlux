@@ -90,7 +90,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 
 # include_directory to BaseFlux:
 target_include_directories(${PROJECT_NAME} PRIVATE
-    ../src
+    ../
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
