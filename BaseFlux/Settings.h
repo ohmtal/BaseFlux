@@ -5,13 +5,11 @@
 // BaseFlux Settings - Singelton
 //-----------------------------------------------------------------------------
 #pragma once
-
-#include "Tools.h"
-
+#include <SDL3/SDL.h>
 #include <string>
 #include <array>
-#include <memory>
-#include <functional>
+
+#include "Tools.h"
 
 namespace BaseFlux {
 

@@ -5,11 +5,9 @@
 // BaseFlux Tools
 //-----------------------------------------------------------------------------
 #pragma once
-
+#include <SDL3/SDL.h>
 #include <string>
-#include <array>
-#include <memory>
-#include <functional>
+
 
 namespace BaseFlux {
 
