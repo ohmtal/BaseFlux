@@ -15,7 +15,6 @@
 #include "Settings.h"
 
 #include <string>
-#include <array>
 #include <memory>
 #include <functional>
 
