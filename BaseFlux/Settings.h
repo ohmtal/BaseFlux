@@ -50,10 +50,10 @@ namespace BaseFlux {
 
 
         std::string getSafeCompany() {
-            return sanitizeFilenameWithUnderScores(Company);
+            return Tools::sanitizeFilenameWithUnderScores(Company);
         }
         std::string getSafeCaption() {
-            return sanitizeFilenameWithUnderScores(Caption);
+            return Tools::sanitizeFilenameWithUnderScores(Caption);
         }
         // -------------- Singelton --------------
         static Settings& getInstance() {

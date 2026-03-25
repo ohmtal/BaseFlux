@@ -56,10 +56,10 @@ namespace BaseFlux {
          */
         void setFullPath(std::string  &path) {
             if (path.find("base:/", 0) != std::string::npos) {
-                path = string_replace_all(path, "base:/", getBasePath());
+                path = Tools::string_replace_all(path, "base:/", Tools::getBasePath());
             }
             if (path.find("pref:/", 0) != std::string::npos) {
-                path = string_replace_all(path, "pref:/", getSettings().getPrefsPath());
+                path = Tools::string_replace_all(path, "pref:/", getSettings().getPrefsPath());
             }
         }
         //--------------------------------------------------------------------------

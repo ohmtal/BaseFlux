@@ -9,7 +9,7 @@
 #include <string>
 
 
-namespace BaseFlux {
+namespace BaseFlux::Tools {
 
     //-----------------------------------------------------------------------------
     inline std::string sanitizeFilenameWithUnderScores(std::string name)
