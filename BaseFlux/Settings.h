@@ -55,11 +55,6 @@ namespace BaseFlux {
         std::string getSafeCaption() {
             return Tools::sanitizeFilenameWithUnderScores(Caption);
         }
-        // -------------- Singelton --------------
-        static Settings& getInstance() {
-            static Settings instance;
-            return instance;
-        }
     };
 
 }; //namespace

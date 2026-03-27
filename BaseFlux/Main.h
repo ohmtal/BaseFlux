@@ -31,8 +31,10 @@ namespace BaseFlux {
         bool mShutDownComplete = false;
         bool mRunning = false;
 
+        Settings mSettings;
+
     public:
-        Settings& getSettings() { return Settings::getInstance(); }
+        Settings& getSettings() { return mSettings; }
 
         Main() = default;
         ~Main()  = default;
