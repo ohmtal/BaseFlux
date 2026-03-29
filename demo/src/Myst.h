@@ -75,7 +75,7 @@ public:
 
             if ( frameSkipCounter > mFrameSkip ) {
                 line.history.push_front({line.p1.pos, line.p2.pos});
-                if (line.history.size() > mMaxHistory) line.history.pop_back();
+                while (line.history.size() > mMaxHistory) line.history.pop_back();
                 frameSkipCounter = 0;
             }
             for (size_t i = 0; i < line.history.size(); i++) {
