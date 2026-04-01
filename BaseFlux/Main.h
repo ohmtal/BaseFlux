@@ -164,9 +164,13 @@ namespace BaseFlux {
         void shutDown() {
             if (mShutDownComplete) return; //double call safety
             if (OnShutDown) OnShutDown();
-            ImGui_ImplSDLRenderer3_Shutdown();
-            ImGui_ImplSDL3_Shutdown();
-            ImGui::DestroyContext();
+            if ( mImGuiIO ) {
+                ImGui_ImplSDLRenderer3_Shutdown();
+                ImGui_ImplSDL3_Shutdown();
+                ImGui::DestroyContext();
+                mImGuiIO = nullptr;
+            }
+
             if (mRenderer) { SDL_DestroyRenderer(mRenderer); mRenderer = nullptr; }
             if (mWindow) {SDL_DestroyWindow(mWindow); mWindow = nullptr;}
             SDL_Quit();
