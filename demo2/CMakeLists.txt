@@ -31,6 +31,7 @@ FetchContent_Declare(
   # SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../lib/SDL-release-3.4.2"
   # --- when downloaded and not extracted:
   URL "${CMAKE_CURRENT_LIST_DIR}/../lib/SDL-release-3.4.2.tar.gz"
+  DOWNLOAD_EXTRACT_TIMESTAMP FALSE
 )
 
 
@@ -54,6 +55,7 @@ FetchContent_Declare(
 
     # --- when downloaded and not extracted:
     URL "${CMAKE_CURRENT_LIST_DIR}/../lib/imgui-1.92.6-docking.tar.gz"
+    DOWNLOAD_EXTRACT_TIMESTAMP FALSE
 
 )
 
