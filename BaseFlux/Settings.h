@@ -40,21 +40,9 @@ namespace BaseFlux {
         // overwrite SDL FLAGS:
         SDL_WindowFlags sdlWindowFlagsOverwrite = 0;
 
-        std::string getPrefsPath() {
-            static std::string cachedPath = "";
-            if (!cachedPath.empty()) return cachedPath;
-            const char* rawPath = SDL_GetPrefPath(getSafeCompany().c_str(), getSafeCaption().c_str());
-            cachedPath = rawPath ? std::string(rawPath) : "";
-            return cachedPath;
-        }
-
-
-        std::string getSafeCompany() {
-            return Tools::sanitizeFilenameWithUnderScores(Company);
-        }
-        std::string getSafeCaption() {
-            return Tools::sanitizeFilenameWithUnderScores(Caption);
-        }
+        std::string getPrefsPath();
+        std::string getSafeCompany();
+        std::string getSafeCaption();
     };
 
 }; //namespace

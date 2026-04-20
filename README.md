@@ -7,6 +7,11 @@ Base to build an cross platform Application or Prototype with SDL3 and ImGui.
 - copy CMakeLists.txt from demo to you new folder
 - create a new empty main.cpp in src 
 
+## CMake in Projects
+- demo: cmake example with setting a path to BaseFlux
+- demo2: cmake with fetch content BaseFlux
+
+
 ## Implement
 
 Only five steps to get it work:
