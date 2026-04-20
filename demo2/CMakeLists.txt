@@ -36,16 +36,14 @@ add_executable(${PROJECT_NAME}
 target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 
 # include_directory to BaseFlux:
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ../
-)
+# target_include_directories(${PROJECT_NAME} PRIVATE
+#     ../
+# )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    SDL3::SDL3-static
-    LibImGui
+    BaseFlux
 )

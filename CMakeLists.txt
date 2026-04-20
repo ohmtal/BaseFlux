@@ -62,7 +62,7 @@ add_library(BaseFlux
     ${baseFlux_SOURCE_DIR}/BaseFlux/Tools.cpp
 )
 
-target_link_libraries(BaseFlux PRIVATE
+target_link_libraries(BaseFlux PUBLIC
     SDL3::SDL3-static
     ImGui
 )

@@ -36,10 +36,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 
-
-
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    SDL3::SDL3-static
-    ImGui
     BaseFlux
 )
+
