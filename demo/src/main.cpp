@@ -79,7 +79,10 @@ namespace BaseFluxDemo {
                 switch ( event.key.key )
                 {
                     case SDLK_F1:
-                        mBaseFlux.getAudioManager().play("dungeon_witch.wav");
+                        mBaseFlux.getAudioManager().play("dungeon_witch.wav", 0.8f, true);
+                        break;
+                    case SDLK_F2:
+                        mBaseFlux.getAudioManager().stop("dungeon_witch.wav");
                         break;
                     case SDLK_ESCAPE:
                         mBaseFlux.TerminateApplication();

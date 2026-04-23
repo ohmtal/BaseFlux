@@ -2,14 +2,6 @@
 #include "Main.h"
 namespace BaseFlux {
     //--------------------------------------------------------------------------
-    void SDLCALL MyAudioLoopCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount) {
-        WavData* data = (WavData*)userdata;
-        if (total_amount < (int)data->len) {
-            SDL_PutAudioStreamData(stream, data->buffer, data->len);
-        }
-    }
-    //--------------------------------------------------------------------------
-    //--------------------------------------------------------------------------
     bool AudioManager::init() {
         // if (!mMain) {
         //     SDL_Log("[error] Init failed! Main object not set.");
@@ -58,24 +50,6 @@ namespace BaseFlux {
         }
     }
 
-   // void AudioManager::shutDown() {
-   //      if (mShutDown) return;
-   //      mShutDown = true;
-   //      SDL_CloseAudioDevice(mAudioDevice);
-   //      mAudioDevice = 0;
-   //
-   //      for (auto const& [key, val] : mWavMap) {
-   //          if (val.buffer) {
-   //              SDL_free(val.buffer);
-   //          }
-   //          if (val.stream) {
-   //              SDL_DestroyAudioStream(val.stream);
-   //          }
-   //      }
-   //      mWavMap.clear();
-   //      mInitialized = false;
-   //  }
-
     //--------------------------------------------------------------------------
     bool AudioManager::bindStream(SDL_AudioStream* stream)
     {
@@ -109,6 +83,14 @@ namespace BaseFlux {
         return mAudioDevice ? SDL_GetAudioDeviceGain(mAudioDevice) : 1.0f;
     }
     //--------------------------------------------------------------------------
+    void SDLCALL MyAudioLoopCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount) {
+        WavData* data = (WavData*)userdata;
+        if (additional_amount > 0) {
+            SDL_PutAudioStreamData(stream, data->buffer, data->len);
+        }
+    }
+
+    // 2. In deiner play-Funktion:
     bool AudioManager::play(std::string fileName, float gain, bool loop) {
         if (!isInitialized()) return false;
         WavData* data = get(fileName);
@@ -120,24 +102,27 @@ namespace BaseFlux {
 
 
         SDL_ClearAudioStream(data->stream);
-
-         SDL_SetAudioStreamGain(data->stream, gain);
+        SDL_SetAudioStreamGain(data->stream, gain);
 
         if (loop) {
-            SDL_SetAudioStreamPutCallback(data->stream, MyAudioLoopCallback, data);
+            SDL_SetAudioStreamGetCallback(data->stream, MyAudioLoopCallback, data);
         } else {
-            SDL_SetAudioStreamPutCallback(data->stream, nullptr, nullptr);
+            SDL_SetAudioStreamGetCallback(data->stream, nullptr, nullptr);
         }
+
         SDL_PutAudioStreamData(data->stream, data->buffer, data->len);
+        SDL_ResumeAudioStreamDevice(data->stream);
+
         return true;
     }
+
     //--------------------------------------------------------------------------
     bool AudioManager::stop(std::string fileName) {
         if (!isInitialized()) return false;
-        WavData* data = get(fileName);
+        WavData* data = get(fileName, false); // no autoload on stop!
         if (!data || !data->stream) return false;
 
-        SDL_SetAudioStreamPutCallback(data->stream, nullptr, nullptr);
+        SDL_SetAudioStreamGetCallback(data->stream, nullptr, nullptr);
         SDL_ClearAudioStream(data->stream);
 
         return true;

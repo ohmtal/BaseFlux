@@ -44,7 +44,7 @@ namespace BaseFlux {
         if (noAutoLoad) return nullptr;
 
         // auto load
-        if (isBlackListed(fileName)) return nullptr;
+        // checked on add => if (isBlackListed(fileName)) return nullptr;
         if (!add(fileName)) return nullptr;
 
         // lookup again
