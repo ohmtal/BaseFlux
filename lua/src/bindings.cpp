@@ -23,11 +23,20 @@ namespace BaseFlux {
                                             "down", &SDL_KeyboardEvent::down
         );
 
+        // lua.new_usertype<SDL_Event>("SDL_Event",
+        //     "type", sol::readonly_property([](SDL_Event& ev) -> uint32_t {
+        //         return ev.type;
+        //     })
+        //     ,"key", [](SDL_Event& ev) { return ev.key; }
+        //     ,"motion", [](SDL_Event& ev) { return ev.motion; }
+        // );
+
         lua.new_usertype<SDL_Event>("SDL_Event",
                                     "type", &SDL_Event::type,
                                     "key", [](SDL_Event& ev) { return ev.key; },
                                     "motion", [](SDL_Event& ev) { return ev.motion; }
         );
+
     }
     void bindSDLConstants(sol::state& lua) {
 
@@ -36,6 +45,13 @@ namespace BaseFlux {
         lua["SDL_EVENT_KEY_UP"] = SDL_EVENT_KEY_UP;
         lua["SDL_EVENT_MOUSE_MOTION"] = SDL_EVENT_MOUSE_MOTION;
         lua["SDL_EVENT_MOUSE_BUTTON_DOWN"] = SDL_EVENT_MOUSE_BUTTON_DOWN;
+
+        // == still not working .. thats no fun i guess i stay with c++ :P
+        // lua["SDL_EVENT_QUIT"] = static_cast<uint32_t>(SDL_EVENT_QUIT);
+        // lua["SDL_EVENT_KEY_DOWN"] = static_cast<uint32_t>(SDL_EVENT_KEY_DOWN);
+        // lua["SDL_EVENT_KEY_UP"] = static_cast<uint32_t>(SDL_EVENT_KEY_UP);
+        // lua["SDL_EVENT_MOUSE_MOTION"] = static_cast<uint32_t>(SDL_EVENT_MOUSE_MOTION);
+        // lua["SDL_EVENT_MOUSE_BUTTON_DOWN"] = static_cast<uint32_t>(SDL_EVENT_MOUSE_BUTTON_DOWN);
 
         // Keycodes (SDLK_...)
         // Lua: sdl.K_SPACE
