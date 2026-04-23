@@ -63,8 +63,10 @@ namespace BaseFlux {
         std::function<void()> OnShutDown = nullptr;
         //----------------------------------------------------------------------
         // wraper for getAudioManager().play and getTextureManager.render:
-        bool playSound(std::string fileName );
-        bool renderImage(std::string fileName , const SDL_FRect *srcrect, const SDL_FRect *dstrect);
+        bool playSound(std::string fileName, float gain = 1.0f, bool loop = false);
+        bool stopSound(std::string fileName  );
+        bool renderTexture(std::string fileName , const SDL_FRect *srcrect, const SDL_FRect *dstrect);
+        SDL_Texture* getTexture(std::string fileName, bool noAutoLoad = false);
         //----------------------------------------------------------------------
         /**
          * replace a path with full path

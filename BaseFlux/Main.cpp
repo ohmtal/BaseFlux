@@ -209,12 +209,20 @@ namespace BaseFlux {
         return;
     }
     //--------------------------------------------------------------------------
-    bool Main::playSound(std::string fileName){
-        return getAudioManager().play(fileName);
+    // Sound Wrapper
+    bool Main::playSound(std::string fileName , float gain , bool loop )  {
+        return getAudioManager().play(fileName, gain, loop);
     }
-
-    bool Main::renderImage(std::string fileName, const SDL_FRect* srcrect, const SDL_FRect* dstrect) {
+    bool Main::stopSound(std::string fileName  ) {
+        return getAudioManager().stop(fileName);
+    }
+    //--------------------------------------------------------------------------
+    // Texture Wrapper
+    bool Main::renderTexture(std::string fileName, const SDL_FRect* srcrect, const SDL_FRect* dstrect) {
         return getTextureManager().render(fileName,srcrect, dstrect);
 
+    }
+    SDL_Texture* Main::getTexture(std::string fileName, bool noAutoLoad) {
+        return getTextureManager().get(fileName, noAutoLoad);
     }
 };
