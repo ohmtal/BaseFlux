@@ -12,19 +12,22 @@ set(PROJECT_SRC
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# ------------- BaseFlux
 include(FetchContent)
+# ------------- BaseFlux
+set(BASEFLUX_DIR "../" CACHE PATH "Path to BaseFlux")
+if(NOT EXISTS "${BASEFLUX_DIR}/CMakeLists.txt")
+  #  message(FATAL_ERROR "The directory OHMFLUX_DIR='${OHMFLUX_DIR}' does not contain a CMakeLists.txt file!")
+  FetchContent_Declare(
+    BaseFlux
+    # --- directly from github:
+    GIT_REPOSITORY https://github.com/ohmtal/BaseFlux.git
+    GIT_TAG        main
+  )
+  FetchContent_MakeAvailable(BaseFlux)
 
-
-# For this demo with fetch it fetch itself again - i know ;)
-FetchContent_Declare(
-  BaseFlux
-  # --- directly from github:
-  GIT_REPOSITORY https://github.com/ohmtal/BaseFlux.git
-  GIT_TAG        main
-)
-
-FetchContent_MakeAvailable(BaseFlux)
+else()
+  add_subdirectory("${BASEFLUX_DIR}" "${CMAKE_BINARY_DIR}/baseFlux_build")
+endif()
 
 
 # ------------- Main

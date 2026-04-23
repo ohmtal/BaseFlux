@@ -11,13 +11,23 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
+include(FetchContent)
+
 #  --- BaseFlux from Directory ---
 set(BASEFLUX_DIR "../" CACHE PATH "Path to BaseFlux")
 if(NOT EXISTS "${BASEFLUX_DIR}/CMakeLists.txt")
-    message(FATAL_ERROR "The directory OHMFLUX_DIR='${OHMFLUX_DIR}' does not contain a CMakeLists.txt file!")
-endif()
+  #  message(FATAL_ERROR "The directory OHMFLUX_DIR='${OHMFLUX_DIR}' does not contain a CMakeLists.txt file!")
+  FetchContent_Declare(
+    BaseFlux
+    # --- directly from github:
+    GIT_REPOSITORY https://github.com/ohmtal/BaseFlux.git
+    GIT_TAG        main
+  )
+  FetchContent_MakeAvailable(BaseFlux)
 
-add_subdirectory("${BASEFLUX_DIR}" "${CMAKE_BINARY_DIR}/baseFlux_build")
+else()
+  add_subdirectory("${BASEFLUX_DIR}" "${CMAKE_BINARY_DIR}/baseFlux_build")
+endif()
 
 
 # --- Project ---

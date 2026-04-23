@@ -26,35 +26,10 @@ namespace BaseFluxDemo {
 
 
         BaseFluxDemo::Myst mMyst;
-        // std::map<std::string, SDL_Texture*> mTextureMap;
-
-        void loadAssets() {
-            // Test lazy loading:
-
-            // std::vector<std::string> textures = {
-            //     "back.bmp"
-            // };
-            // for (int i = 0; i < textures.size(); i++) {
-            //     mTextureManager->add(textures[i]);
-            // }
-
-            // std::vector<std::string> waves = {
-            //     "dungeon_witch.wav"
-            //     , "beep.wav"
-            // };
-            // for (int i = 0; i < waves.size(); i++) {
-            //     mAudioManager->add(waves[i]);
-            // }
-
-
-        }
 
         void OnRender(SDL_Renderer* renderer) {
             mBaseFlux.getTextureManager().render("back.bmp", NULL,NULL);
-            // auto it = mTextureMap.find("back.bmp");
-            // if (it != mTextureMap.end()) {
-            //     SDL_RenderTexture(renderer, it->second, NULL, NULL);
-            // }
+
 
             ImGui::SetNextWindowSize(ImVec2(600.f,400.f), ImGuiCond_FirstUseEver);
             ImGui::SetNextWindowSizeConstraints(ImVec2(300.f, 300.f), ImVec2(FLT_MAX, FLT_MAX));
@@ -67,6 +42,14 @@ namespace BaseFluxDemo {
                 ImGui::SliderInt("Frameskip", &mMyst.mFrameSkip, 0,10);
 
                 mMyst.RenderBouncingLines();
+            }
+            ImGui::End();
+
+            ImGui::SetNextWindowSize(ImVec2(100.f,100.f), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSizeConstraints(ImVec2(60.f, 60.f), ImVec2(FLT_MAX, FLT_MAX));
+            if (ImGui::Begin("Hello Image"))
+            {
+                ImGui::Image((ImTextureID)mBaseFlux.getTexture("icon.bmp"), ImGui::GetContentRegionAvail());
             }
             ImGui::End();
 
@@ -84,6 +67,9 @@ namespace BaseFluxDemo {
                     case SDLK_F2:
                         mBaseFlux.getAudioManager().stop("dungeon_witch.wav");
                         break;
+                    case SDLK_F3:
+                        mBaseFlux.getAudioManager().play("dungeon_witch.wav", 1.8f, false);
+                        break;
                     case SDLK_ESCAPE:
                         mBaseFlux.TerminateApplication();
                         break;
@@ -93,12 +79,7 @@ namespace BaseFluxDemo {
         }
 
         void OnShutDown() {
-            // for (auto const& [id, texture] : mTextureMap) {
-            //     if (texture != nullptr) {
-            //         SDL_DestroyTexture(texture);
-            //     }
-            // }
-            // mTextureMap.clear();
+
         }
 
     public:
@@ -122,8 +103,6 @@ namespace BaseFluxDemo {
             if ( !mBaseFlux.InitSDL() ) return false;
             mBaseFlux.initImGui();
 
-
-            loadAssets();
             mBaseFlux.OnRender = [this](SDL_Renderer* renderer) { OnRender(renderer);};
             mBaseFlux.OnEvent  = [this](const SDL_Event event) { OnEvent(event);};
             mBaseFlux.OnShutDown = [this]() { OnShutDown();};
