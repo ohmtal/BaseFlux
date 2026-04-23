@@ -12,7 +12,6 @@
 #include <map>
 #include <string>
 
-#include "Main.h"
 #include "BaseResourceManager.h"
 
 namespace BaseFlux {
@@ -26,7 +25,9 @@ namespace BaseFlux {
            shutDown();
          }
         void shutDown();
-        SDL_Texture* get(std::string fileName);
+        // Load a Texture (.bmp,.png) relative to AssetPath
+        bool loadTexture(std::string fileName, SDL_Texture*& texture);
+        SDL_Texture* get(std::string fileName, bool noAutoLoad = false);
         bool add(const std::string fileName);
         bool render(const std::string fileName,  const SDL_FRect *srcrect, const SDL_FRect *dstrect);
 

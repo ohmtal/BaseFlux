@@ -24,8 +24,6 @@ namespace BaseFluxDemo {
     private:
         BaseFlux::Main mBaseFlux;
 
-        std::unique_ptr<BaseFlux::TextureManager> mTextureManager;
-        std::unique_ptr<BaseFlux::AudioManager> mAudioManager;
 
         BaseFluxDemo::Myst mMyst;
         // std::map<std::string, SDL_Texture*> mTextureMap;
@@ -52,7 +50,7 @@ namespace BaseFluxDemo {
         }
 
         void OnRender(SDL_Renderer* renderer) {
-            mTextureManager->render("back.bmp", NULL,NULL);
+            mBaseFlux.getTextureManager().render("back.bmp", NULL,NULL);
             // auto it = mTextureMap.find("back.bmp");
             // if (it != mTextureMap.end()) {
             //     SDL_RenderTexture(renderer, it->second, NULL, NULL);
@@ -81,7 +79,7 @@ namespace BaseFluxDemo {
                 switch ( event.key.key )
                 {
                     case SDLK_F1:
-                        mAudioManager->play("dungeon_witch.wav");
+                        mBaseFlux.getAudioManager().play("dungeon_witch.wav");
                         break;
                     case SDLK_ESCAPE:
                         mBaseFlux.TerminateApplication();
@@ -92,8 +90,6 @@ namespace BaseFluxDemo {
         }
 
         void OnShutDown() {
-            mTextureManager->shutDown();
-            mAudioManager->shutDown();
             // for (auto const& [id, texture] : mTextureMap) {
             //     if (texture != nullptr) {
             //         SDL_DestroyTexture(texture);
@@ -123,30 +119,25 @@ namespace BaseFluxDemo {
             if ( !mBaseFlux.InitSDL() ) return false;
             mBaseFlux.initImGui();
 
-            mTextureManager  = std::make_unique<BaseFlux::TextureManager>(&mBaseFlux);
-            mAudioManager = std::make_unique<BaseFlux::AudioManager>(&mBaseFlux);
-            if (!mAudioManager->init()) {
-               SDL_Log("[error]Failed to init audio!");
-            }
 
             loadAssets();
             mBaseFlux.OnRender = [this](SDL_Renderer* renderer) { OnRender(renderer);};
             mBaseFlux.OnEvent  = [this](const SDL_Event event) { OnEvent(event);};
             mBaseFlux.OnShutDown = [this]() { OnShutDown();};
 
-            mMyst.onCollide = [this]() { mAudioManager->play("beep.wav", 0.04f,false); };
+            mMyst.onCollide = [this]() { mBaseFlux.getAudioManager().play("beep.wav", 0.04f,false); };
 
             // schedule welcome sound
             std::thread([this]() {
                 std::this_thread::sleep_for(std::chrono::milliseconds((1000)));
-                mAudioManager->play("dungeon_witch.wav");
+                mBaseFlux.getAudioManager().play("dungeon_witch.wav");
             }).detach();
 
             // call an invalid sound:
-             mAudioManager->play("not existing wav");
+             mBaseFlux.getAudioManager().play("not existing wav");
 
-            // lazy loading
-             mAudioManager->play("sound1.wav");
+            // lazy loading and using main wrapper
+             mBaseFlux.playSound("sound1.wav");
 
             return true;
 

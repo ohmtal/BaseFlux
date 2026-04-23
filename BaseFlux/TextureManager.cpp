@@ -3,6 +3,25 @@
 #include "Main.h"
 namespace BaseFlux {
 
+    bool TextureManager::loadTexture(std::string fileName, SDL_Texture*& texture){
+        if (!mMain) return false;
+        if (!mMain->getRenderer()) return false;
+        fileName = mMain->getSettings().AssetPath + "/" + fileName;
+        mMain->setFullPath(fileName);
+        // SDL_Log("[info] Loading image: %s", fileName.c_str());
+        SDL_Surface* surface = SDL_LoadSurface(fileName.c_str());
+        if (!surface) {
+            SDL_Log("[error] Failed to load texture at %s: %s", fileName.c_str(), SDL_GetError());
+            return false;
+        }
+        texture = SDL_CreateTextureFromSurface(mMain->getRenderer(), surface);
+        SDL_DestroySurface(surface);
+        if (!texture) {
+            SDL_Log("[error] Texture Create Error: %s", SDL_GetError());
+            return false;
+        }
+        return true;
+    }
     //--------------------------------------------------------------------------
     void TextureManager::shutDown(){
         if (mMain == nullptr) return;
@@ -15,11 +34,26 @@ namespace BaseFlux {
         mTextureMap.clear();
     }
     //--------------------------------------------------------------------------
-    SDL_Texture* TextureManager::get(std::string fileName) {
+    SDL_Texture* TextureManager::get(std::string fileName, bool noAutoLoad) {
         auto it = mTextureMap.find(fileName);
 
         if (it != mTextureMap.end()) {
             return it->second;
+        }
+
+        if (noAutoLoad) return nullptr;
+
+        // auto load
+        if (isBlackListed(fileName)) return nullptr;
+        if (!add(fileName)) return nullptr;
+
+        // lookup again
+        {
+            auto it = mTextureMap.find(fileName);
+
+            if (it != mTextureMap.end()) {
+                return it->second;
+            }
         }
         return nullptr;
     }
@@ -32,12 +66,12 @@ namespace BaseFlux {
             return false;
         }
 
-        if (get(fileName) != nullptr) {
+        if (get(fileName, true) != nullptr) {
             SDL_Log("[error] deny texture double load: %s!", fileName.c_str());
             return false;
         }
         SDL_Texture* tex = nullptr;
-        if (!mMain->loadTexture(fileName, tex)) {
+        if (!loadTexture(fileName, tex)) {
             SDL_Log("[error] Error failed to load texture %s!",fileName.c_str());
             blacklist(fileName);
             return false;
@@ -52,10 +86,8 @@ namespace BaseFlux {
         if (!mMain->getRenderer()) return false;
         SDL_Texture* texture = get(fileName);
         if (!texture) {
-            if (isBlackListed(fileName)) return false;
-            if (!add(fileName)) return false;
-            texture = get(fileName);
-            if (!texture) return false;
+            SDL_Log("[error] Invalid Texture Filename: %s", fileName.c_str());
+            return false;
         }
 
         SDL_RenderTexture(mMain->getRenderer(), texture, srcrect, dstrect);

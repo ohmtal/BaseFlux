@@ -12,24 +12,7 @@ namespace BaseFlux {
         }
     }
     //--------------------------------------------------------------------------
-    bool Main::loadTexture(std::string fileName, SDL_Texture*& texture){
-        if (!mRenderer) return false;
-        fileName = getSettings().AssetPath + "/" + fileName;
-        setFullPath(fileName);
-        // SDL_Log("[info] Loading image: %s", fileName.c_str());
-        SDL_Surface* surface = SDL_LoadSurface(fileName.c_str());
-        if (!surface) {
-            SDL_Log("[error] Failed to load texture at %s: %s", fileName.c_str(), SDL_GetError());
-            return false;
-        }
-        texture = SDL_CreateTextureFromSurface(mRenderer, surface);
-        SDL_DestroySurface(surface);
-        if (!texture) {
-            SDL_Log("[error] Texture Create Error: %s", SDL_GetError());
-            return false;
-        }
-        return true;
-    }
+
     //--------------------------------------------------------------------------
     bool Main::setWindowIcon(SDL_Window* window, std::string fileName) {
         fileName = getSettings().AssetPath + "/" + fileName;
@@ -80,6 +63,14 @@ namespace BaseFlux {
 
         SDL_SetRenderVSync(mRenderer,getSettings().EnableVSync);
 
+        mTextureManager  = std::make_unique<BaseFlux::TextureManager>(this);
+        mAudioManager = std::make_unique<BaseFlux::AudioManager>(this);
+        if (!mAudioManager->init()) {
+            SDL_Log("[error]Failed to init audio!");
+        }
+
+
+
         return true;
     }
     //--------------------------------------------------------------------------
@@ -109,6 +100,11 @@ namespace BaseFlux {
     void Main::shutDown() {
         if (mShutDownComplete) return; //double call safety
         if (OnShutDown) OnShutDown();
+
+        mTextureManager->shutDown();
+        mAudioManager->shutDown();
+
+
         if ( mImGuiIO ) {
             ImGui_ImplSDLRenderer3_Shutdown();
             ImGui_ImplSDL3_Shutdown();
@@ -211,5 +207,14 @@ namespace BaseFlux {
             exit(1);
         }
         return;
+    }
+    //--------------------------------------------------------------------------
+    bool Main::playSound(std::string fileName){
+        return getAudioManager().play(fileName);
+    }
+
+    bool Main::renderImage(std::string fileName, const SDL_FRect* srcrect, const SDL_FRect* dstrect) {
+        return getTextureManager().render(fileName,srcrect, dstrect);
+
     }
 };

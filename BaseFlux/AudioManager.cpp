@@ -112,13 +112,6 @@ namespace BaseFlux {
     bool AudioManager::play(std::string fileName, float gain, bool loop) {
         if (!isInitialized()) return false;
         WavData* data = get(fileName);
-        if ( !data) {
-            // lazy loading
-            if (isBlackListed(fileName)) return false;
-            if (!add(fileName)) return false;
-            data = get(fileName);
-            if (!data) return false;
-        }
 
         if (!data || !data->stream)  {
             SDL_Log("[error] Invalid filename: %s", fileName.c_str());
@@ -150,12 +143,28 @@ namespace BaseFlux {
         return true;
     }
     //--------------------------------------------------------------------------
-    WavData* AudioManager::get(std::string fileName) {
+    WavData* AudioManager::get(std::string fileName, bool noAutoLoad) {
         auto it = mWavMap.find(fileName);
 
         if (it != mWavMap.end()) {
-            return &it->second; // Adresse des Objekts in der Map zurückgeben
+            return &it->second;
         }
+
+        if (noAutoLoad) return nullptr;
+
+        // auto load
+        // checked on add: if (isBlackListed(fileName)) return nullptr;
+        if (!add(fileName)) return nullptr;
+
+        // lookup again
+        {
+            auto it = mWavMap.find(fileName);
+
+            if (it != mWavMap.end()) {
+                return &it->second;
+            }
+        }
+
         return nullptr;
     }
     //--------------------------------------------------------------------------
@@ -169,7 +178,7 @@ namespace BaseFlux {
         }
 
 
-        if (get(fileName) != nullptr) {
+        if (get(fileName, true) != nullptr) {
             SDL_Log("[error] deny texture double load: %s!", fileName.c_str());
             return false;
         }

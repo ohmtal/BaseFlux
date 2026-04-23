@@ -13,6 +13,8 @@
 
 #include "Tools.h"
 #include "Settings.h"
+#include "AudioManager.h"
+#include "TextureManager.h"
 
 #include <string>
 #include <memory>
@@ -33,8 +35,19 @@ namespace BaseFlux {
 
         Settings mSettings;
 
+        std::unique_ptr<BaseFlux::TextureManager> mTextureManager;
+        std::unique_ptr<AudioManager> mAudioManager;
+
+
     public:
         Settings& getSettings() { return mSettings; }
+
+        BaseFlux::TextureManager& getTextureManager() const {
+            return *mTextureManager;
+        }
+        AudioManager& getAudioManager() const {
+            return *mAudioManager;
+        }
 
         Main() = default;
         ~Main()  = default;
@@ -49,6 +62,10 @@ namespace BaseFlux {
         std::function<void(const SDL_Event)> OnEvent = nullptr;
         std::function<void()> OnShutDown = nullptr;
         //----------------------------------------------------------------------
+        // wraper for getAudioManager().play and getTextureManager.render:
+        bool playSound(std::string fileName );
+        bool renderImage(std::string fileName , const SDL_FRect *srcrect, const SDL_FRect *dstrect);
+        //----------------------------------------------------------------------
         /**
          * replace a path with full path
          * %base => SDL_GetBasePath
@@ -56,8 +73,6 @@ namespace BaseFlux {
          */
         void setFullPath(std::string  &path);
 
-        // Load a Texture (.bmp,.png) relative to AssetPath
-        bool loadTexture(std::string fileName, SDL_Texture*& texture);
 
         // Set the window icon relative to AssetPath
         bool setWindowIcon(SDL_Window* window, std::string fileName);
