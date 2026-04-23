@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include <vector>
 #include <deque>
+#include <functional>
 
 namespace BaseFluxDemo {
 
@@ -19,6 +20,7 @@ public:
     Myst() : lines(5) {}
     ~Myst() = default;
 
+    std::function<void()> onCollide = nullptr;
 private:
     struct Point {
         ImVec2 pos, vel;
@@ -100,8 +102,15 @@ public:
                 pts[i]->pos.x += pts[i]->vel.x;
                 pts[i]->pos.y += pts[i]->vel.y;
 
-                if (pts[i]->pos.x < 0 || pts[i]->pos.x > winSize.x) pts[i]->vel.x *= -1.0f;
-                if (pts[i]->pos.y < 0 || pts[i]->pos.y > winSize.y) pts[i]->vel.y *= -1.0f;
+                if (pts[i]->pos.x < 0 || pts[i]->pos.x > winSize.x) {
+                    pts[i]->vel.x *= -1.0f;
+                    if (onCollide) onCollide();
+                }
+                if (pts[i]->pos.y < 0 || pts[i]->pos.y > winSize.y) {
+                    pts[i]->vel.y *= -1.0f;
+                    if (onCollide) onCollide();
+
+                }
             }
 
             drawList->AddLine(

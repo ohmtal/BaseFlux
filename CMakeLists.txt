@@ -54,10 +54,14 @@ target_include_directories(ImGui PUBLIC
 # ------------- BaseFlux
 set (baseFlux_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 add_library(BaseFlux
+    ${baseFlux_SOURCE_DIR}/BaseFlux/AudioManager.h
+    ${baseFlux_SOURCE_DIR}/BaseFlux/AudioManager.cpp
     ${baseFlux_SOURCE_DIR}/BaseFlux/Main.h
     ${baseFlux_SOURCE_DIR}/BaseFlux/Main.cpp
     ${baseFlux_SOURCE_DIR}/BaseFlux/Settings.h
     ${baseFlux_SOURCE_DIR}/BaseFlux/Settings.cpp
+    ${baseFlux_SOURCE_DIR}/BaseFlux/TextureManager.h
+    ${baseFlux_SOURCE_DIR}/BaseFlux/TextureManager.cpp
     ${baseFlux_SOURCE_DIR}/BaseFlux/Tools.h
     ${baseFlux_SOURCE_DIR}/BaseFlux/Tools.cpp
 )

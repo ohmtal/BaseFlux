@@ -1,6 +1,20 @@
-# BaseFlux - Minimalist SDL3 and ImGui base
+# BaseFlux - Minimalist SDL3 and ImGui base library
 
 Base to build an cross platform Application or Prototype with SDL3 and ImGui. 
+
+## Features
+- Building: 
+    - Easy building as lib with cmake including static SDL3 and ImGui.
+- Main
+    - Initialize SDL and ImGui bases on the Settings 
+    - Settings setup also the asset path with aliases: base:/ and pref:/
+    - Loading Textures wrapper (bmp/png) 
+    - Set Window Icon 
+    - Event driven system: OnRender, OnEvent and OnShutDown
+- Managers (sice 2026-04-23)
+    - TexturesManager save textures in a map for rendering and garbage collection
+    - AudioManager save Wave-Files in a map for loading, playing and garbage collection
+    
 
 ## Prepare Example
 - create a new folder with a sub folder src
