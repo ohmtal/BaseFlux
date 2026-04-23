@@ -26,6 +26,12 @@ namespace BaseFlux {
     //--------------------------------------------------------------------------
     bool TextureManager::add(const std::string fileName) {
         if (!mMain) return false;
+
+        if (isBlackListed(fileName)) {
+            SDL_Log("[error] deny blacklisted texture: %s!", fileName.c_str());
+            return false;
+        }
+
         if (get(fileName) != nullptr) {
             SDL_Log("[error] deny texture double load: %s!", fileName.c_str());
             return false;
@@ -33,6 +39,7 @@ namespace BaseFlux {
         SDL_Texture* tex = nullptr;
         if (!mMain->loadTexture(fileName, tex)) {
             SDL_Log("[error] Error failed to load texture %s!",fileName.c_str());
+            blacklist(fileName);
             return false;
         }
 
@@ -44,6 +51,13 @@ namespace BaseFlux {
         if (!mMain) return false;
         if (!mMain->getRenderer()) return false;
         SDL_Texture* texture = get(fileName);
+        if (!texture) {
+            if (isBlackListed(fileName)) return false;
+            if (!add(fileName)) return false;
+            texture = get(fileName);
+            if (!texture) return false;
+        }
+
         SDL_RenderTexture(mMain->getRenderer(), texture, srcrect, dstrect);
         return true;
     }

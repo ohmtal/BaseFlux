@@ -31,20 +31,22 @@ namespace BaseFluxDemo {
         // std::map<std::string, SDL_Texture*> mTextureMap;
 
         void loadAssets() {
-            std::vector<std::string> textures = {
-                "back.bmp"
-            };
-            for (int i = 0; i < textures.size(); i++) {
-                mTextureManager->add(textures[i]);
-            }
+            // Test lazy loading:
 
-            std::vector<std::string> waves = {
-                "dungeon_witch.wav"
-                , "beep.wav"
-            };
-            for (int i = 0; i < waves.size(); i++) {
-                mAudioManager->add(waves[i]);
-            }
+            // std::vector<std::string> textures = {
+            //     "back.bmp"
+            // };
+            // for (int i = 0; i < textures.size(); i++) {
+            //     mTextureManager->add(textures[i]);
+            // }
+
+            // std::vector<std::string> waves = {
+            //     "dungeon_witch.wav"
+            //     , "beep.wav"
+            // };
+            // for (int i = 0; i < waves.size(); i++) {
+            //     mAudioManager->add(waves[i]);
+            // }
 
 
         }
@@ -132,16 +134,19 @@ namespace BaseFluxDemo {
             mBaseFlux.OnEvent  = [this](const SDL_Event event) { OnEvent(event);};
             mBaseFlux.OnShutDown = [this]() { OnShutDown();};
 
-            mMyst.onCollide = [this]() { mAudioManager->play("beep.wav", 0.02f,false); };
+            mMyst.onCollide = [this]() { mAudioManager->play("beep.wav", 0.04f,false); };
 
             // schedule welcome sound
             std::thread([this]() {
-                std::this_thread::sleep_for(std::chrono::milliseconds((200)));
+                std::this_thread::sleep_for(std::chrono::milliseconds((1000)));
                 mAudioManager->play("dungeon_witch.wav");
             }).detach();
 
             // call an invalid sound:
              mAudioManager->play("not existing wav");
+
+            // lazy loading
+             mAudioManager->play("sound1.wav");
 
             return true;
 

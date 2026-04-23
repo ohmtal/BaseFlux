@@ -112,10 +112,19 @@ namespace BaseFlux {
     bool AudioManager::play(std::string fileName, float gain, bool loop) {
         if (!isInitialized()) return false;
         WavData* data = get(fileName);
-        if ( !data || !data->stream) {
+        if ( !data) {
+            // lazy loading
+            if (isBlackListed(fileName)) return false;
+            if (!add(fileName)) return false;
+            data = get(fileName);
+            if (!data) return false;
+        }
+
+        if (!data || !data->stream)  {
             SDL_Log("[error] Invalid filename: %s", fileName.c_str());
             return false;
         }
+
 
         SDL_ClearAudioStream(data->stream);
 
@@ -150,10 +159,16 @@ namespace BaseFlux {
         return nullptr;
     }
     //--------------------------------------------------------------------------
-    bool AudioManager::add(std::__1::string fileName)
+    bool AudioManager::add(std::string fileName)
     {
         if (!isInitialized()) return false;
         if (!mMain) return false;
+        if (isBlackListed(fileName)) {
+            SDL_Log("[error] deny texture it's blacklisted: %s!", fileName.c_str());
+            return false;
+        }
+
+
         if (get(fileName) != nullptr) {
             SDL_Log("[error] deny texture double load: %s!", fileName.c_str());
             return false;
@@ -166,6 +181,7 @@ namespace BaseFlux {
         WavData wav_data;
         if (!SDL_LoadWAV(lFileName.c_str(), &wav_data.spec, &wav_data.buffer, &wav_data.len)) {
             SDL_Log("[error]Couldn't load Wavefile:%s file: %s", fileName.c_str(), SDL_GetError());
+            blacklist(fileName);
             return false;
         }
 
@@ -174,6 +190,7 @@ namespace BaseFlux {
         wav_data.stream = SDL_CreateAudioStream(&wav_data.spec, nullptr);
         if (!wav_data.stream ) {
             SDL_Log("Couldn't create audio stream: %s", SDL_GetError());
+            blacklist(fileName);
             return false;
         }
 
@@ -181,6 +198,7 @@ namespace BaseFlux {
             SDL_Log("Failed to bind '%s' stream to device: %s", fileName.c_str(), SDL_GetError());
             SDL_DestroyAudioStream(wav_data.stream);
             SDL_free(wav_data.buffer);
+            blacklist(fileName);
             return false;
         }
 

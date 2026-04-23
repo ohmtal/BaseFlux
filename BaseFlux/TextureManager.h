@@ -13,15 +13,15 @@
 #include <string>
 
 #include "Main.h"
+#include "BaseResourceManager.h"
 
-class Main; //fwd
 namespace BaseFlux {
-   class TextureManager {
+
+   class TextureManager: public BaseResourceManager {
       std::map<std::string, SDL_Texture*> mTextureMap;
-      Main* mMain = nullptr;
 
       public:
-         TextureManager(Main* main): mMain(main) {}
+         TextureManager(Main* main):BaseResourceManager(main) {}
          ~TextureManager() {
            shutDown();
          }

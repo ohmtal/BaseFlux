@@ -13,9 +13,9 @@
 #include <map>
 #include <string>
 
-#include "Main.h"
+#include "BaseResourceManager.h"
 
-class Main; //fwd
+
 namespace BaseFlux {
     struct WavData {
         Uint8* buffer = nullptr;
@@ -25,10 +25,10 @@ namespace BaseFlux {
     };
 
 
-    class AudioManager {
+    class AudioManager : public BaseResourceManager {
         SDL_AudioDeviceID mAudioDevice = 0;
         std::map<std::string, WavData> mWavMap;
-        Main* mMain = nullptr;
+
         bool mInitialized = false;
         bool mShutDown = false;
 
@@ -36,7 +36,7 @@ namespace BaseFlux {
 
 
         AudioManager(Main* main):
-        mMain(main)
+        BaseResourceManager(main)
         ,mAudioDevice(0)
         ,mInitialized(false)
         ,mShutDown(false)
