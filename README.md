@@ -11,7 +11,7 @@ Base to build an cross platform Application or Prototype with SDL3 and ImGui.
     - Loading Textures wrapper (bmp/png) 
     - Set Window Icon 
     - Event driven system: OnRender, OnEvent and OnShutDown
-- Managers (sice 2026-04-23)
+- Managers (since 2026-04-23)
     - TexturesManager save textures in a map for rendering and garbage collection
     - AudioManager save Wave-Files in a map for loading, playing and garbage collection
     
