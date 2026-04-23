@@ -15,6 +15,8 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <thread>
+#include <chrono>
 
 
 namespace BaseFluxDemo {
@@ -56,7 +58,7 @@ namespace BaseFluxDemo {
 
             ImGui::SetNextWindowSize(ImVec2(600.f,400.f), ImGuiCond_FirstUseEver);
             ImGui::SetNextWindowSizeConstraints(ImVec2(300.f, 300.f), ImVec2(FLT_MAX, FLT_MAX));
-            if (ImGui::Begin("HmAudioManagerello World"))
+            if (ImGui::Begin("Hello World"))
             {
                 ImGui::SetNextItemWidth(80.f);
                 ImGui::SliderInt("History", &mMyst.mMaxHistory, 1,1000);
@@ -131,6 +133,15 @@ namespace BaseFluxDemo {
             mBaseFlux.OnShutDown = [this]() { OnShutDown();};
 
             mMyst.onCollide = [this]() { mAudioManager->play("beep.wav", 0.02f,false); };
+
+            // schedule welcome sound
+            std::thread([this]() {
+                std::this_thread::sleep_for(std::chrono::milliseconds((200)));
+                mAudioManager->play("dungeon_witch.wav");
+            }).detach();
+
+            // call an invalid sound:
+             mAudioManager->play("not existing wav");
 
             return true;
 

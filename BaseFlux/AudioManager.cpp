@@ -112,7 +112,10 @@ namespace BaseFlux {
     bool AudioManager::play(std::string fileName, float gain, bool loop) {
         if (!isInitialized()) return false;
         WavData* data = get(fileName);
-        if ( !data || !data->stream) return false;
+        if ( !data || !data->stream) {
+            SDL_Log("[error] Invalid filename: %s", fileName.c_str());
+            return false;
+        }
 
         SDL_ClearAudioStream(data->stream);
 
