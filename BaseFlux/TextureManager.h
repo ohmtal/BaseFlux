@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 #pragma once
 #include <SDL3/SDL.h>
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #include "BaseResourceManager.h"
@@ -17,7 +17,8 @@
 namespace BaseFlux {
 
    class TextureManager: public BaseResourceManager {
-      std::map<std::string, SDL_Texture*> mTextureMap;
+      // std::map<std::string, SDL_Texture*> mTextureMap;
+     std::unordered_map<std::string, SDL_Texture*> mTextureMap;
 
       public:
          TextureManager(Main* main):BaseResourceManager(main) {}
@@ -30,6 +31,7 @@ namespace BaseFlux {
         SDL_Texture* get(std::string fileName, bool noAutoLoad = false);
         bool add(const std::string fileName);
         bool render(const std::string fileName,  const SDL_FRect *srcrect, const SDL_FRect *dstrect);
+        bool render(SDL_Texture* texture,  const SDL_FRect *srcrect, const SDL_FRect *dstrect);
 
 
    }; //class

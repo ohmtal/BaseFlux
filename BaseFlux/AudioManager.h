@@ -10,7 +10,7 @@
 //-----------------------------------------------------------------------------
 #pragma once
 #include <SDL3/SDL.h>
-#include <map>
+#include <unordered_map>
 #include <string>
 
 #include "BaseResourceManager.h"
@@ -27,7 +27,9 @@ namespace BaseFlux {
 
     class AudioManager : public BaseResourceManager {
         SDL_AudioDeviceID mAudioDevice = 0;
-        std::map<std::string, WavData> mWavMap;
+        // std::map<std::string, WavData> mWavMap;
+        std::unordered_map<std::string, WavData> mWavMap;
+
 
         bool mInitialized = false;
         bool mShutDown = false;

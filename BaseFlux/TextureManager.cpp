@@ -6,7 +6,8 @@ namespace BaseFlux {
     bool TextureManager::loadTexture(std::string fileName, SDL_Texture*& texture){
         if (!mMain) return false;
         if (!mMain->getRenderer()) return false;
-        fileName = mMain->getSettings().AssetPath + "/" + fileName;
+
+        fileName = "texture:/" + fileName;
         mMain->setFullPath(fileName);
         // SDL_Log("[info] Loading image: %s", fileName.c_str());
         SDL_Surface* surface = SDL_LoadSurface(fileName.c_str());
@@ -62,7 +63,7 @@ namespace BaseFlux {
         if (!mMain) return false;
 
         if (isBlackListed(fileName)) {
-            SDL_Log("[error] deny blacklisted texture: %s!", fileName.c_str());
+           // heavy spam onRender event! SDL_Log("[error] deny blacklisted texture: %s!", fileName.c_str());
             return false;
         }
 
@@ -89,9 +90,14 @@ namespace BaseFlux {
             SDL_Log("[error] Invalid Texture Filename: %s", fileName.c_str());
             return false;
         }
+        return render(texture,srcrect,dstrect);
+    }
 
+    bool TextureManager::render(SDL_Texture* texture,  const SDL_FRect *srcrect, const SDL_FRect *dstrect) {
+        if (!texture) return false;
         SDL_RenderTexture(mMain->getRenderer(), texture, srcrect, dstrect);
         return true;
+
     }
 
 

@@ -168,7 +168,7 @@ namespace BaseFlux {
             return false;
         }
 
-        std::string lFileName = mMain->getSettings().AssetPath + "/" + fileName;
+        std::string lFileName =  "sound:/" + fileName;
         mMain->setFullPath(lFileName);
 
 

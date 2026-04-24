@@ -7,6 +7,8 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <algorithm>
+
 namespace BaseFlux {
     class Main; //fwd
     class BaseResourceManager {

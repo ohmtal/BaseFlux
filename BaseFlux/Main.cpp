@@ -4,6 +4,15 @@ namespace BaseFlux {
 
     //--------------------------------------------------------------------------
     void Main::setFullPath(std::string& path){
+        if (path.find("assets:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "assets:/", getSettings().AssetPath);
+        }
+        if (path.find("sound:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "sound:/", getSettings().AssetPath + getSettings().SoundPathAppend);
+        }
+        if (path.find("texture:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "texture:/", getSettings().AssetPath + getSettings().TexturePathAppend);
+        }
         if (path.find("base:/", 0) != std::string::npos) {
             path = Tools::string_replace_all(path, "base:/", Tools::getBasePath());
         }
@@ -126,6 +135,8 @@ namespace BaseFlux {
 
         bool usingImGui = mImGuiIO != nullptr;
 
+
+        //FIXME change to performanceCounter
         Uint32 frameStart, frameTime;
         uint16_t frameLimit = 0;
 
@@ -173,6 +184,7 @@ namespace BaseFlux {
             if (OnRender) OnRender(mRenderer);
 
 
+
             // ~~~ ImGui End ~~~
             if (usingImGui) {
                 ImGui::Render();
@@ -191,7 +203,12 @@ namespace BaseFlux {
                 if (frameTime < frameLimit) {
                     SDL_Delay(frameLimit - frameTime);
                 }
+                frameTime = SDL_GetTicks() - frameStart;
             }
+
+
+            if (OnUpdate) OnUpdate(frameTime / 1000.f);
+
 
         }
         shutDown();

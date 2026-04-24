@@ -1,3 +1,5 @@
+#define SOL_ALL_SAFETIES_ON 1
+
 #include "bindings.h"
 #include "BaseFlux/Main.h"
 #include <SDL3/SDL.h>
@@ -14,6 +16,31 @@ namespace BaseFlux {
         type["getWindow"] = [](BaseFlux::Main& self) -> void* {
             return static_cast<void*>(self.getWindow());
         };
+
+
+        type["playSound"] = &BaseFlux::Main::playSound;
+        // type["renderTexture"] = &BaseFlux::Main::renderTexture;
+        type["renderTexture"] = [](BaseFlux::Main& self, std::string fileName,
+                                   sol::optional<SDL_FRect> src,
+                                   sol::optional<SDL_FRect> dst) {
+
+            SDL_FRect* pSrc = src ? &(*src) : nullptr;
+            SDL_FRect* pDst = dst ? &(*dst) : nullptr;
+            return self.renderTexture(fileName, pSrc, pDst);
+        };
+
+    }
+
+    void bindSDLBasics(sol::state& lua) {
+        lua.new_usertype<SDL_FRect>("SDL_FRect",
+                                    sol::constructors<SDL_FRect(), SDL_FRect(float, float, float, float)>(),
+                                    "x", &SDL_FRect::x,
+                                    "y", &SDL_FRect::y,
+                                    "w", &SDL_FRect::w,
+                                    "h", &SDL_FRect::h
+        );
+
+        lua.new_usertype<SDL_Texture>("SDL_Texture");
     }
 
     void bindSDLEvents(sol::state& lua) {
@@ -23,17 +50,10 @@ namespace BaseFlux {
                                             "down", &SDL_KeyboardEvent::down
         );
 
-        // lua.new_usertype<SDL_Event>("SDL_Event",
-        //     "type", sol::readonly_property([](SDL_Event& ev) -> uint32_t {
-        //         return ev.type;
-        //     })
-        //     ,"key", [](SDL_Event& ev) { return ev.key; }
-        //     ,"motion", [](SDL_Event& ev) { return ev.motion; }
-        // );
-
         lua.new_usertype<SDL_Event>("SDL_Event",
                                     "type", &SDL_Event::type,
-                                    "key", [](SDL_Event& ev) { return ev.key; },
+                                    "key", sol::property([](SDL_Event& ev) { return ev.key; }),
+                                    // "key", [](SDL_Event& ev) { return ev.key; },
                                     "motion", [](SDL_Event& ev) { return ev.motion; }
         );
 
@@ -46,12 +66,6 @@ namespace BaseFlux {
         lua["SDL_EVENT_MOUSE_MOTION"] = SDL_EVENT_MOUSE_MOTION;
         lua["SDL_EVENT_MOUSE_BUTTON_DOWN"] = SDL_EVENT_MOUSE_BUTTON_DOWN;
 
-        // == still not working .. thats no fun i guess i stay with c++ :P
-        // lua["SDL_EVENT_QUIT"] = static_cast<uint32_t>(SDL_EVENT_QUIT);
-        // lua["SDL_EVENT_KEY_DOWN"] = static_cast<uint32_t>(SDL_EVENT_KEY_DOWN);
-        // lua["SDL_EVENT_KEY_UP"] = static_cast<uint32_t>(SDL_EVENT_KEY_UP);
-        // lua["SDL_EVENT_MOUSE_MOTION"] = static_cast<uint32_t>(SDL_EVENT_MOUSE_MOTION);
-        // lua["SDL_EVENT_MOUSE_BUTTON_DOWN"] = static_cast<uint32_t>(SDL_EVENT_MOUSE_BUTTON_DOWN);
 
         // Keycodes (SDLK_...)
         // Lua: sdl.K_SPACE

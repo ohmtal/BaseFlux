@@ -30,7 +30,10 @@ namespace BaseFlux {
 
         //pre path for IconFilename and loadTexture
         // base:/ is replaced with your BasePath
+        // NOTE: add a tralling slash!
         std::string AssetPath = "base:/assets/";
+        std::string SoundPathAppend   = "";
+        std::string TexturePathAppend = "";
 
         //imgui
         bool EnableDockSpace = true;

@@ -17,8 +17,10 @@
 BaseFlux::Main app;
 ImConsole console;
 sol::state lua;
-std::function<void(SDL_Event)> LuaEventHandler;
-std::function<void(SDL_Event)> LuaKeyboardEventHandler;
+
+sol::protected_function lua_OnSDLEvent;
+sol::protected_function lua_OnRender;
+sol::protected_function lua_OnUpdate;
 //-----------------------------------------------------------------------------
 // console redirect ....
 void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
@@ -42,12 +44,31 @@ struct foo {
     }
 };
 
+
+//-----------------------------------------------------------------------------
+void LoadScript() {
+    auto result = lua.script_file("assets/main.lua");
+    if (!result.valid()) {
+        sol::error err = result;
+        SDL_Log("[error] SCRIPT LOAD ERROR: %s\n", err.what());
+    } else {
+        SDL_Log("[info] scipt loaded...");
+    }
+}
+
+
 //-----------------------------------------------------------------------------
 void initConsole() {
     SDL_SetLogOutputFunction(ConsoleLogFunction, nullptr);
 
     console.OnCommand = [&](ImConsole* console, const char* cmd) {
         std::string cmdStr = cmd;
+
+        if (cmdStr == "rl") {
+            LoadScript();
+            return;
+        }
+
         if (cmdStr == "foo") {
             try {
                 lua.safe_script(R"(
@@ -97,7 +118,6 @@ void initConsole() {
 }
 //-----------------------------------------------------------------------------
 
-
 void initLua() {
     // lua.open_libraries(sol::lib::base);
     lua.open_libraries(
@@ -114,21 +134,72 @@ void initLua() {
     );
 
     // --------- SDK (keyboard) events -----
+    BaseFlux::bindSDLBasics(lua);
     BaseFlux::bindSDLEvents(lua);
-
-    //FIXME Constants dont work ?!
     BaseFlux::bindSDLConstants(lua);
+
+
+    lua["OnRender"] = [&](sol::function func) {
+        SDL_Log("[debug] lua called OnRender");
+        lua_OnRender = func;
+    };
+
+    lua["OnUpdate"] = [&](sol::protected_function func) {
+        SDL_Log("[debug] lua called OnUpdate");
+        lua_OnUpdate = func;
+    };
+
+
+
 
     lua["OnSDLEvent"] = [&](sol::function func) {
         SDL_Log("[debug] lua called OnSDLEvent");
-        LuaEventHandler = func;
+        lua_OnSDLEvent = func;
     };
-    lua["OnSDLKeyBoardEvent"] = [&](sol::function func) {
-        SDL_Log("[debug] lua called OnSDLKeyBoardEvent");
-        LuaKeyboardEventHandler = func;
-    };
+    // ------ register sound function ----
 
-    // ------ register function ----
+    // lua.set_function("playSound", [&](std::string fileName, sol::optional<float> gain = 1.f, sol::optional<bool> loop=false) {
+    //     return app.playSound(fileName, gain, loop);
+    // });
+    // THIS for optional parameter =>
+
+    /* TEST:
+      playSound("sound1.wav", 0.1, true);
+      stopSound("sound1.wav");
+    */
+
+    lua.set_function("playSound", [&](std::string fileName, sol::optional<float> gain, sol::optional<bool> loop) {
+        return app.playSound(fileName, gain.value_or(1.0f), loop.value_or(false));
+    });
+    lua.set_function("stopSound", [&](std::string fileName) {
+        return app.stopSound(fileName);
+    });
+
+    // ------ register texture function ----
+    lua.set_function("getTexture", [&](std::string file) {
+        return app.getTextureManager().get(file);
+    });
+    lua.set_function("renderTexture", sol::overload(
+        // with filename:
+        [&](std::string file, sol::optional<SDL_FRect> src, sol::optional<SDL_FRect> dst) {
+            return app.renderTexture(file, src ? &*src : nullptr, dst ? &*dst : nullptr);
+        },
+        // with pointer:
+        [&](SDL_Texture* texture, sol::optional<SDL_FRect> src, sol::optional<SDL_FRect> dst) {
+            // Falls dein TextureManager die Render-Logik hat:
+            return app.getTextureManager().render(texture, src ? &*src : nullptr, dst ? &*dst : nullptr);
+        }
+    ));
+
+    // lua.set_function("renderTexture", [&](std::string file, sol::optional<SDL_FRect> src, sol::optional<SDL_FRect> dst) {
+    //     return app.renderTexture(file, src ? &*src : nullptr, dst ? &*dst : nullptr);
+    // });
+    //
+    // lua.set_function("renderTexture", [&](SDL_Texture* texture, sol::optional<SDL_FRect> src, sol::optional<SDL_FRect> dst) {
+    //     return app.getTextureManager().render(texture, src ? &*src : nullptr, dst ? &*dst : nullptr);
+    // });
+
+
     lua.set_function("HelloLua", &Hello);
 
     // ----- register struct -----
@@ -142,24 +213,27 @@ void initLua() {
     );
 
 
-    lua.set_function("print", [](sol::variadic_args args) {
-        std::string output;
-        for (auto it = args.begin(); it != args.end(); ++it) {
-            std::string s = (*it).as<std::string>();
-            output += s + (std::next(it) == args.end() ? "" : "\t");
+    lua.set_function("print", [](sol::variadic_args va, sol::this_state s) {
+        std::string out;
+        for (auto v : va) {
+            std::string str = sol::stack::get<sol::optional<std::string>>(s, v.stack_index()).value_or("nil");
+            out += str + "    ";
         }
-        SDL_Log("%s", output.c_str());
+        SDL_Log("[Lua] %s", out.c_str());
     });
 
-    auto result = lua.script_file("assets/main.lua");
-    if (!result.valid()) {
-        sol::error err = result;
-        SDL_Log("[error] SCRIPT LOAD ERROR: %s\n", err.what());
-    } else {
-        SDL_Log("[info] scipt loaded...");
-    }
+    // lua.set_function("print", [](sol::variadic_args args) {
+    //     std::string output;
+    //     for (auto it = args.begin(); it != args.end(); ++it) {
+    //         std::string s = (*it).as<std::string>();
+    //         output += s + (std::next(it) == args.end() ? "" : "\t");
+    //     }
+    //     SDL_Log("%s", output.c_str());
+    // });
 
+    LoadScript();
 }
+
 //-----------------------------------------------------------------------------
 void onDraw(SDL_Renderer* renderer) {
     console.Draw("Lua Console",nullptr);
@@ -171,19 +245,52 @@ void shutDown() {
 //-----------------------------------------------------------------------------
 bool initApp() {
 
+    //FIXME  onetime   sol::protected_function traceback_handler = lua["debug"]["traceback"];
+    // need to reorganize calls so initLua is before the event calls =!
     if ( !app.InitSDL() ) return false;
     app.initImGui();
 
     app.OnRender = [&](SDL_Renderer* renderer) {
         onDraw(renderer);
+        if (lua_OnRender.valid()) {
+            auto result = lua_OnRender.call(/*traceback_handler*/);
+            if (!result.valid()) {
+                sol::error err = result;
+                SDL_Log("[error] lua: %s", err.what());
+            }
+        }
+
+    };
+
+    app.OnUpdate = [&](const float deltaTime) {
+        const float fixedStep = 1.0f / 60.0f;
+        static float accumulator = 0.0f;
+
+        accumulator += deltaTime;
+        while (accumulator >= fixedStep) {
+            // FIXME NO idea why delta - fixedStep - is nil !!!!!!
+            if (lua_OnUpdate.valid()) {
+                auto result = lua_OnUpdate(fixedStep);
+
+                if (!result.valid()) {
+                    sol::error err = result;
+                    SDL_Log("[LUA ERROR] %s", err.what());
+                }
+            }
+            accumulator -= fixedStep;
+        }
     };
 
     app.OnEvent = [&](const SDL_Event event) {
-        if (LuaEventHandler) {
-            // SDL_Log("[debug] LuaEventHandler fired!");
-            LuaEventHandler(event);
+
+        if (lua_OnSDLEvent.valid()) {
+            auto result = lua_OnSDLEvent.call(event/*, traceback_handler*/);
+
+            if (!result.valid()) {
+                sol::error err = result;
+                SDL_Log("[error] lua: %s", err.what());
+            }
         }
-        //FIXME keyboard events only ... LuaKeyboardEventHandler
     };
 
 
@@ -196,6 +303,8 @@ int main(int argc, char* argv[]) {
         .Company = "ScriptFlux",
         .Caption = "LuaFlux",
         .Version = "0.260423.23",
+        .SoundPathAppend = "sound/",
+        .TexturePathAppend = "texture/"
     };
 
     if (!initApp()) return 1;

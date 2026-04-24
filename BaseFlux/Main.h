@@ -59,6 +59,7 @@ namespace BaseFlux {
         ImGuiID         getDockSpaceId() const { return mDockSpaceId; }
 
         std::function<void(SDL_Renderer*)> OnRender = nullptr;
+        std::function<void(const float)> OnUpdate = nullptr;
         std::function<void(const SDL_Event)> OnEvent = nullptr;
         std::function<void()> OnShutDown = nullptr;
         //----------------------------------------------------------------------
