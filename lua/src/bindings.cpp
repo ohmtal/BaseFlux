@@ -6,28 +6,28 @@
 
 namespace BaseFlux {
 
-    void bindMain(sol::state& lua) {
-        // lua.new_usertype<SDL_Window>("SDL_Window");
-
-        auto type = lua.new_usertype<BaseFlux::Main>("BaseFlux::Main");
-        type.set(sol::call_constructor, sol::constructors<BaseFlux::Main()>());
-        type["getWindow"] = [](BaseFlux::Main& self) -> void* {
-            return static_cast<void*>(self.getWindow());
-        };
-
-
-        type["playSound"] = &BaseFlux::Main::playSound;
-        // type["renderTexture"] = &BaseFlux::Main::renderTexture;
-        type["renderTexture"] = [](BaseFlux::Main& self, std::string fileName,
-                                   sol::optional<SDL_FRect> src,
-                                   sol::optional<SDL_FRect> dst) {
-
-            SDL_FRect* pSrc = src ? &(*src) : nullptr;
-            SDL_FRect* pDst = dst ? &(*dst) : nullptr;
-            return self.renderTexture(fileName, pSrc, pDst);
-        };
-
-    }
+    // void bindMain(sol::state& lua) {
+    //     // lua.new_usertype<SDL_Window>("SDL_Window");
+    //
+    //     auto type = lua.new_usertype<BaseFlux::Main>("BaseFlux::Main");
+    //     type.set(sol::call_constructor, sol::constructors<BaseFlux::Main()>());
+    //     type["getWindow"] = [](BaseFlux::Main& self) -> void* {
+    //         return static_cast<void*>(self.getWindow());
+    //     };
+    //
+    //
+    //     type["playSound"] = &BaseFlux::Main::playSound;
+    //     // type["renderTexture"] = &BaseFlux::Main::renderTexture;
+    //     type["renderTexture"] = [](BaseFlux::Main& self, std::string fileName,
+    //                                sol::optional<SDL_FRect> src,
+    //                                sol::optional<SDL_FRect> dst) {
+    //
+    //         SDL_FRect* pSrc = src ? &(*src) : nullptr;
+    //         SDL_FRect* pDst = dst ? &(*dst) : nullptr;
+    //         return self.renderTexture(fileName, pSrc, pDst);
+    //     };
+    //
+    // }
 
     void bindSDLBasics(sol::state& lua) {
 
@@ -38,6 +38,13 @@ namespace BaseFlux {
                                     "w", &SDL_FRect::w,
                                     "h", &SDL_FRect::h
         );
+        lua.new_usertype<SDL_FPoint>("SDL_FPoint",
+                                    sol::constructors<SDL_FPoint(), SDL_FPoint(float, float)>(),
+                                    "x", &SDL_FPoint::x,
+                                    "y", &SDL_FPoint::y
+        );
+
+
 
         lua.new_usertype<SDL_Texture>("SDL_Texture");
         // lua.new_usertype<SDL_Renderer>("SDL_Renderer")

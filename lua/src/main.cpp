@@ -192,6 +192,25 @@ void initLua() {
         SDL_SetRenderScale(app.getRenderer(), x, y);
     });
 
+    // primitives
+    lua.set_function("drawPoint", [&](float x, float y) {
+        SDL_RenderPoint(app.getRenderer(), x, y);
+    });
+
+    lua.set_function("drawLine", [&](float x1, float y1, float x2, float y2) {
+        SDL_RenderLine(app.getRenderer(), x1, y1, x2 , y2);
+    });
+
+
+    lua.set_function("drawRect", [&](SDL_FRect * rect) {
+        SDL_RenderRect(app.getRenderer(), rect);
+    });
+
+    lua.set_function("drawFillRect", [&](SDL_FRect * rect) {
+        SDL_RenderFillRect(app.getRenderer(), rect);
+    });
+
+
 
     // ------ register sound function ----
 
@@ -228,9 +247,9 @@ void initLua() {
     ));
 
 
-    lua.set_function("HelloLua", &Hello);
+    lua.set_function("quit", [&]() { app.TerminateApplication(); });
 
-    // ----- register struct -----
+    // ----- register struct test -----
     lua.new_usertype<foo>("foo",
         // constructor
         sol::constructors<foo()>(),
@@ -240,7 +259,7 @@ void initLua() {
         "bar", &foo::bar
     );
 
-
+    // --------- CONSOLE REDIRECT -----------
     // took me ages to find this !
     lua.set_function("print", [](sol::variadic_args va, sol::this_state s) {
         std::string out;
