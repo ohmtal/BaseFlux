@@ -54,7 +54,7 @@ void LoadScript() {
         sol::error err = result;
         SDL_Log("[error] SCRIPT LOAD ERROR: %s\n", err.what());
     } else {
-        SDL_Log("[info] scipt loaded...");
+        // SDL_Log("[info] script loaded");
     }
 }
 
