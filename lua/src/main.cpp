@@ -171,6 +171,9 @@ void initLua() {
         SDL_SetRenderDrawColor(app.getRenderer(), R, G, B, A.value_or(255));
     });
 
+    lua.set_function("setScale", [&](float x, float y) {
+        SDL_SetRenderScale(app.getRenderer(), x, y);
+    });
 
 
     // ------ register sound function ----
@@ -242,7 +245,19 @@ void initLua() {
 
 //-----------------------------------------------------------------------------
 void onDraw(SDL_Renderer* renderer) {
-    console.Draw("Lua Console",nullptr);
+
+    static bool showConsole = true;
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("Window")) {
+            ImGui::MenuItem("Console", "GraveAccent", &showConsole);
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+    if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) showConsole = !showConsole;
+
+
+    console.Draw("Lua Console",&showConsole);
 }
 //-----------------------------------------------------------------------------
 void shutDown() {

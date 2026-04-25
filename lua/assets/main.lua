@@ -10,15 +10,13 @@ local startSound  = "sound1.wav"
 
 --  Wall
 local wallThickness = 10
-local screenW = 600
-local screenH = 350
-
+local screenRect = SDL_FRect.new(20, 40, 600, 350)
 
 local walls = {
-    top    = SDL_FRect.new(0, 0, screenW, wallThickness),
-    bottom = SDL_FRect.new(0, screenH - wallThickness, screenW, wallThickness),
-    left   = SDL_FRect.new(0, 0, wallThickness, screenH),
-    right  = SDL_FRect.new(screenW - wallThickness, 0, wallThickness, screenH)
+    top    = SDL_FRect.new(screenRect.x, screenRect.y,  screenRect.w,   wallThickness),
+    bottom = SDL_FRect.new(screenRect.x, screenRect.y + screenRect.h - wallThickness,  screenRect.w, wallThickness),
+    left   = SDL_FRect.new(screenRect.x, screenRect.y,  wallThickness, screenRect.h),
+    right  = SDL_FRect.new( screenRect.x + screenRect.w - wallThickness, screenRect.y , wallThickness, screenRect.h)
 }
 
 local borders = { walls.left, walls.top, walls.bottom }
@@ -33,7 +31,7 @@ local ballSpeed = 1.0
 local paddleSize = { w = 5.0 , h = 60.0 }
 local paddleVel = 0.0;
 local paddleSpeed = 250.0;
-local paddle = SDL_FRect.new(screenW - 10.0, (screenH - paddleSize.w) / 2.0, 5.0, 60.0)
+local paddle = SDL_FRect.new(screenRect.w - 10.0, (screenRect.h - paddleSize.w) / 2.0, 5.0, 60.0)
 
 
 -- ---------- OnEvent --------------
@@ -76,7 +74,7 @@ end )
 
 -- ---------- OnRender --------------
 OnRender( function()
-     renderTexture(blacktex)
+     renderTexture(blacktex, nil, screenRect )
      renderTexture(whitetex, nil, paddle)
      renderTexture(whitetex, nil, ball)
 
@@ -86,22 +84,25 @@ OnRender( function()
 
 
 
-     local x = 30
-     local y = 20
+     local x = screenRect.x +  screenRect.w + 10
+     local y = screenRect.y + wallThickness
+     local incY = 20
      setColor(128,128,128)
      drawDebugText(x, y, "BASEFLUX PONG SQUASH LUA EDITION ;)")
-     y = y + 15
+     y = y + incY
      drawDebugText(x, y, string.format("Ball POS: %.2f,%.2f VEL: %.2f, %.2f", ball.x, ball.y, ballVel.x, ballVel.y))
 
+     setScale(2.0,2.0)
      setColor(255,255,255)
-     y = y + 15
-     drawDebugText(x, y, string.format("SCORE: %2d    HI: %2d", score, hiscore))
+     y = y + incY
+     drawDebugText(x / 2.0, y / 2.0, string.format("SCORE: %2d    HI: %2d", score, hiscore))
 
      if (gameOver) then
-         y = y + 15
+         y = y + incY + 5
          setColor(255,0,0)
-         drawDebugText(x, y, "G A M E  O V E R")
+         drawDebugText(x / 2.0, y / 2.0, "G A M E   O V E R")
      end
+     setScale(1.0,1.0)
 
 end )
 
@@ -140,7 +141,7 @@ OnUpdate(function(dt)
 
                 elseif wall == walls.top or wall == walls.bottom then
                     ballVel.y = -ballVel.y
-                    if wall == walls.top then ball.y = wall.h else ball.y = wall.y - ball.h end
+                    if wall == walls.top then ball.y = wall.y + wall.h else ball.y = wall.y - ball.h end
                 end
 
                 playSound(bounceSound)
@@ -149,9 +150,9 @@ OnUpdate(function(dt)
     end
 
 
-    if ball.x > screenW then
+    if ball.x > screenRect.w then
         gameOver = true;
-        ball.x, ball.y = screenW / 2.0, screenH / 2.0
+        ball.x, ball.y = screenRect.w / 2.0, screenRect.h / 2.0
     end
 
 --  paddle
@@ -159,7 +160,7 @@ OnUpdate(function(dt)
 
     if checkCollision(walls.top, paddle) then
         paddleVel = 0.0
-        paddle.y = walls.top.h
+        paddle.y =  walls.top.y + walls.top.h
     elseif checkCollision(walls.bottom, paddle) then
         paddleVel = 0.0
         paddle.y = walls.bottom.y - paddle.h
