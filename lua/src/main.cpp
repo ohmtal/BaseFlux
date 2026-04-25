@@ -310,6 +310,14 @@ bool initApp() {
 
     app.OnEvent = [&](const SDL_Event event) {
 
+        if (app.getImGuiIO() && app.getImGuiIO()->WantTextInput) {
+            if (event.type == SDL_EVENT_KEY_DOWN ||
+                event.type == SDL_EVENT_KEY_UP ||
+                event.type == SDL_EVENT_TEXT_INPUT) {
+                return;
+            }
+        }
+
         if (lua_OnSDLEvent.valid()) {
             auto result = lua_OnSDLEvent.call(event/*, traceback_handler*/);
 
