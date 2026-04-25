@@ -47,7 +47,8 @@ struct foo {
 
 //-----------------------------------------------------------------------------
 void LoadScript() {
-    auto result = lua.script_file("assets/main.lua");
+    // auto result = lua.script_file("assets/main.lua");
+    auto result = lua.safe_script_file("assets/main.lua", sol::script_pass_on_error);
     if (!result.valid()) {
         sol::error err = result;
         SDL_Log("[error] SCRIPT LOAD ERROR: %s\n", err.what());
@@ -63,6 +64,12 @@ void initConsole() {
 
     console.OnCommand = [&](ImConsole* console, const char* cmd) {
         std::string cmdStr = cmd;
+
+        if (cmdStr == "update") {
+            lua_OnUpdate.call(8.15f);
+            return;
+        }
+
 
         if (cmdStr == "rl") {
             LoadScript();
@@ -144,18 +151,28 @@ void initLua() {
         lua_OnRender = func;
     };
 
-    lua["OnUpdate"] = [&](sol::protected_function func) {
+    // lua["OnUpdate"] = [&](sol::protected_function func) {
+    lua["OnUpdate"] = [&](sol::function func) {
         SDL_Log("[debug] lua called OnUpdate");
         lua_OnUpdate = func;
     };
-
-
 
 
     lua["OnSDLEvent"] = [&](sol::function func) {
         SDL_Log("[debug] lua called OnSDLEvent");
         lua_OnSDLEvent = func;
     };
+
+    lua.set_function("drawDebugText", [&](float x, float y, const std::string& text) {
+        SDL_RenderDebugText(app.getRenderer(), x, y, text.c_str());
+    });
+
+    lua.set_function("setColor", [&](u_int8_t R, u_int8_t G, u_int8_t B, sol::optional<u_int8_t> A) {
+        SDL_SetRenderDrawColor(app.getRenderer(), R, G, B, A.value_or(255));
+    });
+
+
+
     // ------ register sound function ----
 
     // lua.set_function("playSound", [&](std::string fileName, sol::optional<float> gain = 1.f, sol::optional<bool> loop=false) {
@@ -186,18 +203,9 @@ void initLua() {
         },
         // with pointer:
         [&](SDL_Texture* texture, sol::optional<SDL_FRect> src, sol::optional<SDL_FRect> dst) {
-            // Falls dein TextureManager die Render-Logik hat:
             return app.getTextureManager().render(texture, src ? &*src : nullptr, dst ? &*dst : nullptr);
         }
     ));
-
-    // lua.set_function("renderTexture", [&](std::string file, sol::optional<SDL_FRect> src, sol::optional<SDL_FRect> dst) {
-    //     return app.renderTexture(file, src ? &*src : nullptr, dst ? &*dst : nullptr);
-    // });
-    //
-    // lua.set_function("renderTexture", [&](SDL_Texture* texture, sol::optional<SDL_FRect> src, sol::optional<SDL_FRect> dst) {
-    //     return app.getTextureManager().render(texture, src ? &*src : nullptr, dst ? &*dst : nullptr);
-    // });
 
 
     lua.set_function("HelloLua", &Hello);
@@ -213,23 +221,21 @@ void initLua() {
     );
 
 
+    // took me ages to find this !
     lua.set_function("print", [](sol::variadic_args va, sol::this_state s) {
         std::string out;
-        for (auto v : va) {
-            std::string str = sol::stack::get<sol::optional<std::string>>(s, v.stack_index()).value_or("nil");
-            out += str + "    ";
+        for (sol::object obj : va) {
+            obj.push();
+            size_t len;
+            const char* str = luaL_tolstring(s, -1, &len);
+            if (str) {
+                out += std::string(str, len) + "    ";
+            }
+            lua_pop(s, 2);
         }
         SDL_Log("[Lua] %s", out.c_str());
     });
 
-    // lua.set_function("print", [](sol::variadic_args args) {
-    //     std::string output;
-    //     for (auto it = args.begin(); it != args.end(); ++it) {
-    //         std::string s = (*it).as<std::string>();
-    //         output += s + (std::next(it) == args.end() ? "" : "\t");
-    //     }
-    //     SDL_Log("%s", output.c_str());
-    // });
 
     LoadScript();
 }
@@ -268,9 +274,8 @@ bool initApp() {
 
         accumulator += deltaTime;
         while (accumulator >= fixedStep) {
-            // FIXME NO idea why delta - fixedStep - is nil !!!!!!
             if (lua_OnUpdate.valid()) {
-                auto result = lua_OnUpdate(fixedStep);
+                auto result = lua_OnUpdate.call(fixedStep);
 
                 if (!result.valid()) {
                     sol::error err = result;

@@ -11,8 +11,6 @@ namespace BaseFlux {
 
         auto type = lua.new_usertype<BaseFlux::Main>("BaseFlux::Main");
         type.set(sol::call_constructor, sol::constructors<BaseFlux::Main()>());
-        // type["getWindow"] = &BaseFlux::Main::getWindow;
-        // type["getWindow"] = [](BaseFlux::Main& self) {return sol::lightuserdata(self.getWindow());};
         type["getWindow"] = [](BaseFlux::Main& self) -> void* {
             return static_cast<void*>(self.getWindow());
         };
@@ -32,6 +30,7 @@ namespace BaseFlux {
     }
 
     void bindSDLBasics(sol::state& lua) {
+
         lua.new_usertype<SDL_FRect>("SDL_FRect",
                                     sol::constructors<SDL_FRect(), SDL_FRect(float, float, float, float)>(),
                                     "x", &SDL_FRect::x,
@@ -41,6 +40,9 @@ namespace BaseFlux {
         );
 
         lua.new_usertype<SDL_Texture>("SDL_Texture");
+        // lua.new_usertype<SDL_Renderer>("SDL_Renderer")
+        // lua.new_usertype<SDL_Renderer>("SDL_Renderer", sol::no_constructor);;
+
     }
 
     void bindSDLEvents(sol::state& lua) {
