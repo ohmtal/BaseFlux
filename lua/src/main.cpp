@@ -48,7 +48,8 @@ struct foo {
 //-----------------------------------------------------------------------------
 void LoadScript() {
     // auto result = lua.script_file("assets/main.lua");
-    auto result = lua.safe_script_file("assets/main.lua", sol::script_pass_on_error);
+
+    auto result = lua.safe_script_file( BaseFlux::Tools::getBasePath() + "assets/main.lua", sol::script_pass_on_error);
     if (!result.valid()) {
         sol::error err = result;
         SDL_Log("[error] SCRIPT LOAD ERROR: %s\n", err.what());
@@ -139,6 +140,12 @@ void initLua() {
         ,sol::lib::io
 
     );
+
+    // ------  set package path
+    std::string current_path = lua["package"]["path"];
+    lua["package"]["path"] = current_path + ";" + BaseFlux::Tools::getBasePath() + "assets/?.lua";
+    current_path = lua["package"]["path"];
+    SDL_Log("[info] package path = %s", current_path.c_str());
 
     // --------- SDK (keyboard) events -----
     BaseFlux::bindSDLBasics(lua);

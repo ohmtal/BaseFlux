@@ -1,3 +1,8 @@
+-- Package test:
+package.loaded["tools"] = nil -- << for hot reload!
+local myTools = require("tools")
+myTools.greet()
+
 -- Status
 local gameOver = true;
 local score = 0
@@ -23,7 +28,7 @@ local borders = { walls.left, walls.top, walls.bottom }
 local goals = { left = walls.left, right = walls.right }
 
 -- Ball
-local ball = SDL_FRect.new(300, 175, 10, 10)
+local ball = SDL_FRect.new(screenRect.x + screenRect.w / 2.0, screenRect.y + screenRect.h / 2.0, 10, 10)
 local ballVel = { x = 150, y = 150 }
 local ballSpeed = 1.0
 
@@ -31,7 +36,7 @@ local ballSpeed = 1.0
 local paddleSize = { w = 5.0 , h = 60.0 }
 local paddleVel = 0.0;
 local paddleSpeed = 250.0;
-local paddle = SDL_FRect.new(screenRect.w - 10.0, (screenRect.h - paddleSize.w) / 2.0, 5.0, 60.0)
+local paddle = SDL_FRect.new(screenRect.x + screenRect.w - 20.0, (screenRect.y + screenRect.h - paddleSize.w) / 2.0, 5.0, 60.0)
 
 
 -- ---------- OnEvent --------------
@@ -83,7 +88,7 @@ OnRender( function()
      end
 
 
-
+-- FIXME bad idea to calc the positions on render ;)
      local x = screenRect.x +  screenRect.w + 10
      local y = screenRect.y + wallThickness
      local incY = 20
@@ -101,6 +106,12 @@ OnRender( function()
          y = y + incY + 5
          setColor(255,0,0)
          drawDebugText(x / 2.0, y / 2.0, "G A M E   O V E R")
+
+         setScale(1.0,1.0)
+         y = y + incY
+         setColor(64,64,200)
+         drawDebugText(x , y , "SPACE = Start, Cursor: Up / Down ")
+
      end
      setScale(1.0,1.0)
 
@@ -119,6 +130,10 @@ local function doScore(  )
     score = score + 1;
     if score > hiscore then hiscore = score end
     ballSpeed = ballSpeed + 0.15;
+end
+
+local function playBounce()
+   playSound(bounceSound, 0.2)
 end
 -- ---------- OnUpdate --------------
 OnUpdate(function(dt)
@@ -144,15 +159,15 @@ OnUpdate(function(dt)
                     if wall == walls.top then ball.y = wall.y + wall.h else ball.y = wall.y - ball.h end
                 end
 
-                playSound(bounceSound)
+                playBounce()
             end
         end
     end
 
 
-    if ball.x > screenRect.w then
+    if ball.x > screenRect.x + screenRect.w then
         gameOver = true;
-        ball.x, ball.y = screenRect.w / 2.0, screenRect.h / 2.0
+        ball.x, ball.y = screenRect.x + screenRect.w / 2.0, screenRect.y + screenRect.h / 2.0
     end
 
 --  paddle
@@ -177,7 +192,7 @@ OnUpdate(function(dt)
             ballVel.y = (ballCenter - paddleCenter) * 5.0
 
             ball.x = paddle.x - ball.w
-            playSound(bounceSound)
+            playBounce()
         end
     end
 
