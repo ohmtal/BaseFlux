@@ -12,12 +12,15 @@
 
 #include "BaseFlux/Main.h"
 #include "spice/gui/ImConsole.h"
+#include "spice/tools/fluxStr.h"
 #include "bindings.h"
 
 BaseFlux::Main app;
 ImConsole console;
-sol::state lua;
 
+std::string currentScript = "main.lua";
+
+sol::state lua;
 sol::protected_function lua_OnSDLEvent;
 sol::protected_function lua_OnRender;
 sol::protected_function lua_OnUpdate;
@@ -47,14 +50,13 @@ struct foo {
 
 //-----------------------------------------------------------------------------
 void LoadScript() {
-    // auto result = lua.script_file("assets/main.lua");
 
-    auto result = lua.safe_script_file( BaseFlux::Tools::getBasePath() + "assets/main.lua", sol::script_pass_on_error);
+    auto result = lua.safe_script_file( BaseFlux::Tools::getBasePath() + "assets/" + currentScript, sol::script_pass_on_error);
     if (!result.valid()) {
         sol::error err = result;
-        SDL_Log("[error] SCRIPT LOAD ERROR: %s\n", err.what());
+        SDL_Log("[error] SCRIPT %s LOAD ERROR: %s\n", currentScript.c_str(),  err.what());
     } else {
-        // SDL_Log("[info] script loaded");
+        SDL_Log("[info] script %s loaded", currentScript.c_str());
     }
 }
 
@@ -63,21 +65,29 @@ void LoadScript() {
 void initConsole() {
     SDL_SetLogOutputFunction(ConsoleLogFunction, nullptr);
 
-    console.OnCommand = [&](ImConsole* console, const char* cmd) {
-        std::string cmdStr = cmd;
+    console.OnCommand = [&](ImConsole* console, const char* command_line) {
+        std::string cmdLineStr = command_line;
+        std::string cmd = FluxStr::getWord(cmdLineStr, 0);
 
-        if (cmdStr == "update") {
-            lua_OnUpdate.call(8.15f);
+        if (cmd == "load" || cmd == "exec" ) {
+            std::string file = FluxStr::getWord(cmdLineStr,1);
+            if (file != "") {
+                if (file.find(".lua") == std::string::npos) {
+                    file = file + ".lua";
+                }
+                currentScript = file;
+                LoadScript();
+            }
             return;
         }
 
 
-        if (cmdStr == "rl") {
+        if (cmd == "rl") {
             LoadScript();
             return;
         }
 
-        if (cmdStr == "foo") {
+        if (cmd == "foo") {
             try {
                 lua.safe_script(R"(
                     local f = foo.new()
@@ -100,7 +110,7 @@ void initConsole() {
         // Lua commands:
         try {
 
-            auto result = lua.safe_script(cmd, sol::script_pass_on_error);
+            auto result = lua.safe_script(cmdLineStr, sol::script_pass_on_error);
 
             if (!result.valid()) {
                 sol::error err = result;
