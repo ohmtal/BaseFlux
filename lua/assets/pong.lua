@@ -1,7 +1,7 @@
 -- Package test:
 package.loaded["tools"] = nil -- << for hot reload!
 local myTools = require("tools")
-myTools.greet()
+
 
 -- Status
 local gameOver = true;

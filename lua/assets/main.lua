@@ -1,4 +1,7 @@
--- Pong - same as pong.lua but without textures rendering primitives
+-- lua test playground
+
+package.loaded["tools"] = nil -- << for hot reload!
+myTools = require("tools")
 
 -- Status
 local gameOver = true;
@@ -8,7 +11,14 @@ local hiscore = 0
 local bounceSound = "beep.wav"
 local startSound  = "sound1.wav"
 
+local color_white = SDL_Color.new(255, 255,255,255)
+local color_red = SDL_Color.new(255, 20,20,255)
 
+local circlePos = SDL_FPoint.new(100,500)
+local  arcPos = SDL_FPoint.new(200,500)
+local donutPos = SDL_FPoint.new(300,500)
+local myColor = SDL_Color.new(255, 255,255,255)
+local timer = 0
 
 --  Wall
 local wallThickness = 10
@@ -140,6 +150,17 @@ OnRender( function()
         end
     end
     setScale(1.0,1.0)
+
+--     // Test Circle
+--     //     lua.set_function("drawCircle", [&](float radius, SDL_FPoint pos, SDL_Color color, bool fill) {
+
+    drawCircle(50,circlePos, color_red , true)
+--     lua.set_function("drawArc", [&](float radius, SDL_FPoint pos, float startRad, float endRad, SDL_Color color, bool fill) {
+
+    drawArc(50, math.pi, math.pi / 2,  arcPos,color_white , false)
+
+    drawDonut(30, 50,  donutPos,myColor , true)
+
 end )
 
 -- --------- Collision check -----------
@@ -220,6 +241,12 @@ OnUpdate(function(dt)
             playBounce()
         end
     end
+
+
+    timer = timer + dt
+    myColor.r = math.floor(math.sin(timer) * 127 + 128)
+    myColor.g = math.floor(math.sin(timer + 2) * 127 + 128)
+    myColor.b = math.floor(math.sin(timer + 4) * 127 + 128)
 
 end)
 

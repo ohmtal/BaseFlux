@@ -3,6 +3,7 @@
 #include "bindings.h"
 #include "BaseFlux/Main.h"
 #include <SDL3/SDL.h>
+#include "draw.h" //FIXME move to BaseFlux/Draw.h
 
 namespace BaseFlux {
 
@@ -30,6 +31,21 @@ namespace BaseFlux {
     // }
 
     void bindSDLBasics(sol::state& lua) {
+        lua.new_usertype<SDL_Color>("SDL_Color",
+                                     sol::constructors<SDL_Color(), SDL_Color(int, int, int, int)>(),
+                                     "r", &SDL_Color::r,
+                                     "g", &SDL_Color::g,
+                                     "b", &SDL_Color::b,
+                                     "a", &SDL_Color::a
+        );
+        lua.new_usertype<SDL_FColor>("SDL_FColor",
+                                    sol::constructors<SDL_FColor(), SDL_FColor(float, float, float, float)>(),
+                                    "r", &SDL_FColor::r,
+                                    "g", &SDL_FColor::g,
+                                    "b", &SDL_FColor::b,
+                                    "a", &SDL_FColor::a
+        );
+
 
         lua.new_usertype<SDL_FRect>("SDL_FRect",
                                     sol::constructors<SDL_FRect(), SDL_FRect(float, float, float, float)>(),
@@ -44,6 +60,35 @@ namespace BaseFlux {
                                     "y", &SDL_FPoint::y
         );
 
+        lua.new_usertype<SDL_Point>("SDL_Point",
+                                     sol::constructors<SDL_Point(), SDL_Point(int, int)>(),
+                                     "x", &SDL_Point::x,
+                                     "y", &SDL_Point::y
+        );
+
+        lua.new_usertype<SDL_Rect>("SDL_Rect",
+                                    sol::constructors<SDL_Rect(), SDL_Rect(int, int, int, int)>(),
+                                    "x", &SDL_Rect::x,
+                                    "y", &SDL_Rect::y,
+                                    "w", &SDL_Rect::w,
+                                    "h", &SDL_Rect::h
+        );
+
+        lua.set_function("SDL_PointInRect", [](const SDL_Point& p, const SDL_Rect& r) {
+            return (bool)SDL_PointInRect(&p, &r);
+        });
+        lua.set_function("SDL_HasRectIntersection", [](const SDL_Rect& A, const SDL_Rect& B) {
+            return (bool)SDL_HasRectIntersection(&A, &B);
+        });
+
+
+        lua.new_usertype<SDL_Vertex>("SDL_Vertex",
+                                   sol::constructors<SDL_Vertex(), SDL_Vertex(SDL_FPoint, SDL_FColor, SDL_FPoint)>(),
+                                   "position", &SDL_Vertex::position,
+                                   "color", &SDL_Vertex::color,
+                                   "tex_coord", &SDL_Vertex::tex_coord
+
+        );
 
 
         lua.new_usertype<SDL_Texture>("SDL_Texture");

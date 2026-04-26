@@ -38,6 +38,10 @@ I use this for practice lua without have to learn to many command.
     - drawLine( float x1, float y1, float x2, float y2)
     - drawRect( SDL_FRect rect )
     - drawFillRect( SDL_FRect rect )
+    - drawCircle(float radius, SDL_FPoint pos, SDL_Color color, bool fill)
+    - drawArc(float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill)
+    - drawDonut(float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill) 
+ 
     
 - sound (wav)
     - playSound( string fileName, [ float gain ], [ bool loop ])
@@ -59,6 +63,7 @@ I use this for practice lua without have to learn to many command.
     - [ ] bind SDL_Ticks
     - [ ] bind screen resolution and toggle fullscreen
     - [ ] modular so bindings can be used in other projects with demo project without console 
+    - [ ] move draw.h to BaseFlux/Draw.h/cpp
     
 ```
     void bindSDLConstants(sol::state& lua) {

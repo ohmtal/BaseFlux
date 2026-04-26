@@ -208,8 +208,6 @@ namespace BaseFlux {
 
 
             if (OnUpdate) OnUpdate(frameTime / 1000.f);
-
-
         }
         shutDown();
         return true;

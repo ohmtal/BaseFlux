@@ -11,9 +11,11 @@
 #include <sol/sol.hpp>
 
 #include "BaseFlux/Main.h"
+#include "draw.h" //FIXME move to BaseFlux/Draw.h
 #include "spice/gui/ImConsole.h"
 #include "spice/tools/fluxStr.h"
 #include "bindings.h"
+
 
 BaseFlux::Main app;
 ImConsole console;
@@ -208,6 +210,21 @@ void initLua() {
 
     lua.set_function("drawFillRect", [&](SDL_FRect * rect) {
         SDL_RenderFillRect(app.getRenderer(), rect);
+    });
+
+    // void DrawCircle(SDL_Renderer *renderer, float radius, SDL_FPoint pos, SDL_Color color, bool fill) {
+
+    lua.set_function("drawCircle", [&](float radius, SDL_FPoint pos, SDL_Color color, bool fill) {
+        BaseFlux::DrawCircle(app.getRenderer(), radius, pos, color, fill);
+    });
+
+    // void DrawArc(SDL_Renderer *renderer, float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill) {
+    lua.set_function("drawArc", [&](float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill) {
+        BaseFlux::DrawArc(app.getRenderer(), radius,  startRad, endRad, pos, color, fill);
+    });
+    //     inline void DrawDonut(SDL_Renderer *renderer, float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill) {
+    lua.set_function("drawDonut", [&](float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill) {
+        BaseFlux::DrawDonut(app.getRenderer(),  innerRadius, outerRadius, pos, color, fill);
     });
 
 
