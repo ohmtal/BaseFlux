@@ -22,17 +22,14 @@
 namespace fs = std::filesystem;
 
 BaseFlux::Main app;
+BaseFlux::Lua::LuaState LuaState;
 ImConsole console;
 
-std::string currentScript = "main.lua";
 
 std::vector<fs::path> luaFiles;
 
 
-sol::state lua;
-sol::protected_function lua_OnSDLEvent;
-sol::protected_function lua_OnRender;
-sol::protected_function lua_OnUpdate;
+
 //-----------------------------------------------------------------------------
 // console redirect ....
 void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
@@ -58,16 +55,6 @@ struct foo {
 
 
 //-----------------------------------------------------------------------------
-void LoadScript() {
-
-    auto result = lua.safe_script_file( BaseFlux::Tools::getBasePath() + "assets/" + currentScript, sol::script_pass_on_error);
-    if (!result.valid()) {
-        sol::error err = result;
-        SDL_Log("[error] SCRIPT %s LOAD ERROR: %s\n", currentScript.c_str(),  err.what());
-    } else {
-        SDL_Log("[info] script %s loaded", currentScript.c_str());
-    }
-}
 
 
 //-----------------------------------------------------------------------------
@@ -84,42 +71,25 @@ void initConsole() {
                 if (file.find(".lua") == std::string::npos) {
                     file = file + ".lua";
                 }
-                currentScript = file;
-                LoadScript();
+                LuaState.setScript(file);
             }
             return;
         }
 
 
         if (cmd == "rl") {
-            LoadScript();
+            LuaState.LoadScript();
             return;
         }
 
-        if (cmd == "foo") {
-            try {
-                lua.safe_script(R"(
-                    local f = foo.new()
-                    print("myFloat is: " .. f.myFloat)
-
-                    f.myFloat = 10.0
-                    local result = f:bar(15.5)
-
-                    print("result: " .. tostring(result))
-                )");
-            } catch (const sol::error& e) {
-                console->AddLog("Lua Error: %s", e.what());
-            } catch (const std::exception& e) {
-                console->AddLog("C++ Error: %s", e.what());
-            }
-
-            return;
-        }
 
         // Lua commands:
         try {
-
-            auto result = lua.safe_script(cmdLineStr, sol::script_pass_on_error);
+            if (!LuaState.getLua()) {
+                SDL_Log("[error] failed to get LuaState!");
+                return;
+            }
+            auto result =  LuaState.getLua()->safe_script(cmdLineStr, sol::script_pass_on_error);
 
             if (!result.valid()) {
                 sol::error err = result;
@@ -132,7 +102,7 @@ void initConsole() {
             }
 
             sol::object obj = result[0];
-            std::string output = lua["tostring"](obj);
+            std::string output = (*LuaState.getLua())["tostring"](obj);
 
             console->AddLog("%s", output.c_str());
 
@@ -146,161 +116,9 @@ void initConsole() {
 //-----------------------------------------------------------------------------
 
 void initLua() {
-    // lua.open_libraries(sol::lib::base);
-    lua.open_libraries(
-        sol::lib::base
-        ,sol::lib::package
-        ,sol::lib::coroutine
-        ,sol::lib::os
-        ,sol::lib::math
-        ,sol::lib::table
-        ,sol::lib::string
-        ,sol::lib::debug
-        ,sol::lib::io
-
-    );
-
-    // ------  set package path
-    std::string current_path = lua["package"]["path"];
-    lua["package"]["path"] = current_path + ";" + BaseFlux::Tools::getBasePath() + "assets/?.lua";
-    current_path = lua["package"]["path"];
-    SDL_Log("[info] package path = %s", current_path.c_str());
-
-    // --------- SDK (keyboard) events -----
-    BaseFlux::bindSDLBasics(lua);
-    BaseFlux::bindSDLEvents(lua);
-    BaseFlux::bindSDLConstants(lua);
-
-
-    lua["OnRender"] = [&](sol::function func) {
-        SDL_Log("[debug] lua called OnRender");
-        lua_OnRender = func;
-    };
-
-    // lua["OnUpdate"] = [&](sol::protected_function func) {
-    lua["OnUpdate"] = [&](sol::function func) {
-        SDL_Log("[debug] lua called OnUpdate");
-        lua_OnUpdate = func;
-    };
-
-
-    lua["OnSDLEvent"] = [&](sol::function func) {
-        SDL_Log("[debug] lua called OnSDLEvent");
-        lua_OnSDLEvent = func;
-    };
-
-    lua.set_function("drawDebugText", [&](float x, float y, const std::string& text) {
-        SDL_RenderDebugText(app.getRenderer(), x, y, text.c_str());
-    });
-
-    lua.set_function("setColor", [&](u_int8_t R, u_int8_t G, u_int8_t B, sol::optional<u_int8_t> A) {
-        SDL_SetRenderDrawColor(app.getRenderer(), R, G, B, A.value_or(255));
-    });
-
-    lua.set_function("setScale", [&](float x, float y) {
-        SDL_SetRenderScale(app.getRenderer(), x, y);
-    });
-
-    // primitives
-    lua.set_function("drawPoint", [&](float x, float y) {
-        SDL_RenderPoint(app.getRenderer(), x, y);
-    });
-
-    lua.set_function("drawLine", [&](float x1, float y1, float x2, float y2) {
-        SDL_RenderLine(app.getRenderer(), x1, y1, x2 , y2);
-    });
-
-
-    lua.set_function("drawRect", [&](SDL_FRect * rect) {
-        SDL_RenderRect(app.getRenderer(), rect);
-    });
-
-    lua.set_function("drawFillRect", [&](SDL_FRect * rect) {
-        SDL_RenderFillRect(app.getRenderer(), rect);
-    });
-
-    // void DrawCircle(SDL_Renderer *renderer, float radius, SDL_FPoint pos, SDL_Color color, bool fill) {
-
-    lua.set_function("drawCircle", [&](float radius, SDL_FPoint pos, SDL_Color color, bool fill) {
-        BaseFlux::DrawCircle(app.getRenderer(), radius, pos, color, fill);
-    });
-
-    // void DrawArc(SDL_Renderer *renderer, float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill) {
-    lua.set_function("drawArc", [&](float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill) {
-        BaseFlux::DrawArc(app.getRenderer(), radius,  startRad, endRad, pos, color, fill);
-    });
-    //     inline void DrawDonut(SDL_Renderer *renderer, float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill) {
-    lua.set_function("drawDonut", [&](float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill) {
-        BaseFlux::DrawDonut(app.getRenderer(),  innerRadius, outerRadius, pos, color, fill);
-    });
-
-
-
-    // ------ register sound function ----
-
-    // lua.set_function("playSound", [&](std::string fileName, sol::optional<float> gain = 1.f, sol::optional<bool> loop=false) {
-    //     return app.playSound(fileName, gain, loop);
-    // });
-    // THIS for optional parameter =>
-
-    /* TEST:
-      playSound("sound1.wav", 0.1, true);
-      stopSound("sound1.wav");
-    */
-
-    lua.set_function("playSound", [&](std::string fileName, sol::optional<float> gain, sol::optional<bool> loop) {
-        return app.playSound(fileName, gain.value_or(1.0f), loop.value_or(false));
-    });
-    lua.set_function("stopSound", [&](std::string fileName) {
-        return app.stopSound(fileName);
-    });
-
-    // ------ register texture function ----
-    lua.set_function("getTexture", [&](std::string file) {
-        return app.getTextureManager().get(file);
-    });
-    lua.set_function("renderTexture", sol::overload(
-        // with filename:
-        [&](std::string file, sol::optional<SDL_FRect> src, sol::optional<SDL_FRect> dst) {
-            return app.renderTexture(file, src ? &*src : nullptr, dst ? &*dst : nullptr);
-        },
-        // with pointer:
-        [&](SDL_Texture* texture, sol::optional<SDL_FRect> src, sol::optional<SDL_FRect> dst) {
-            return app.getTextureManager().render(texture, src ? &*src : nullptr, dst ? &*dst : nullptr);
-        }
-    ));
-
-
-    lua.set_function("quit", [&]() { app.TerminateApplication(); });
-
-    // ----- register struct test -----
-    lua.new_usertype<foo>("foo",
-        // constructor
-        sol::constructors<foo()>(),
-        // Member var
-        "myFloat", &foo::myFloat,
-        // Member function
-        "bar", &foo::bar
-    );
-
-    // --------- CONSOLE REDIRECT -----------
-    // took me ages to find this !
-    lua.set_function("print", [](sol::variadic_args va, sol::this_state s) {
-        std::string out;
-        for (sol::object obj : va) {
-            obj.push();
-            size_t len;
-            const char* str = luaL_tolstring(s, -1, &len);
-            if (str) {
-                out += std::string(str, len) + "    ";
-            }
-            lua_pop(s, 2);
-        }
-        SDL_Log("[Lua] %s", out.c_str());
-    });
-
-
-    LoadScript();
+    if (LuaState.init(&app)) {
+        LuaState.LoadScript();
+    }
 }
 
 
@@ -338,17 +156,16 @@ void onDraw(SDL_Renderer* renderer) {
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Scripts")) {
-            if (ImGui::MenuItem(std::format("Hot Reload {}", currentScript).c_str(),"CTRL+R")) {
-                LoadScript();
+            if (ImGui::MenuItem(std::format("Hot Reload {}", LuaState.getScript()).c_str(),"CTRL+R")) {
+                LuaState.LoadScript();
             }
 
             ImGui::SeparatorText("Files");
             bool selected = false;
             for (const auto& f : luaFiles) {
-                selected = currentScript == f.string();
+                selected = LuaState.getScript() == f.string();
                 if (ImGui::MenuItem(f.string().c_str(), nullptr, selected)) {
-                    currentScript = f.string();
-                    LoadScript();
+                    LuaState.setScript(f.string());
                 }
 
             }
@@ -360,7 +177,7 @@ void onDraw(SDL_Renderer* renderer) {
     }
     if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) showConsole = !showConsole;
     if (app.getImGuiIO()->KeyCtrl) {
-        if (ImGui::IsKeyPressed(ImGuiKey_R)) LoadScript();
+        if (ImGui::IsKeyPressed(ImGuiKey_R)) LuaState.LoadScript();
     }
 
 
@@ -380,13 +197,8 @@ bool initApp() {
 
     app.OnRender = [&](SDL_Renderer* renderer) {
         onDraw(renderer);
-        if (lua_OnRender.valid()) {
-            auto result = lua_OnRender.call(/*traceback_handler*/);
-            if (!result.valid()) {
-                sol::error err = result;
-                SDL_Log("[error] lua: %s", err.what());
-            }
-        }
+        LuaState.OnRender(renderer);
+
 
     };
 
@@ -396,14 +208,8 @@ bool initApp() {
 
         accumulator += deltaTime;
         while (accumulator >= fixedStep) {
-            if (lua_OnUpdate.valid()) {
-                auto result = lua_OnUpdate.call(fixedStep);
+            LuaState.OnUpdate(fixedStep);
 
-                if (!result.valid()) {
-                    sol::error err = result;
-                    SDL_Log("[LUA ERROR] %s", err.what());
-                }
-            }
             accumulator -= fixedStep;
         }
     };
@@ -417,15 +223,7 @@ bool initApp() {
                 return;
             }
         }
-
-        if (lua_OnSDLEvent.valid()) {
-            auto result = lua_OnSDLEvent.call(event/*, traceback_handler*/);
-
-            if (!result.valid()) {
-                sol::error err = result;
-                SDL_Log("[error] lua: %s", err.what());
-            }
-        }
+        LuaState.OnEvent(event);
     };
 
 
@@ -435,9 +233,9 @@ bool initApp() {
 int main(int argc, char* argv[]) {
 
     app.getSettings() = {
-        .Company = "ScriptFlux",
+        .Company = "BaseFlux",
         .Caption = "LuaFlux",
-        .Version = "0.260423.23",
+        .Version = "0.260426.01",
         .SoundPathAppend = "sound/",
         .TexturePathAppend = "texture/"
     };
@@ -447,7 +245,7 @@ int main(int argc, char* argv[]) {
     initLua();
     fetchLuaFiles();
     initConsole();
-    SDL_Log("[info] Welcome to Lua Console!");
+    SDL_Log("[info] Welcome to BaseFlux Lua Console!");
     app.Execute();
     shutDown();
 

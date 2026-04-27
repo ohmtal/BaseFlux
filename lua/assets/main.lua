@@ -252,5 +252,6 @@ end)
 
 --- ---------- ------------ ----------
 print("Lua-Skript loaded")
-
+local windowSize = getWindowSize();
+print ("windowSize", windowSize.x, windowSize.y)
 

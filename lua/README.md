@@ -49,6 +49,7 @@ I use this for practice lua without have to learn to many command.
 
 - App functions
     - quit() - terminate the app
+    - SDL_Point getWindowSize
  
 - **Notes**
     - SDL_Texture can be a BMP or PNG file
@@ -62,7 +63,7 @@ I use this for practice lua without have to learn to many command.
 - Todo:
     - [ ] bind SDL_Ticks
     - [ ] bind screen resolution and toggle fullscreen
-    - [ ] modular so bindings can be used in other projects with demo project without console 
+    - [X] modular so bindings can be used in other projects with demo project without console 
     - [ ] move draw.h to BaseFlux/Draw.h/cpp
     
 ```
@@ -74,6 +75,11 @@ I use this for practice lua without have to learn to many command.
         lua["SDL_EVENT_MOUSE_MOTION"] = SDL_EVENT_MOUSE_MOTION;
         lua["SDL_EVENT_MOUSE_BUTTON_DOWN"] = SDL_EVENT_MOUSE_BUTTON_DOWN;
 
+        lua["SDL_EVENT_WINDOW_RESIZED"]     = SDL_EVENT_WINDOW_RESIZED;
+        lua["SDL_EVENT_WINDOW_MINIMIZED"]   =  SDL_EVENT_WINDOW_MINIMIZED;
+        lua["SDL_EVENT_WINDOW_RESTORED"]    = SDL_EVENT_WINDOW_RESTORED;
+        lua["SDL_EVENT_WINDOW_FOCUS_GAINED"] = SDL_EVENT_WINDOW_FOCUS_GAINED;
+        lua["SDL_EVENT_WINDOW_FOCUS_LOST"] = SDL_EVENT_WINDOW_FOCUS_LOST;
 
         // Keycodes (SDLK_...)
         // Lua: sdl.K_SPACE
