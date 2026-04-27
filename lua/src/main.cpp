@@ -11,7 +11,6 @@
 #include <sol/sol.hpp>
 
 #include "BaseFlux/Main.h"
-#include "draw.h" //FIXME move to BaseFlux/Draw.h
 #include "spice/gui/ImConsole.h"
 #include "spice/tools/fluxStr.h"
 #include "bindings.h"

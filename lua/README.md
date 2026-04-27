@@ -61,10 +61,9 @@ I use this for practice lua without have to learn to many command.
         - textures => assets/texture/
     
 - Todo:
-    - [ ] bind SDL_Ticks
-    - [ ] bind screen resolution and toggle fullscreen
+    - [X] screen resolution 
     - [X] modular so bindings can be used in other projects with demo project without console 
-    - [ ] move draw.h to BaseFlux/Draw.h/cpp
+    - [X] move draw.h to BaseFlux/Draw.h/cpp
     
 ```
     void bindSDLConstants(sol::state& lua) {

@@ -1,4 +1,4 @@
-#pragma once
+
 #include <SDL3/SDL.h>
 #include <sys/types.h>
 #include <math.h>
@@ -13,7 +13,7 @@
 
 namespace BaseFlux {
 
-    inline void DrawCircle(SDL_Renderer *renderer, float radius, SDL_FPoint pos, SDL_Color color, bool fill) {
+    void DrawCircle(SDL_Renderer *renderer, float radius, SDL_FPoint pos, SDL_Color color, bool fill) {
         if (!renderer || radius <= 0) return;
 
         int segments = (int)(M_2PI * sqrtf(radius) * 2.0f);
@@ -49,7 +49,7 @@ namespace BaseFlux {
         }
     }
 
-    inline void DrawArc(SDL_Renderer *renderer, float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill) {
+    void DrawArc(SDL_Renderer *renderer, float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill) {
         if (!renderer || radius <= 0) return;
 
         float delta = endRad - startRad;
@@ -88,7 +88,7 @@ namespace BaseFlux {
     }
 
 
-    inline void DrawDonut(SDL_Renderer *renderer, float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill) {
+    void DrawDonut(SDL_Renderer *renderer, float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill) {
         if (!renderer || outerRadius <= 0) return;
 
         int segments = (int)(M_2PI * sqrtf(outerRadius) * 2.0f);

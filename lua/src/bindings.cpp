@@ -2,8 +2,8 @@
 #include "bindings.h"
 #include "BaseFlux/Main.h"
 #include "BaseFlux/Tools.h"
+#include "BaseFlux/Draw.h"
 #include <SDL3/SDL.h>
-#include "draw.h" //FIXME move to BaseFlux/Draw.h
 #include <string>
 
 namespace BaseFlux::Lua {

@@ -56,6 +56,8 @@ set (baseFlux_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
 add_library(BaseFlux
     ${baseFlux_SOURCE_DIR}/BaseFlux/AudioManager.h
     ${baseFlux_SOURCE_DIR}/BaseFlux/AudioManager.cpp
+    ${baseFlux_SOURCE_DIR}/BaseFlux/Draw.h
+    ${baseFlux_SOURCE_DIR}/BaseFlux/Draw.cpp
     ${baseFlux_SOURCE_DIR}/BaseFlux/Main.h
     ${baseFlux_SOURCE_DIR}/BaseFlux/Main.cpp
     ${baseFlux_SOURCE_DIR}/BaseFlux/Settings.h
