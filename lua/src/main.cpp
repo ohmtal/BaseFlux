@@ -15,12 +15,19 @@
 #include "spice/gui/ImConsole.h"
 #include "spice/tools/fluxStr.h"
 #include "bindings.h"
-
+#include <format>
+#include <iostream>
+#include <filesystem>
+#include <vector>
+namespace fs = std::filesystem;
 
 BaseFlux::Main app;
 ImConsole console;
 
 std::string currentScript = "main.lua";
+
+std::vector<fs::path> luaFiles;
+
 
 sol::state lua;
 sol::protected_function lua_OnSDLEvent;
@@ -296,6 +303,31 @@ void initLua() {
     LoadScript();
 }
 
+
+
+bool fetchLuaFiles() {
+    std::string path = BaseFlux::Tools::getBasePath() + "assets/";
+
+    try {
+        if (fs::exists(path) && fs::is_directory(path)) {
+             for (const auto& entry : fs::recursive_directory_iterator(path)) {
+                if (entry.is_regular_file() && entry.path().extension() == ".lua") {
+                    // Full path: luaFiles.push_back(entry.path());
+                    luaFiles.push_back(fs::relative(entry.path(), path));
+
+                }
+            }
+        }
+    } catch (const fs::filesystem_error& e) {
+        SDL_Log("[error]%s",e.what());
+        return false;
+    }
+
+
+
+    return true;
+}
+
 //-----------------------------------------------------------------------------
 void onDraw(SDL_Renderer* renderer) {
 
@@ -305,9 +337,31 @@ void onDraw(SDL_Renderer* renderer) {
             ImGui::MenuItem("Console", "GraveAccent", &showConsole);
             ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("Scripts")) {
+            if (ImGui::MenuItem(std::format("Hot Reload {}", currentScript).c_str(),"CTRL+R")) {
+                LoadScript();
+            }
+
+            ImGui::SeparatorText("Files");
+            bool selected = false;
+            for (const auto& f : luaFiles) {
+                selected = currentScript == f.string();
+                if (ImGui::MenuItem(f.string().c_str(), nullptr, selected)) {
+                    currentScript = f.string();
+                    LoadScript();
+                }
+
+            }
+
+            ImGui::EndMenu();
+        }
+
         ImGui::EndMainMenuBar();
     }
     if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) showConsole = !showConsole;
+    if (app.getImGuiIO()->KeyCtrl) {
+        if (ImGui::IsKeyPressed(ImGuiKey_R)) LoadScript();
+    }
 
 
     console.Draw("Lua Console",&showConsole);
@@ -391,6 +445,7 @@ int main(int argc, char* argv[]) {
     if (!initApp()) return 1;
 
     initLua();
+    fetchLuaFiles();
     initConsole();
     SDL_Log("[info] Welcome to Lua Console!");
     app.Execute();
