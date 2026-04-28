@@ -11,7 +11,7 @@ namespace BaseFlux::Lua {
 
     void bindSDLBasics(sol::state& lua) {
         lua.new_usertype<SDL_Color>("SDL_Color",
-                                     sol::constructors<SDL_Color(), SDL_Color(int, int, int, int)>(),
+                                     sol::constructors<SDL_Color(), SDL_Color(Uint8, Uint8, Uint8, Uint8)>(),
                                      "r", &SDL_Color::r,
                                      "g", &SDL_Color::g,
                                      "b", &SDL_Color::b,
@@ -135,12 +135,47 @@ namespace BaseFlux::Lua {
             name += c;
             k[name] = (SDL_Keycode)c;
         }
+
+
+        // ----  Colors -----
+        k["C_WHITE"]   = SDL_Color{255, 255, 255, 255};
+        k["C_BLACK"]   = SDL_Color{0,   0,   0,   255};
+        k["C_RED"]     = SDL_Color{255, 0,   0,   255};
+        k["C_GREEN"]   = SDL_Color{0,   255, 0,   255};
+        k["C_BLUE"]    = SDL_Color{0,   0,   255, 255};
+
+        k["C_GRAY"]    = SDL_Color{128, 128, 128, 255};
+        k["C_DARKGRAY"]= SDL_Color{45,  45,  45,  255};
+        k["C_SILVER"]  = SDL_Color{192, 192, 192, 255};
+
+        k["C_YELLOW"]  = SDL_Color{255, 255, 0,   255};
+        k["C_ORANGE"]  = SDL_Color{255, 165, 0,   255};
+        k["C_CYAN"]    = SDL_Color{0,   255, 255, 255};
+        k["C_MAGENTA"] = SDL_Color{255, 0,   255, 255};
+        k["C_PURPLE"]  = SDL_Color{128, 0,   128, 255};
+
+        k["C_TRANSPARENT"] = SDL_Color{0, 0, 0, 0};
+
+
+        // make write protected:
+        // lua.script(R"(
+        //     local protected_table = sdl
+        //     local mt = {
+        //         __newindex = function(t, k, v)
+        //             error("you can not change a constant value " .. tostring(k), 2)
+        //         end
+        //     }
+        //     setmetatable(protected_table, mt)
+        // )");
+
+
     }
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 bool LuaState::init(BaseFlux::Main* lApp){
 
-    if (!lApp) return false;
+    if (!lApp || !lApp->getRenderer()) return false;
+
 
     if (mInitialied) {
         SDL_Log("[error] LuaState already initialied");
@@ -193,6 +228,31 @@ bool LuaState::init(BaseFlux::Main* lApp){
     mLua.set_function("drawDebugText", [&](float x, float y, const std::string& text) {
         SDL_RenderDebugText(mApp->getRenderer(), x, y, text.c_str());
     });
+
+    mLua.set_function("drawText", [&](float x, float y, const std::string& text,
+                                      sol::optional<float> scale,
+                                      sol::optional<SDL_Color> paintcolor ) {
+        float  lScale = scale.value_or(1.f) ;
+        SDL_Color oldColor;
+        if (paintcolor.has_value())
+        {
+            SDL_GetRenderDrawColor(mApp->getRenderer(),&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
+            SDL_Color color = paintcolor.value_or(SDL_Color{255,255,255,255});
+            SDL_SetRenderDrawColor(mApp->getRenderer(), color.r,color.g,color.b,color.a);
+        }
+        if (lScale != 1.f) {
+            SDL_SetRenderScale(mApp->getRenderer(), lScale, lScale);
+            SDL_RenderDebugText(mApp->getRenderer(), x / lScale, y / lScale, text.c_str());
+            SDL_SetRenderScale(mApp->getRenderer(), 1.0f, 1.0f);
+        } else {
+             SDL_RenderDebugText(mApp->getRenderer(), x, y, text.c_str());
+        }
+        if (paintcolor.has_value()) {
+            SDL_SetRenderDrawColor(mApp->getRenderer( ), oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+        }
+
+    });
+
 
     mLua.set_function("setColor", [&](u_int8_t R, u_int8_t G, u_int8_t B, sol::optional<u_int8_t> A) {
         SDL_SetRenderDrawColor(mApp->getRenderer(), R, G, B, A.value_or(255));

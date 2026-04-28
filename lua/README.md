@@ -34,6 +34,7 @@ I use this for practice lua without have to learn to many command.
     - setColor(byte r, byte g, byte b, [ byte a ])
     - setScale( float x, float y )
     - drawDebugText( float x, float y , string text)
+    - drawText(float x, float y, const std::string& text,optional<float> scale,optional<SDL_Color> paintcolor ) 
     - drawPoint( float x, float y )
     - drawLine( float x1, float y1, float x2, float y2)
     - drawRect( SDL_FRect rect )
@@ -108,5 +109,24 @@ I use this for practice lua without have to learn to many command.
             name += c;
             k[name] = (SDL_Keycode)c;
         }
+        
+        // ----  Colors -----
+        k["C_WHITE"]   = SDL_Color{255, 255, 255, 255};
+        k["C_BLACK"]   = SDL_Color{0,   0,   0,   255};
+        k["C_RED"]     = SDL_Color{255, 0,   0,   255};
+        k["C_GREEN"]   = SDL_Color{0,   255, 0,   255};
+        k["C_BLUE"]    = SDL_Color{0,   0,   255, 255};
+
+        k["C_GRAY"]    = SDL_Color{128, 128, 128, 255};
+        k["C_DARKGRAY"]= SDL_Color{45,  45,  45,  255};
+        k["C_SILVER"]  = SDL_Color{192, 192, 192, 255};
+
+        k["C_YELLOW"]  = SDL_Color{255, 255, 0,   255};
+        k["C_ORANGE"]  = SDL_Color{255, 165, 0,   255};
+        k["C_CYAN"]    = SDL_Color{0,   255, 255, 255};
+        k["C_MAGENTA"] = SDL_Color{255, 0,   255, 255};
+        k["C_PURPLE"]  = SDL_Color{128, 0,   128, 255};
+
+        k["C_TRANSPARENT"] = SDL_Color{0, 0, 0, 0};
     }
 ```
