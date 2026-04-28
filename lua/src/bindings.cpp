@@ -253,10 +253,15 @@ bool LuaState::init(BaseFlux::Main* lApp){
 
     });
 
+    mLua.set_function("setColor", sol::overload(
+        [&](u_int8_t R, u_int8_t G, u_int8_t B, sol::optional<u_int8_t> A) {
+            SDL_SetRenderDrawColor(mApp->getRenderer(), R, G, B, A.value_or(255));
+        },
+        [&](SDL_Color color) {
+            SDL_SetRenderDrawColor(mApp->getRenderer(), color.r, color.g, color.b, color.a);
+        }
+    ));
 
-    mLua.set_function("setColor", [&](u_int8_t R, u_int8_t G, u_int8_t B, sol::optional<u_int8_t> A) {
-        SDL_SetRenderDrawColor(mApp->getRenderer(), R, G, B, A.value_or(255));
-    });
 
     mLua.set_function("setScale", [&](float x, float y) {
         SDL_SetRenderScale(mApp->getRenderer(), x, y);

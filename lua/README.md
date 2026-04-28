@@ -32,6 +32,7 @@ I use this for practice lua without have to learn to many command.
     
 - primitives drawing functions
     - setColor(byte r, byte g, byte b, [ byte a ])
+    - setColor(SDLColor color)
     - setScale( float x, float y )
     - drawDebugText( float x, float y , string text)
     - drawText(float x, float y, const std::string& text,optional<float> scale,optional<SDL_Color> paintcolor ) 

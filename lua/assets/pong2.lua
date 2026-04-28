@@ -35,16 +35,6 @@ local paddleVel = 0.0;
 local paddleSpeed = 250.0;
 local paddle = SDL_FRect.new(screenRect.x + screenRect.w - 20.0, (screenRect.y + screenRect.h - paddleSize.w) / 2.0, 5.0, 60.0)
 
--- pixel test ;)
-local testPixels = {
-    { 0, 1, 0 },
-    { 1, 1 ,1 },
-    { 1, 1 ,1 }
-}
-
-local pixelPos = SDL_FPoint.new( screenRect.x + screenRect.w + 10, screenRect.y + screenRect.h - 50 )
-local shipPos  = SDL_FPoint.new( screenRect.x + screenRect.w + 20, screenRect.y + screenRect.h - 50 )
-
 -- ---------- OnEvent --------------
 OnSDLEvent( function(ev)
     if ev.type == SDL_EVENT_QUIT then
@@ -102,44 +92,25 @@ OnRender( function()
      local y = screenRect.y + wallThickness
      local incY = 20
      setColor(128,128,128)
-     drawDebugText(x, y, "BASEFLUX PONG SQUASH LUA EDITION ;)")
+     drawText(x, y, "BASEFLUX PONG SQUASH LUA EDITION ;)")
      y = y + incY
-     drawDebugText(x, y, string.format("Ball POS: %.2f,%.2f VEL: %.2f, %.2f", ball.x, ball.y, ballVel.x, ballVel.y))
+     drawText(x, y, string.format("Ball POS: %.2f,%.2f VEL: %.2f, %.2f", ball.x, ball.y, ballVel.x, ballVel.y))
 
-     setScale(2.0,2.0)
-     setColor(255,255,255)
+
      y = y + incY
-     drawDebugText(x / 2.0, y / 2.0, string.format("SCORE: %2d    HI: %2d", score, hiscore))
+     drawText(x , y , string.format("SCORE: %2d    HI: %2d", score, hiscore), 2.0, sdl.C_WHITE)
 
      if (gameOver) then
          y = y + incY + 5
-         setColor(255,0,0)
-         drawDebugText(x / 2.0, y / 2.0, "G A M E   O V E R")
+         drawText(x , y , "G A M E   O V E R", 2.0, sdl.C_RED)
 
-         setScale(1.0,1.0)
-         y = y + incY
+         y = y + incY + 5
          setColor(64,64,200)
-         drawDebugText(x , y , "SPACE = Start, Cursor: Up / Down ")
+         drawText(x , y , "SPACE = Start, Cursor: Up / Down ")
 
      end
      setScale(1.0,1.0)
 
-     -- Pixel Test ;)
-    local scale = 10
-    setScale(scale,scale)
-    for y, row in ipairs(testPixels) do
-        for x, value in ipairs(row) do
-            if value == 1 then
-                setColor(255, 255, 255, 255)
-            else
-                setColor(0, 0, 0, 255)
-            end
-             drawPoint(pixelPos.x / scale + x , pixelPos.y / scale + y )
-
-
-        end
-    end
-    setScale(1.0,1.0)
 end )
 
 -- --------- Collision check -----------
