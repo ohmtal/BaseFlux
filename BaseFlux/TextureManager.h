@@ -17,7 +17,6 @@
 namespace BaseFlux {
 
    class TextureManager: public BaseResourceManager {
-      // std::map<std::string, SDL_Texture*> mTextureMap;
      std::unordered_map<std::string, SDL_Texture*> mTextureMap;
 
       public:

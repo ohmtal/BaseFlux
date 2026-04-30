@@ -89,8 +89,7 @@ namespace BaseFlux {
             SDL_PutAudioStreamData(stream, data->buffer, data->len);
         }
     }
-
-    // 2. In deiner play-Funktion:
+    //--------------------------------------------------------------------------
     bool AudioManager::play(std::string fileName, float gain, bool loop) {
         if (!isInitialized()) return false;
         WavData* data = get(fileName);
@@ -99,7 +98,6 @@ namespace BaseFlux {
             SDL_Log("[error] Invalid filename: %s", fileName.c_str());
             return false;
         }
-
 
         SDL_ClearAudioStream(data->stream);
         SDL_SetAudioStreamGain(data->stream, gain);
@@ -158,13 +156,13 @@ namespace BaseFlux {
         if (!isInitialized()) return false;
         if (!mMain) return false;
         if (isBlackListed(fileName)) {
-            SDL_Log("[error] deny texture it's blacklisted: %s!", fileName.c_str());
+            SDL_Log("[error] deny sound it's blacklisted: %s!", fileName.c_str());
             return false;
         }
 
 
         if (get(fileName, true) != nullptr) {
-            SDL_Log("[error] deny texture double load: %s!", fileName.c_str());
+            SDL_Log("[error] deny sound double load: %s!", fileName.c_str());
             return false;
         }
 

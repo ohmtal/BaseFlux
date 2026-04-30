@@ -310,12 +310,6 @@ bool LuaState::init(BaseFlux::Main* lApp){
 
 
     // ------ register sound function ----
-
-    // lua.set_function("playSound", [&](std::string fileName, sol::optional<float> gain = 1.f, sol::optional<bool> loop=false) {
-    //     return mApp->playSound(fileName, gain, loop);
-    // });
-    // THIS for optional parameter =>
-
     /* TEST:
      *      playSound("sound1.wav", 0.1, true);
      *      stopSound("sound1.wav");
