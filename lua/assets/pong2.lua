@@ -7,7 +7,7 @@ local hiscore = 0
 -- Textures and Sounds
 local bounceSound = "beep.wav"
 local startSound  = "sound1.wav"
-
+local lostSound = "dungeon_witch.wav"
 
 
 --  Wall
@@ -163,6 +163,7 @@ OnUpdate(function(dt)
 
     if ball.x > screenRect.x + screenRect.w then
         gameOver = true;
+        playSound(lostSound)
         ball.x, ball.y = screenRect.x + screenRect.w / 2.0, screenRect.y + screenRect.h / 2.0
     end
 
