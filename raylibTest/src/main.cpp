@@ -1,6 +1,22 @@
 #include "raylib.h"
+#include "raymath.h"
+#define RLIGHTS_IMPLEMENTATION
+#include "rlights.h"
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"                 // Required for GUI controls
+
 #include <string>
 #include <functional>
+#include <math.h>
+
+//--------------------------------------------------------------------------
+#if defined(PLATFORM_DESKTOP)
+#define GLSL_VERSION            330
+#else   // PLATFORM_ANDROID, PLATFORM_WEB
+#define GLSL_VERSION            100
+#endif
+
+#define COLOR_SLATEGRAY   CLITERAL(Color){ 20, 20, 20, 255 }      // Darkest Gray
 //--------------------------------------------------------------------------
 // ---------------- typedef
 // like my defs from TGE ;) U16 is much shorter than "unsigned int"
@@ -20,7 +36,7 @@ typedef double             F64;     ///< Compiler independent 64-bit float
 #endif
 //--------------------------------------------------------------------------
 namespace Tools {
-    std::string GetUserConfigPath(void) {
+    std::string GetUserConfigPath() {
         char path[512] = { 0 };
 
         #if defined(_WIN32)
@@ -33,7 +49,7 @@ namespace Tools {
         #elif defined(__EMSCRIPTEN__)
         snprintf(path, sizeof(path), "%s",  "/home/web_user");
 
-        #elif defined(__linux__)
+        #elif defined(__unix__)
         const char* home = getenv("HOME");
         if (home) snprintf(path, sizeof(path), "%s/.local/share", home);
 
@@ -50,7 +66,7 @@ namespace Tools {
         static std::string cachedPath = "";
         if (!cachedPath.empty()) return cachedPath;
         std::string base = GetUserConfigPath();
-        if (base.empty()) return std::string(app);
+        if (base.empty()) return std::string();
         cachedPath =  base + "/" + org + "/" + app;
         return cachedPath;
     }
@@ -101,31 +117,31 @@ struct Settings {
     bool WindowMaximized  = false;
     // you also can set FpsLimit
     bool EnableVSync      = true;
+    bool EnableFSAA       = true;
+
     std::string Company = "RayLib Test Company";
     std::string Caption = "RayLib Caption";
     std::string Version = "RayLib Test 0.260505";
 
-    // your window icon (have to be .bmp or .png)
-    std::string IconFilename = "";
-
-    //pre path for IconFilename and loadTexture
-    // base:/ is replaced with your BasePath
-    // NOTE: add a tralling slash!
-    std::string AssetPath = "base:/assets/";
-    std::string SoundPathAppend   = "";
-    std::string TexturePathAppend = "";
-
-    //imgui
-    bool EnableDockSpace = true;
-    // pref:/ is replaced with your pref Path
-    std::string IniFileName = "pref:/appgui.ini";
+    //FIXME
+//     // your window icon (have to be .bmp or .png)
+//     std::string IconFilename = "";
+//
+//     //pre path for IconFilename and loadTexture
+//     // base:/ is replaced with your BasePath
+//     // NOTE: add a tralling slash!
+//
+//     std::string AssetPath = "base:/assets/";
+//     std::string SoundPathAppend   = "";
+//     std::string TexturePathAppend = "";
+//
+//     //imgui
+//     bool EnableDockSpace = true;
+//     // pref:/ is replaced with your pref Path
+//     std::string IniFileName = "pref:/appgui.ini";
 
     // overwrite Window FLAGS:
     int windowFlagsOverwrite = 0;
-
-    // std::string getPrefsPath();
-    // std::string getSafeCompany();
-    // std::string getSafeCaption();
 
     //--------------------------------------------------------------------------
     std::string getPrefsPath(){
@@ -167,6 +183,9 @@ class RayFlux  {
 public:
     Settings settings;
     std::function<void()> OnRender = nullptr;
+    std::function<void(const float)> OnUpdate = nullptr;
+    // std::function<void(const SDL_Event)> OnEvent = nullptr;
+    std::function<void()> OnShutDown = nullptr;
 
     bool Init() {
         int windowFlags = 0;
@@ -178,6 +197,7 @@ public:
                 if (settings.WindowMaximized) windowFlags |= FLAG_WINDOW_MAXIMIZED;
             }
             if (settings.EnableVSync) windowFlags |= FLAG_VSYNC_HINT;
+            if (settings.EnableFSAA) windowFlags |= FLAG_MSAA_4X_HINT;
         }
 
         SetConfigFlags(windowFlags);
@@ -191,14 +211,19 @@ public:
     void Execute() {
         while (!WindowShouldClose())
         {
+            // fixme fixed update / deltaTime
+            if (OnUpdate) OnUpdate(0.166);
+
+            BeginDrawing();
+            ClearBackground(COLOR_SLATEGRAY);
             if (OnRender) OnRender();
+            EndDrawing();
         }
-        CloseWindow();
+        if (OnShutDown) OnShutDown();
+         CloseWindow();
     }
 }; //class
-
-#define COLOR_SLATEGRAY   CLITERAL(Color){ 20, 20, 20, 255 }      // Darkest Gray
-
+//------------------------------------------------------------------------------
 struct LazyText {
    U16 x = 0;
    U16 y = 0;
@@ -221,24 +246,163 @@ int main(void)
         TraceLog(LOG_ERROR, "%s", "Failed to Initialize!");
         return 1;
     }
+
+    //-------
+    // add basic lighting demo .....
+    // Define the camera to look into our 3d world
+    Camera camera = { 0 };
+    camera.position = (Vector3){ 2.0f, 4.0f, 6.0f };    // Camera position
+    camera.target = (Vector3){ 0.0f, 0.5f, 0.0f };      // Camera looking at point
+    camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };          // Camera up vector (rotation towards target)
+    camera.fovy = 45.0f;                                // Camera field-of-view Y
+    camera.projection = CAMERA_PERSPECTIVE;             // Camera projection type
+
+    // Load basic lighting shader
+    Shader shader = LoadShader(TextFormat("assets/shaders/glsl%i/lighting.vs", GLSL_VERSION),
+                               TextFormat("assets/shaders/glsl%i/lighting.fs", GLSL_VERSION));
+    // Get some required shader locations
+    shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+    // NOTE: "matModel" location name is automatically assigned on shader loading,
+    // no need to get the location again if using that uniform name
+    //shader.locs[SHADER_LOC_MATRIX_MODEL] = GetShaderLocation(shader, "matModel");
+
+    // Ambient light level (some basic lighting)
+    int ambientLoc = GetShaderLocation(shader, "ambient");
+    SetShaderValue(shader, ambientLoc, (float[4]){ 0.1f, 0.1f, 0.1f, 1.0f }, SHADER_UNIFORM_VEC4);
+
+    // Create lights
+    Light lights[MAX_LIGHTS] = { 0 };
+    lights[0] = CreateLight(LIGHT_POINT, (Vector3){ -2, 1, -2 }, Vector3Zero(), YELLOW, shader);
+    lights[1] = CreateLight(LIGHT_POINT, (Vector3){ 2, 1, 2 }, Vector3Zero(), RED, shader);
+    lights[2] = CreateLight(LIGHT_POINT, (Vector3){ -2, 1, 2 }, Vector3Zero(), GREEN, shader);
+    lights[3] = CreateLight(LIGHT_POINT, (Vector3){ 2, 1, -2 }, Vector3Zero(), BLUE, shader);
+
+    // ------- eyes
+
+    Vector2 scleraLeftPosition = { GetScreenWidth() - 200.0f, GetScreenHeight() - 100.f };
+    Vector2 scleraRightPosition = { GetScreenWidth() - 60.0f, GetScreenHeight() - 100.f };
+    float scleraRadius = 60;
+
+    Vector2 irisLeftPosition = scleraLeftPosition;
+    Vector2 irisRightPosition = scleraRightPosition;
+    float irisRadius = 24;
+
+    float angle = 0.0f;
+    float dx = 0.0f, dy = 0.0f, dxx = 0.0f, dyy = 0.0f;
+
+    //-------
     std::string confPathText = TextFormat("Base Path: %s", Tools::getBasePath().c_str());
     std::string prefPathText = TextFormat("Config Path: %s", app.settings.getPrefsPath().c_str());
-    LazyText lt {20, 50, 20};
+    LazyText lt {10, 10, 20};
+
+    //------
+    app.OnUpdate = [&](float dt) {
+        UpdateCamera(&camera, CAMERA_ORBITAL);
+
+        // Update the shader with the camera view vector (points towards { 0.0f, 0.0f, 0.0f })
+        float cameraPos[3] = { camera.position.x, camera.position.y, camera.position.z };
+        SetShaderValue(shader, shader.locs[SHADER_LOC_VECTOR_VIEW], cameraPos, SHADER_UNIFORM_VEC3);
+
+        // Check key inputs to enable/disable lights
+        if (IsKeyPressed(KEY_Y)) { lights[0].enabled = !lights[0].enabled; }
+        if (IsKeyPressed(KEY_R)) { lights[1].enabled = !lights[1].enabled; }
+        if (IsKeyPressed(KEY_G)) { lights[2].enabled = !lights[2].enabled; }
+        if (IsKeyPressed(KEY_B)) { lights[3].enabled = !lights[3].enabled; }
+
+        // Update light values (actually, only enable/disable them)
+        for (int i = 0; i < MAX_LIGHTS; i++) UpdateLightValues(shader, lights[i]);
 
 
-    app.OnRender = [&]() {
-        BeginDrawing();
-            ClearBackground(COLOR_SLATEGRAY);
-            lt.y = 50;
-            lt.size = 40;
-            lt.Write("RayLib Test .....", GOLD);
-            lt.size = 20;
-            lt.Write(TextFormat("FPS: %d", GetFPS()), RED);
-            lt.Write(confPathText.c_str(), ORANGE);
-            lt.Write(prefPathText.c_str(), SKYBLUE);
-        EndDrawing();
+        // Eyes
+        //----------------------------------------------------------------------------------
+        if (IsWindowResized()) { // FIXME EVENT !!
+            // int newWidth = GetScreenWidth();
+            // int newHeight = GetScreenHeight();
+            scleraLeftPosition = { GetScreenWidth() - 200.0f, GetScreenHeight() - 100.f };
+            scleraRightPosition = { GetScreenWidth() - 60.0f, GetScreenHeight() - 100.f };
+        }
+
+        irisLeftPosition = GetMousePosition();
+        irisRightPosition = GetMousePosition();
+
+        // Check not inside the left eye sclera
+        if (!CheckCollisionPointCircle(irisLeftPosition, scleraLeftPosition, scleraRadius - irisRadius))
+        {
+            dx = irisLeftPosition.x - scleraLeftPosition.x;
+            dy = irisLeftPosition.y - scleraLeftPosition.y;
+
+            angle = atan2f(dy, dx);
+
+            dxx = (scleraRadius - irisRadius)*cosf(angle);
+            dyy = (scleraRadius - irisRadius)*sinf(angle);
+
+            irisLeftPosition.x = scleraLeftPosition.x + dxx;
+            irisLeftPosition.y = scleraLeftPosition.y + dyy;
+        }
+
+        // Check not inside the right eye sclera
+        if (!CheckCollisionPointCircle(irisRightPosition, scleraRightPosition, scleraRadius - irisRadius))
+        {
+            dx = irisRightPosition.x - scleraRightPosition.x;
+            dy = irisRightPosition.y - scleraRightPosition.y;
+
+            angle = atan2f(dy, dx);
+
+            dxx = (scleraRadius - irisRadius)*cosf(angle);
+            dyy = (scleraRadius - irisRadius)*sinf(angle);
+
+            irisRightPosition.x = scleraRightPosition.x + dxx;
+            irisRightPosition.y = scleraRightPosition.y + dyy;
+        }
     };
+    //------
+    app.OnRender = [&]() {
 
+        BeginMode3D(camera);
+            BeginShaderMode(shader);
+            DrawPlane(Vector3Zero(), (Vector2) { 10.0, 10.0 }, WHITE);
+            DrawCube(Vector3Zero(), 2.0, 4.0, 2.0, WHITE);
+            EndShaderMode();
+            // Draw spheres to show where the lights are
+            for (int i = 0; i < MAX_LIGHTS; i++)
+            {
+                if (lights[i].enabled) DrawSphereEx(lights[i].position, 0.2f, 8, 8, lights[i].color);
+                else DrawSphereWires(lights[i].position, 0.2f, 8, 8, ColorAlpha(lights[i].color, 0.3f));
+            }
+            DrawGrid(10, 1.0f);
+        EndMode3D();
+
+        // eyes
+        DrawCircleV(scleraLeftPosition, scleraRadius, LIGHTGRAY);
+        DrawCircleV(irisLeftPosition, irisRadius, BROWN);
+        DrawCircleV(irisLeftPosition, 10, BLACK);
+
+        DrawCircleV(scleraRightPosition, scleraRadius, LIGHTGRAY);
+        DrawCircleV(irisRightPosition, irisRadius, DARKGREEN);
+        DrawCircleV(irisRightPosition, 10, BLACK);
+
+
+        // debug text
+        lt.y = 50;
+        lt.size = 40;
+        lt.Write("RayLib Test .....", GOLD);
+        lt.size = 20;
+        lt.Write(TextFormat("FPS: %d", GetFPS()), RED);
+        lt.size = 10;
+        lt.Write(confPathText.c_str(), ORANGE);
+        lt.Write(prefPathText.c_str(), SKYBLUE);
+        lt.size = 20;
+        lt.Write("LIGHTS:", WHITE);
+        GuiCheckBox((Rectangle){ (float)lt.x, (float)lt.y        , 20.f, 20.f }, "Red", &lights[1].enabled);
+        GuiCheckBox((Rectangle){ (float)lt.x, (float)lt.y + 30.f , 20.f, 20.f }, "Green", &lights[2].enabled);
+        GuiCheckBox((Rectangle){ (float)lt.x, (float)lt.y + 60.f , 20.f, 20.f }, "Blue", &lights[3].enabled);
+        GuiCheckBox((Rectangle){ (float)lt.x, (float)lt.y + 90.f , 20.f, 20.f }, "Yellow", &lights[0].enabled);
+    };
+    //--------
+    app.OnShutDown = [&]() {
+        UnloadShader(shader);
+    };
+    //--------
     app.Execute();
 
     return 0;
