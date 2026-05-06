@@ -32,7 +32,7 @@ include(FetchContent)
 # endif()
 
 # ------------- RayLib
-
+# set(PLATFORM "SDL" CACHE STRING "raylib platform" FORCE)
 set(RAYLIB_DIR "${CMAKE_CURRENT_LIST_DIR}/raylib" CACHE PATH "Path to RayLib")
 if(NOT EXISTS "${RAYLIB_DIR}/CMakeLists.txt")
   message(FATAL_ERROR
@@ -42,7 +42,7 @@ if(NOT EXISTS "${RAYLIB_DIR}/CMakeLists.txt")
 else()
   add_subdirectory("${RAYLIB_DIR}" "${CMAKE_BINARY_DIR}/raylib_build")
 
-  target_compile_definitions( raylib PUBLIC PLATFORM_DESKTOP_SDL)
+  # target_compile_definitions( raylib PUBLIC PLATFORM_DESKTOP_SDL)
 
 endif()
 

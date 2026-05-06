@@ -3,7 +3,7 @@
 #define RLIGHTS_IMPLEMENTATION
 #include "rlights.h"
 #define RAYGUI_IMPLEMENTATION
-#include "raygui.h"                 // Required for GUI controls
+#include "raygui_custom.h"
 
 #include <string>
 #include <functional>
@@ -169,13 +169,13 @@ struct Settings {
 };
 //------------------------------------------------------------------------------
 // ---------------- Log Wrapper
-int Log(const char *szFormat, va_list args)
-{
-    if (!szFormat) return -1;
-    TraceLog(LOG_INFO, szFormat, args );
-
-    return 0;
-}
+// int Log(const char *szFormat, va_list args)
+// {
+//     if (!szFormat) return -1;
+//     TraceLog(LOG_INFO, szFormat, args );
+//
+//     return 0;
+// }
 //------------------------------------------------------------------------------
 // ---------------- Main Class
 class RayFlux  {
@@ -224,16 +224,29 @@ public:
     }
 }; //class
 //------------------------------------------------------------------------------
-struct LazyText {
+struct LazyGui {
    U16 x = 0;
    U16 y = 0;
    U16 size = 20;
+
 
    U16 spacing = 10;
    void Write(const char* text, Color color = LIGHTGRAY) {
         DrawText(text, x, y,size, color);
         y += size + spacing;
    }
+
+   int CheckBox( const char *text, bool *checked) {
+     int result = GuiCheckBox(Rectangle((float) x,(float)y, (float)size, (float)size), text, checked);
+     y += size + spacing;
+     return result;
+   }
+   int ComboBox( float width, const char *text, int *active) {
+       int result = GuiComboBox(Rectangle((float) x,(float)y, width, (float)size), text, active);
+       y += size + spacing;
+       return result;
+   }
+
 };
 // =============================================================================
 int main(void)
@@ -293,7 +306,7 @@ int main(void)
     //-------
     std::string confPathText = TextFormat("Base Path: %s", Tools::getBasePath().c_str());
     std::string prefPathText = TextFormat("Config Path: %s", app.settings.getPrefsPath().c_str());
-    LazyText lt {10, 10, 20};
+    LazyGui lg {10, 10, 20};
 
     //------
     app.OnUpdate = [&](float dt) {
@@ -383,20 +396,26 @@ int main(void)
 
 
         // debug text
-        lt.y = 50;
-        lt.size = 40;
-        lt.Write("RayLib Test .....", GOLD);
-        lt.size = 20;
-        lt.Write(TextFormat("FPS: %d", GetFPS()), RED);
-        lt.size = 10;
-        lt.Write(confPathText.c_str(), ORANGE);
-        lt.Write(prefPathText.c_str(), SKYBLUE);
-        lt.size = 20;
-        lt.Write("LIGHTS:", WHITE);
-        GuiCheckBox((Rectangle){ (float)lt.x, (float)lt.y        , 20.f, 20.f }, "Red", &lights[1].enabled);
-        GuiCheckBox((Rectangle){ (float)lt.x, (float)lt.y + 30.f , 20.f, 20.f }, "Green", &lights[2].enabled);
-        GuiCheckBox((Rectangle){ (float)lt.x, (float)lt.y + 60.f , 20.f, 20.f }, "Blue", &lights[3].enabled);
-        GuiCheckBox((Rectangle){ (float)lt.x, (float)lt.y + 90.f , 20.f, 20.f }, "Yellow", &lights[0].enabled);
+        lg.y = 50;
+        lg.size = 40;
+        lg.Write("RayLib Test .....", GOLD);
+        lg.size = 20;
+        lg.Write(TextFormat("FPS: %d", GetFPS()), RED);
+        lg.size = 10;
+        lg.Write(confPathText.c_str(), ORANGE);
+        lg.Write(prefPathText.c_str(), SKYBLUE);
+        lg.size = 20;
+        lg.Write("LIGHTS:", WHITE);
+        lg.CheckBox( "Red", &lights[1].enabled);
+        lg.CheckBox( "Green", &lights[2].enabled);
+        lg.CheckBox( "Blue", &lights[3].enabled);
+        lg.CheckBox( "Yellow", &lights[0].enabled);
+
+        static int testDummy = 0;
+        if (lg.ComboBox( 100.f, "FullScreen;Windowed", &testDummy ) == 1) {
+            TraceLog(LOG_INFO, "New TestDummy value: %d", testDummy);
+        }
+
     };
     //--------
     app.OnShutDown = [&]() {
