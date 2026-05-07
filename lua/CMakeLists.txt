@@ -125,10 +125,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     lua
 )
 
-# IMPORTANT FIX SO SOL2 FIND THE CORREXT lua.h !
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /FI"lua.h")
-else()
-    target_compile_options(${PROJECT_NAME} PRIVATE -include "lua.h")
-endif()
+# # IMPORTANT FIX SO SOL2 FIND THE CORREXT lua.h !
+# if(MSVC)
+#     target_compile_options(${PROJECT_NAME} PRIVATE /FI"lua.h")
+# else()
+#     target_compile_options(${PROJECT_NAME} PRIVATE -include "lua.h")
+# endif()
 
