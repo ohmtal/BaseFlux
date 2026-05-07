@@ -27,7 +27,7 @@ ImConsole console;
 
 std::vector<fs::path> luaFiles;
 
-
+#define Log(...) SDL_Log(__VA_ARGS__)
 
 //-----------------------------------------------------------------------------
 // console redirect ....
@@ -81,6 +81,10 @@ void initConsole() {
             return;
         }
 
+        if (cmd == "version") {
+            SDL_Log("Lua Version: %s" , LUA_RELEASE );
+            return;
+        }
 
         // Lua commands:
         try {
@@ -115,6 +119,7 @@ void initConsole() {
 //-----------------------------------------------------------------------------
 
 void initLua() {
+    SDL_Log("Init Lua Version: %s" , LUA_RELEASE );
     if (LuaState.init(&app)) {
         LuaState.LoadScript();
     }
