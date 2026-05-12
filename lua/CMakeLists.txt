@@ -69,23 +69,33 @@ set(LUA_SOURCES
 )
 
 # COMPILE AS CXX to prevent linker errors !!!
-set_source_files_properties(${LUA_SOURCES} PROPERTIES LANGUAGE CXX)
+# NOTE: lua.hpp did fix it!
+# set_source_files_properties(${LUA_SOURCES} PROPERTIES LANGUAGE CXX)
 add_library(lua STATIC ${LUA_SOURCES})
-set_target_properties(lua PROPERTIES LINKER_LANGUAGE CXX)
+# set_target_properties(lua PROPERTIES LINKER_LANGUAGE CXX)
 
 # --- generate lua.hpp -----
 set(LUA_HPP_PATH "${lua_SOURCE_DIR}/lua.hpp")
 
-if(NOT EXISTS "${LUA_HPP_PATH}")
+# if(NOT EXISTS "${LUA_HPP_PATH}")
+    # file(WRITE "${LUA_HPP_PATH}"
+    #     "// XXTH lua.hpp \n"
+    #     "#pragma once \n"
+    #     "#include \"lua.h\"\n"
+    #     "#include \"lualib.h\"\n"
+    #     "#include \"lauxlib.h\"\n"
+    # )
+
     file(WRITE "${LUA_HPP_PATH}"
-        "// XXTH lua.hpp \n"
-        "#pragma once \n"
-        "#include \"lua.h\"\n"
-        "#include \"lualib.h\"\n"
-        "#include \"lauxlib.h\"\n"
+      "extern \"C\" { \n"
+          "#include \"lua.h\"\n"
+          "#include \"lualib.h\"\n"
+          "#include \"lauxlib.h\"\n"
+          "}\n"
     )
+
     message(STATUS "generated: ${LUA_HPP_PATH}")
-endif()
+# endif()
 
 
 # ------- lua compile parameter:
