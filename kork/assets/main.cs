@@ -22,4 +22,5 @@ function totP() {
     %skey =  "G26FPPD2YZZ2WHDG";
     echo ("CODE" SPC getTotpCode(%skey) SPC "VALIDATE:" SPC getTotpValidate(%skey,getTotpCode(%skey)));
 }
+totP();
 //------------------------------
