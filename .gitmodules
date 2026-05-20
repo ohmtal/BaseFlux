@@ -1,0 +1,3 @@
+[submodule "kork/lib/korkscript"]
+	path = kork/lib/korkscript
+	url = git@github.com:ohmtal/korkscript.git
