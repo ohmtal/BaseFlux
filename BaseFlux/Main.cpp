@@ -1,6 +1,13 @@
 
 #include "Main.h"
 namespace BaseFlux {
+    double gFrameTime = 0.f; // Global for timming
+    double gGameTime  = 0.f;
+    Uint32 gFPS = 60;
+
+    double getFrameTime() { return gFrameTime;}
+    double getGameTime() { return gGameTime;}
+    Uint32 getFPS() { return gFPS;}
 
     //--------------------------------------------------------------------------
     void Main::setFullPath(std::string& path){
@@ -127,6 +134,8 @@ namespace BaseFlux {
         mShutDownComplete = true;
     }
     //--------------------------------------------------------------------------
+
+    //--------------------------------------------------------------------------
     bool Main::Execute() {
         if (!mWindow || !mRenderer) {
             SDL_Log("[error] Init ImGui failed: InitSDL first!");
@@ -136,16 +145,22 @@ namespace BaseFlux {
         bool usingImGui = mImGuiIO != nullptr;
 
 
-        //FIXME change to performanceCounter
-        Uint32 frameStart, frameTime;
-        uint16_t frameLimit = 0;
+        //changed to performanceCounter
+        // Uint32 frameStart, frameTime;
+        // uint16_t frameLimit = 0;
 
-        if (getSettings().FpsLimit > 0) frameLimit = static_cast<uint16_t>(1000 / getSettings().FpsLimit);
+        //FIXME if (getSettings().FpsLimit > 0) frameLimit = static_cast<uint16_t>(1000 / getSettings().FpsLimit);
+
+        mPerformanceFrequency = SDL_GetPerformanceFrequency();
+        // INITIALIZE time once here before the loop starts
+        mLastTick = SDL_GetPerformanceCounter();
 
         mRunning = true;
 
         while (mRunning) {
-            frameStart = SDL_GetTicks();
+            mTickCount = SDL_GetPerformanceCounter();
+            gFrameTime = (double)(mTickCount - mLastTick) / (double)mPerformanceFrequency;
+
 
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
@@ -197,17 +212,43 @@ namespace BaseFlux {
 
             SDL_RenderPresent(mRenderer);
 
-            frameTime = SDL_GetTicks() - frameStart;
+
+
+            // FIXME
             // FPS Limiter
-            if ( getSettings().FpsLimit > 0  && frameLimit > 0) {
-                if (frameTime < frameLimit) {
-                    SDL_Delay(frameLimit - frameTime);
-                }
-                frameTime = SDL_GetTicks() - frameStart;
+            // if ( getSettings().FpsLimit > 0  && frameLimit > 0) {
+            //     if (frameTime < frameLimit) {
+            //         SDL_Delay(frameLimit - frameTime);
+            //     }
+            //     frameTime = SDL_GetTicks() - frameStart;
+            // }
+
+            // changed to tick style  all 16ms
+            static double accumulator = 0.f;
+            accumulator += gFrameTime;
+            if (accumulator >= 0.016) {
+
+                if (OnUpdate) OnUpdate(accumulator);
+                accumulator = 0.f;
             }
 
 
-            if (OnUpdate) OnUpdate(frameTime / 1000.f);
+            // fps update every 1 second:
+            static double lFpsTimer = 0;
+            static Uint32 lFrameCounter = 0;
+
+            lFpsTimer += gFrameTime;
+            lFrameCounter++;
+
+            if (lFpsTimer >= 1.0f) { // Every 1 second
+                gFPS = lFrameCounter;
+                lFrameCounter = 0;
+                lFpsTimer -= 1.0f;
+            }
+
+            gGameTime += gFrameTime;
+            //NOTE keep this at last point
+            mLastTick = mTickCount;
         }
         shutDown();
         return true;

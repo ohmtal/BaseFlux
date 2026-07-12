@@ -9,6 +9,7 @@
 #include <vector>
 #include <deque>
 #include <functional>
+#include <BaseFlux/Main.h>
 
 namespace BaseFluxDemo {
 
@@ -99,8 +100,8 @@ public:
 
 
             for (int i = 0; i < 2; i++) {
-                pts[i]->pos.x += pts[i]->vel.x;
-                pts[i]->pos.y += pts[i]->vel.y;
+                pts[i]->pos.x += pts[i]->vel.x * BaseFlux::getFrameTime() * 100.f ;
+                pts[i]->pos.y += pts[i]->vel.y * BaseFlux::getFrameTime() * 100.f;
 
                 if (pts[i]->pos.x < 0 || pts[i]->pos.x > winSize.x) {
                     pts[i]->vel.x *= -1.0f;

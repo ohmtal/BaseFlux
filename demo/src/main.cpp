@@ -20,16 +20,30 @@
 
 
 namespace BaseFluxDemo {
+
+
+
     class Demo {
     private:
         BaseFlux::Main mBaseFlux;
 
+        float mTickAvg = 0.f;
+        bool mVsync = true;
 
         BaseFluxDemo::Myst mMyst;
 
         void OnRender(SDL_Renderer* renderer) {
             mBaseFlux.getTextureManager().render("back.bmp", NULL,NULL);
 
+            if (ImGui::Begin("Testing"))
+            {
+                ImGui::Text("FPS = %d", BaseFlux::getFPS());
+                ImGui::Text("FrameTime = %.4f", BaseFlux::getFrameTime());
+                ImGui::Text("GameTime = %.4f", BaseFlux::getGameTime());
+                ImGui::Text("mTickAvg = %0.4f sec", mTickAvg);
+                if (ImGui::Checkbox("VSync", &mVsync)) SDL_SetRenderVSync(renderer, mVsync);
+            }
+            ImGui::End();
 
             ImGui::SetNextWindowSize(ImVec2(600.f,400.f), ImGuiCond_FirstUseEver);
             ImGui::SetNextWindowSizeConstraints(ImVec2(300.f, 300.f), ImVec2(FLT_MAX, FLT_MAX));
@@ -78,6 +92,7 @@ namespace BaseFluxDemo {
 
         }
 
+
         void OnShutDown() {
 
         }
@@ -106,6 +121,16 @@ namespace BaseFluxDemo {
             mBaseFlux.OnRender = [this](SDL_Renderer* renderer) { OnRender(renderer);};
             mBaseFlux.OnEvent  = [this](const SDL_Event event) { OnEvent(event);};
             mBaseFlux.OnShutDown = [this]() { OnShutDown();};
+            mBaseFlux.OnUpdate = [this](float dt) {
+                static uint32_t ticker = 0;
+                static float sum = 0.f;
+                ticker++;
+                sum += dt;
+                if (ticker % 10 == 0) {
+                    mTickAvg = sum / 10;
+                    sum = 0.f;
+                }
+            };
 
             mMyst.onCollide = [this]() { mBaseFlux.getAudioManager().play("beep.wav", 0.04f,false); };
 

@@ -21,6 +21,9 @@
 #include <functional>
 
 namespace BaseFlux {
+    double getFrameTime();// { return gFrameTime;}
+    double getGameTime(); //) { return gGameTime;}
+    Uint32 getFPS(); // { return gFPS;}
 
     class Main {
     protected:
@@ -37,6 +40,10 @@ namespace BaseFlux {
 
         std::unique_ptr<BaseFlux::TextureManager> mTextureManager;
         std::unique_ptr<AudioManager> mAudioManager;
+
+        Uint64 mLastTick;
+        Uint64 mTickCount;
+        Uint64 mPerformanceFrequency;
 
 
     public:
