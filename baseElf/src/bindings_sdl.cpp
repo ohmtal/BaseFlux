@@ -2,11 +2,14 @@
 #include "console/engineAPI.h"
 #include "console/consoleExtras.h"
 #include "ConsoleTypes.h"
+#include <core/volume.h>
 
 #include <string>
 #include <format>
 
 #include "BaseFlux/Main.h"
+#include "BaseFlux/Draw.h"
+#include <console/script.h>
 extern BaseFlux::Main app;
 
 
@@ -96,29 +99,139 @@ DefineEngineFunction(HasRectIntersection, bool , (RectI rectA, RectI rectB),
     return (bool)SDL_HasRectIntersection(&rectA, &rectB);
 }
 
+DefineEngineFunction(DrawFPS, void, (F32 x, F32 y)
+,, "Draw FPS as position")
+{
+    Color color = GREEN;
+    U32 fps =  BaseFlux::getFPS();
+    String text = String::ToString("%d fps",fps);
+
+    if (fps < 35) color = MAROON;
+    else if (fps < 15) color = RED;
+
+    BaseFlux::DrawDebugText(app.getRenderer(),x,y,text.c_str(), 1.0f, color, true/*, shadowColor*/);
+}
+
 DefineEngineFunction(DrawText, void, (F32 x, F32 y, String text,
                     F32 scale, Color color,
                     bool doShadow, Color shadowColor)
                 ,(1.0, BLACK, false, DARKGRAY),"Draw a Text with optional shadow")
 {
-    SDL_Color oldColor;
-    F32 oldScaleX, oldScaleY;
-    SDL_GetRenderDrawColor(app.getRenderer(),&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
-    SDL_GetRenderScale(app.getRenderer(), &oldScaleX, &oldScaleY);
-    SDL_SetRenderScale(app.getRenderer(), scale, scale);
-
-    if (doShadow) {
-        SDL_SetRenderDrawColor(app.getRenderer(), shadowColor.r,shadowColor.g,shadowColor.b,shadowColor.a);
-        SDL_RenderDebugText(app.getRenderer(), (x + 1)/ scale, (y + 1) / scale, text.c_str());
-    }
-    SDL_SetRenderDrawColor(app.getRenderer(), color.r,color.g,color.b,color.a);
-    SDL_RenderDebugText(app.getRenderer(), x / scale, y / scale, text.c_str());
-
-    // restore old scale color
-    SDL_SetRenderScale(app.getRenderer(), oldScaleX, oldScaleY);
-    SDL_SetRenderDrawColor(app.getRenderer( ), oldColor.r, oldColor.g, oldColor.b, oldColor.a);
-
+    BaseFlux::DrawDebugText(app.getRenderer(),x,y,text.c_str(), scale, color, doShadow, shadowColor);
 }
+
 // -----------------------------------------------------------------------------
 ConsoleFunctionGroupEnd(SDL);
+
 // -----------------------------------------------------------------------------
+// this is ported from OmFlux/KorkTest to OmFlux/ElfTest to baseElf
+// since it was inital written for KorkTest it use old style ConsoleFunction
+// -----------------------------------------------------------------------------
+ConsoleFunctionGroupBegin(BaseFlux, "BaseFlux Functions: getFPS, ...");
+
+ConsoleFunction(getFullScreen, bool, 1,1, "") {
+    Uint32 flags = SDL_GetWindowFlags(app.getWindow());
+    return (flags & SDL_WINDOW_FULLSCREEN);
+}
+DefineEngineFunction(setFullScreen, bool,(bool value),, "bool value") {
+    return SDL_SetWindowFullscreen(app.getWindow(),value);
+}
+
+ConsoleFunction(getFrameTime, F32, 1,1, "") {
+    return (F32) BaseFlux::getFrameTime();
+}
+
+ConsoleFunction(getRealTime, S32, 1,1, "") {
+    return Sim::getCurrentTime();
+}
+
+ConsoleFunction(getFPS, S32, 1,1, "") {
+    return (S32)BaseFlux::getFPS();
+}
+
+
+DefineEngineFunction(setWindowSize, bool, (S32 x, S32 y), , "") {
+   return  SDL_SetWindowSize(app.getWindow(), x, y);
+}
+DefineEngineFunction(getWindowSize, Point2I, (), , "") {
+    int x, y;
+    SDL_GetWindowSize(app.getWindow(), &x, &y);
+    return {x,y};
+}
+
+DefineEngineFunction(setVSync, void, (bool value), , "bool value") {
+    SDL_SetRenderVSync(app.getRenderer(), (int)value);
+}
+
+DefineEngineFunction(getFullPath, String,(),, "get the current directory") {
+    return Torque::FS::GetCwd().getFullPath();
+}
+
+// ----------------- include = exec with nocalls ----------------------
+
+DefineEngineFunction(include,bool, (String fileName),, "include(fileName)" "exec a file without calls" ){
+    return Con::executeFile(fileName, true);
+}
+// ----------------- debuglog ----------------------
+//-----------------------------------------------------------------------------
+
+DefineEngineStringlyVariadicFunction( dEcho, void, 2, 0, "debug echo ( string message... ) ")
+{
+    #ifdef FLUX_DEBUG
+    U32 len = 0;
+    S32 i;
+    for(i = 1; i < argc; i++)
+        len += dStrlen(argv[i]);
+
+    char *ret = Con::getReturnBuffer(len + 1);
+    ret[0] = 0;
+    for(i = 1; i < argc; i++)
+        dStrcat(ret, argv[i], (U64)(len + 1));
+
+    Con::printf("%s", ret);
+    ret[0] = 0;
+    #endif
+}
+
+//-----------------------------------------------------------------------------
+
+DefineEngineStringlyVariadicFunction( dWarn, void, 2, 0, "debug warn( string message... ) " )
+{
+    #ifdef FLUX_DEBUG
+    U32 len = 0;
+    S32 i;
+    for(i = 1; i < argc; i++)
+        len += dStrlen(argv[i]);
+
+    char *ret = Con::getReturnBuffer(len + 1);
+    ret[0] = 0;
+    for(i = 1; i < argc; i++)
+        dStrcat(ret, argv[i], (U64)(len + 1));
+
+    Con::warnf(ConsoleLogEntry::General, "%s", ret);
+    ret[0] = 0;
+    #endif
+}
+
+//-----------------------------------------------------------------------------
+
+DefineEngineStringlyVariadicFunction( dError, void, 2, 0, "(debug error  string message... ) ")
+{
+    #ifdef FLUX_DEBUG
+    U32 len = 0;
+    S32 i;
+    for(i = 1; i < argc; i++)
+        len += dStrlen(argv[i]);
+
+    char *ret = Con::getReturnBuffer(len + 1);
+    ret[0] = 0;
+    for(i = 1; i < argc; i++)
+        dStrcat(ret, argv[i], (U64)(len + 1));
+
+    Con::errorf(ConsoleLogEntry::General, "%s", ret);
+    ret[0] = 0;
+    #endif
+}
+//-----------------------------------------------------------------------------
+ConsoleFunctionGroupEnd(BaseFlux);
+//-----------------------------------------------------------------------------

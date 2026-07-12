@@ -13,6 +13,30 @@
 
 namespace BaseFlux {
 
+    void DrawDebugText( SDL_Renderer *renderer,
+                        float x, float y, const char* text,
+                       float scale /*= 1.f*/, SDL_Color color /*= {100,100,100,255}*/,
+                        bool doShadow /*= false*/, SDL_Color shadowColor /*= { 60,60,60,255}*/)
+    {
+        SDL_Color oldColor;
+        float oldScaleX, oldScaleY;
+        SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
+        SDL_GetRenderScale(renderer, &oldScaleX, &oldScaleY);
+        SDL_SetRenderScale(renderer, scale, scale);
+
+        if (doShadow) {
+            SDL_SetRenderDrawColor(renderer, shadowColor.r,shadowColor.g,shadowColor.b,shadowColor.a);
+            SDL_RenderDebugText(renderer, (x + 1)/ scale, (y + 1) / scale, text);
+        }
+        SDL_SetRenderDrawColor(renderer, color.r,color.g,color.b,color.a);
+        SDL_RenderDebugText(renderer, x / scale, y / scale, text);
+
+        // restore old scale color
+        SDL_SetRenderScale(renderer, oldScaleX, oldScaleY);
+        SDL_SetRenderDrawColor(renderer, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+
+    }
+
     void DrawCircle(SDL_Renderer *renderer, float radius, SDL_FPoint pos, SDL_Color color, bool fill) {
         if (!renderer || radius <= 0) return;
 

@@ -18,7 +18,10 @@
 #endif
 
 namespace BaseFlux {
-
+    void DrawDebugText( SDL_Renderer *renderer,
+                        float x, float y, const char* text,
+                        float scale = 1.f, SDL_Color color = {100,100,100,255},
+                        bool doShadow = false, SDL_Color shadowColor = { 60,60,60,255});
     void DrawCircle(SDL_Renderer *renderer, float radius, SDL_FPoint pos, SDL_Color color, bool fill);
     void DrawArc(SDL_Renderer *renderer, float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill);
     void DrawDonut(SDL_Renderer *renderer, float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill);
