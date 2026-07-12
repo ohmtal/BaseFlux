@@ -377,7 +377,7 @@ bool LuaState::LoadScript() {
     }
 }
 // -----------------------------------------------------------------------------
-void LuaState::OnEvent(const SDL_Event event){
+void LuaState::OnEvent(const SDL_Event& event){
     if (!mInitialied) return;
     if (mLua_OnSDLEvent.valid()) {
         auto result = mLua_OnSDLEvent.call(event/*, traceback_handler*/);

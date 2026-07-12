@@ -36,7 +36,7 @@ namespace BaseFlux::Lua {
         sol::state* getLua() { return &mLua; }
         bool init(BaseFlux::Main* lApp);
         bool LoadScript();
-        void OnEvent(const SDL_Event event);
+        void OnEvent(const SDL_Event& event);
         void OnUpdate(const float deltaTime);
         void OnRender(SDL_Renderer* renderer);
 

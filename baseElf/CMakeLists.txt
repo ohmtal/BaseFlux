@@ -1,19 +1,19 @@
 cmake_minimum_required(VERSION 3.24)
 # -----------------------------------------------------------------------------
-# Project settings:
-
-project(BaseFluxDemo2)
+# Project settings - this is all you have to modify:
+project(baseElf)
 set(PROJECT_SRC
     src/main.cpp
+    src/bindings.cpp
+    src/myPlatformProcess.cc
 )
-
-
 # -----------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 # ------------- BaseFlux
+#  --- BaseFlux from Directory OR GITHUB ---
 set(BASEFLUX_DIR "../" CACHE PATH "Path to BaseFlux")
 if(NOT EXISTS "${BASEFLUX_DIR}/CMakeLists.txt")
   #  message(FATAL_ERROR "The directory OHMFLUX_DIR='${OHMFLUX_DIR}' does not contain a CMakeLists.txt file!")
@@ -29,24 +29,47 @@ else()
   add_subdirectory("${BASEFLUX_DIR}" "${CMAKE_BINARY_DIR}/baseFlux_build")
 endif()
 
+# =============== ElfScript >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+set(ELFSCRIPT_PATH "/opt/ElfScript" CACHE PATH "Path to ElfScript")
+set(ELF_MODULE ${ELFSCRIPT_PATH}/ElfScript)
+set(ELF_CMAKE ${ELF_MODULE}/ElfScript.cmake)
+
+
+if(NOT EXISTS ${ELF_CMAKE})
+    message(FATAL_ERROR
+        "\n ElfScript path is not set! "
+        "\n Please provide the path using: "
+        "\n cmake -B build -DELFSCRIPT_PATH=/path/to/ElfScript"
+    )
+else()
+ include(${ELF_CMAKE})
+
+  set (ELFSCRIPT_INCLUDES
+   ${ELF_MODULE}
+  )
+endif()
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<< ElfScript ========================
+
 
 # ------------- Main
 add_executable(${PROJECT_NAME}
     ${PROJECT_SRC}
+    ${ELFSCRIPT_SRC}
 )
-
-
-target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
-
-# include_directory to BaseFlux:
-# target_include_directories(${PROJECT_NAME} PRIVATE
-#     ../
-# )
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+  IMGUI_DEFINE_MATH_OPERATORS
+)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
+target_include_directories(${PROJECT_NAME} PRIVATE
+  "${ELFSCRIPT_INCLUDES}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
     BaseFlux
 )
+

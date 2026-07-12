@@ -218,7 +218,7 @@ bool initApp() {
         }
     };
 
-    app.OnEvent = [&](const SDL_Event event) {
+    app.OnEvent = [&](const SDL_Event& event) {
 
         if (app.getImGuiIO() && app.getImGuiIO()->WantTextInput) {
             if (event.type == SDL_EVENT_KEY_DOWN ||

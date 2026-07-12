@@ -69,7 +69,7 @@ namespace BaseFluxDemo {
 
         }
 
-        void OnEvent(const SDL_Event event) {
+        void OnEvent(const SDL_Event& event) {
 
 
             if ( event.type == SDL_EVENT_KEY_UP ) {
