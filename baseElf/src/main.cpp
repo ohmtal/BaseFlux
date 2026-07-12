@@ -129,7 +129,7 @@ int main(int argc, char* argv[]) {
 
                 // onInputEvent_callback(
                  Con::executef("onInputEvent"
-                    "keyboard"
+                    , "keyboard"
                     , keyName
                     , gMousePos.x
                     , gMousePos.y
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
                 dSprintf( buttonNameBuf, sizeof(buttonNameBuf), "button%d", event.button.button );
                 // onInputEvent_callback(
                 Con::executef("onInputEvent"
-                    "mouse0"
+                    , "mouse"
                     , buttonNameBuf
                     , gMousePos.x
                     , gMousePos.y
