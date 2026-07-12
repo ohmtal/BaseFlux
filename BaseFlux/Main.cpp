@@ -193,7 +193,12 @@ namespace BaseFlux {
 
             }
 
-            SDL_SetRenderDrawColor(mRenderer, 45, 45, 45, 255);
+            SDL_SetRenderDrawColor(mRenderer
+                , mSettings.clearColor.r
+                , mSettings.clearColor.g
+                , mSettings.clearColor.b
+                , mSettings.clearColor.a
+            );
             SDL_RenderClear(mRenderer);
 
             if (OnRender) OnRender(mRenderer);

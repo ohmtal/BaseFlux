@@ -1,1 +1,41 @@
 echo("Hello World!");
+
+function onInit() {
+
+ClearBackground( SEABLUE ); //should be only called when changed! it's a setting
+}
+
+function onRender() {
+    %y = 10;
+    %x = 10;
+    DrawText(%x,%y,"Hello Base11 SDL todos:", 2, WHITE, true, SLATEGRAY);
+    %y+= 30;DrawText(%x,%y,"[X] ConsoleTypes and Colors", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] ClearBackground", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] DrawText", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] setColor", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] setScale", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] drawPoint", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] drawLine", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] drawRect", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] drawCircle", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] drawArc", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] drawDonut", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] getWindowSize", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] playSound", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] stopSound", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] getTexture", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] renderTexture", 1.5, WHITE, true, SLATEGRAY);
+
+    if (ImBegin("Window from ElfScript")) {
+        ImTextColored(WHITE, "ImGui Todos");
+        ImTextColored(GREEN, "[X] ImBegin/ImEnd");
+        ImTextColored(GREEN, "[X] SetNextWindowSize");
+        ImTextColored(GREEN, "[X] ImText(Colored)");
+        ImTextColored(GRAY, "... to many to list - only implement the basics ;)");
+    }
+    ImEnd();
+}
+
+function rl() {
+    exec("main.elf");
+}

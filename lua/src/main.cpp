@@ -22,7 +22,7 @@ namespace fs = std::filesystem;
 
 BaseFlux::Main app;
 BaseFlux::Lua::LuaState LuaState;
-ImConsole console;
+ImConsole gConsole;
 
 
 std::vector<fs::path> luaFiles;
@@ -35,7 +35,7 @@ void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority pr
 {
     char lBuffer[1024];
     snprintf(lBuffer, sizeof(lBuffer), "%s", message);
-    console.AddLog("%s", message);
+    gConsole.AddLog("%s", message);
 }
 //-----------------------------------------------------------------------------
 // Test  function ....
@@ -60,7 +60,7 @@ struct foo {
 void initConsole() {
     SDL_SetLogOutputFunction(ConsoleLogFunction, nullptr);
 
-    console.OnCommand = [&](ImConsole* console, const char* command_line) {
+    gConsole.OnCommand = [&](ImConsole* console, const char* command_line) {
         std::string cmdLineStr = command_line;
         std::string cmd = FluxStr::getWord(cmdLineStr, 0);
 
@@ -185,7 +185,7 @@ void onDraw(SDL_Renderer* renderer) {
     }
 
 
-    console.Draw("Lua Console",&showConsole);
+    gConsole.Draw("Lua Console",&showConsole);
 }
 //-----------------------------------------------------------------------------
 void shutDown() {

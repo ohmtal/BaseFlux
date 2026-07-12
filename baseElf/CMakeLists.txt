@@ -4,8 +4,10 @@ cmake_minimum_required(VERSION 3.24)
 project(baseElf)
 set(PROJECT_SRC
     src/main.cpp
-    src/bindings.cpp
+    src/bindings_sdl.cpp
+    src/bindings_imgui.cpp
     src/myPlatformProcess.cc
+    src/ConsoleTypes.cpp
 )
 # -----------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 20)

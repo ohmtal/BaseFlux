@@ -43,6 +43,9 @@ namespace BaseFlux {
         // overwrite SDL FLAGS:
         SDL_WindowFlags sdlWindowFlagsOverwrite = 0;
 
+        // the color when nothing is on screen
+        SDL_Color clearColor = {45, 45, 45, 255};
+
         std::string getPrefsPath();
         std::string getSafeCompany();
         std::string getSafeCaption();
