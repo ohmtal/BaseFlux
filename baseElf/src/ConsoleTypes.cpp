@@ -1,3 +1,9 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2026 Thomas Hühn (XXTH)
+// SPDX-License-Identifier: MIT
+//-----------------------------------------------------------------------------
+// Console Types source
+//-----------------------------------------------------------------------------
 #include <console/console.h>
 #include "ConsoleTypes.h"
 #include <core/strings/stringUnit.h>

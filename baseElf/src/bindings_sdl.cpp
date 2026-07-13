@@ -1,7 +1,12 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2026 Thomas Hühn (XXTH)
+// SPDX-License-Identifier: MIT
+//-----------------------------------------------------------------------------
+// ElfScript BaseFlux/SDL3 binding
+//-----------------------------------------------------------------------------
 #include <SDL3/SDL.h>
 #include "console/engineAPI.h"
 #include "console/consoleExtras.h"
-#include "ConsoleTypes.h"
 #include <core/volume.h>
 
 #include <string>
@@ -10,9 +15,11 @@
 #include "BaseFlux/Main.h"
 #include "BaseFlux/Draw.h"
 #include <console/script.h>
+
+#include "ConsoleTypes.h"
+#include "ColorConstants.h"
+
 extern BaseFlux::Main app;
-
-
 
 
 /* constant example:

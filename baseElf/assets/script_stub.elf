@@ -1530,6 +1530,7 @@ namespace Global {
    Script onFruitContextClick( string index, string itemName )...) {}
    Script onUpdate( string dt )...) {}
    Script onInit()...) {}
+   Script RenderPong()...) {}
    /*! @name SDL
    
    SDL/BaseFlux functions

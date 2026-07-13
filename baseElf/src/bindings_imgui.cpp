@@ -1,4 +1,15 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2026 Thomas Hühn (XXTH)
+// SPDX-License-Identifier: MIT
+//-----------------------------------------------------------------------------
+// ElfScript ImGui binding
+//-----------------------------------------------------------------------------
 //FIXME THIS MUST BE PORTED TO OhmFlux :D
+// or better add this project to ElfScript that is what BaseFlux was
+// made for: ProtoTyping so it should be there
+// OhmFlux can simple add this file and is ready to go
+
+//NOTE  dont forget to call InitBindings_ImGui when porting;)
 
 #include "console/engineAPI.h"
 #include "console/consoleExtras.h"
@@ -8,9 +19,6 @@
 
 #include <string>
 #include <format>
-
-#include "BaseFlux/Main.h"
-extern BaseFlux::Main app;
 
 #include <imgui.h>
 #include <imgui_internal.h>
