@@ -28,6 +28,8 @@ function onInit() {
 
     new TextureObject(IconTexture) { fileName = "texture/icon_32.png"; };
     new SoundObject(Sound1) { fileName = "sound/sound1.wav"; };
+
+    new SimSet(LogoList);
 }
 /*
  * onShutDown
@@ -36,6 +38,8 @@ function onShutDown() {
     //time to cleanup
     ImStorage.delete();
     IconTexture.delete();
+    LogoList.deleteObjects();
+    LogoList.delete();
 }
 
 /*
@@ -98,11 +102,13 @@ function onRender() {
         DrawDonut(220, %y+5, 3, 6,BLUE,true);
     %y+= 20;DrawText(%x,%y,"[X] GetWindowSize" SPC GetWindowSize(), 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] TextureObject", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] Texture object needs color and getSize()", 1.5, WHITE, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] SoundObject", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] BaseFlux Settings window size/vsync/appname/icon/...", 1.5, WHITE, true, SLATEGRAY);
     // %y+= 20;DrawText(%x,%y,"[ ] load assets/main.elf from current folder.", 1.5, WHITE, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] add source editor with example", 1.5, WHITE, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] create web build", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] after some right clicks: Sim::getUniqueName( IconTexture ) - failed after 100 attempts", 1.5, RED, true, SLATEGRAY);
 
 
     // WARNING we have 2 different color systems !!! cl_White is Color4F and WHITE is Color(U8)
@@ -217,6 +223,12 @@ function onRender() {
     }
     ImEnd();
 
+    // LogoList
+    %cnt = LogoList.getCount();
+    for (%i = 0; %i < %cnt; %i++) {
+        %obj = LogoList.getObject(%i);
+        IconTexture.Draw(%obj.x, %obj.y);
+    }
 
 }
 
@@ -230,6 +242,18 @@ function onInputEvent( %deviceString, %actionString, %mouseX, %mouseY, %keyValue
         if (!%keyValue) {//keyup
             if (%actionString $= "escape") {
                 quit();
+            }
+        }
+    }
+    else if (%deviceString $= "mouse" ) {
+        if (%keyValue == 1) {
+        echo("MOUSE! val:" SPC %keyValue SPC %actionString);
+            if (%actionString $= "button3") {
+                %logo = new SimObject();
+                %logo.x = %mouseX;
+                %logo.y = %mouseY;
+                LogoList.add(%logo);
+                echo("added logo:" SPC %logo);
             }
         }
     }
