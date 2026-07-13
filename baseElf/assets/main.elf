@@ -1,6 +1,6 @@
 // exec("pong.elf");
 
-// drawing test: >>>
+// Drawing test: >>>
 #define RadarGreen "0.0 1.0 0.0 1.0"
 #define RadarBg "0.1 0.1 0.1 0.8"
 #define TargetRed "1.0 0.0 0.0 1.0"
@@ -68,29 +68,41 @@ function onFruitContextClick(%index, %itemName) {
 
 
 /*
- * OnRender ... inside main draw loop
+ * OnRender ... inside main Draw loop
  */
 function onRender() {
     DrawFPS(0,0);
     %y = 20;
     %x = 10;
-    if (isObject(IconTexture)) IconTexture.draw(%x,%y - 8);
+    if (isObject(IconTexture)) IconTexture.Draw(%x,%y - 8);
     DrawText(%x + 40,%y,"Base11 SDL/BaseFlux todos:", 2, WHITE, true, SLATEGRAY);
     %y+= 30;DrawText(%x,%y,"[X] ConsoleTypes and Colors", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] ClearBackground", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] DrawText", 1.5, GREEN, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] setColor", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] setScale", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] drawPoint", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] drawLine", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] drawRect", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] drawCircle", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] drawArc", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] drawDonut", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[X] getWindowSize", 1.5, GREEN, true, SLATEGRAY);
+    //not needed  %y+= 20;DrawText(%x,%y,"[ ] setColor", 1.5, WHITE, true, SLATEGRAY);
+    //not needed  %y+= 20;DrawText(%x,%y,"[ ] setScale", 1.5, WHITE, true, SLATEGRAY);
+    //not needed  %y+= 20;DrawText(%x,%y,"[ ] DrawPoint", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] DrawLine", 1.5, GREEN, true, SLATEGRAY);
+        DrawLine(200, %y, 400, %y+10,RED);
+    %y+= 20;DrawText(%x,%y,"[X] DrawRect", 1.5, GREEN, true, SLATEGRAY);
+        DrawRect(195, %y,10,10,RED,false);
+        DrawRect(215, %y,10,10,BLUE,true);
+    %y+= 20;DrawText(%x,%y,"[X] DrawCircle", 1.5, GREEN, true, SLATEGRAY);
+        DrawCircle(200, %y+5, 5,RED,false);
+        DrawCircle(220, %y+5, 5,BLUE,true);
+    %y+= 20;DrawText(%x,%y,"[X] DrawArc", 1.5, GREEN, true, SLATEGRAY);
+        DrawArc(200, %y+5, 5, 0,mDegToRad(180),RED,false);
+        DrawArc(220, %y+5, 5, mDegToRad(180),mDegToRad(359),BLUE,TRUE);
+    %y+= 20;DrawText(%x,%y,"[X] DrawDonut", 1.5, GREEN, true, SLATEGRAY);
+        DrawDonut(200, %y+5, 3, 6,RED,false);
+        DrawDonut(220, %y+5, 3, 6,BLUE,true);
+    %y+= 20;DrawText(%x,%y,"[X] GetWindowSize" SPC GetWindowSize(), 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] TextureObject", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] SoundObject", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] BaseFlux Settings window size/vsync/appname/icon/...", 1.5, WHITE, true, SLATEGRAY);
+    // %y+= 20;DrawText(%x,%y,"[ ] load assets/main.elf from current folder.", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] add source editor with example", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] create web build", 1.5, WHITE, true, SLATEGRAY);
 
 
     // WARNING we have 2 different color systems !!! cl_White is Color4F and WHITE is Color(U8)

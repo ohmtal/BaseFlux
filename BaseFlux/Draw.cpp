@@ -13,6 +13,22 @@
 
 namespace BaseFlux {
 
+    void DrawLine(SDL_Renderer *renderer, SDL_FPoint p1,SDL_FPoint p2 , SDL_Color color) {
+        SDL_Color oldColor;
+        SDL_SetRenderDrawColor(renderer, color.r,color.g,color.b,color.a);
+        SDL_RenderLine(renderer, p1.x, p1.y, p2.x , p2.y);
+        SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
+    }
+
+    void DrawRect(SDL_Renderer *renderer, SDL_FRect rect , SDL_Color color, bool fill) {
+        SDL_Color oldColor;
+        SDL_SetRenderDrawColor(renderer, color.r,color.g,color.b,color.a);
+        if (fill) SDL_RenderFillRect(renderer, &rect);
+        else SDL_RenderRect(renderer, &rect);
+        SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
+    }
+
+
     void DrawDebugText( SDL_Renderer *renderer,
                         float x, float y, const char* text,
                        float scale /*= 1.f*/, SDL_Color color /*= {100,100,100,255}*/,
@@ -78,7 +94,7 @@ namespace BaseFlux {
 
         float delta = endRad - startRad;
         int segments = (int)(fabsf(delta) * radius * 0.5f);
-        if (segments < 4) segments = 4;     // Mindestmaß für Kurven
+        if (segments < 4) segments = 4;
         if (segments > 512) segments = 512;
 
         SDL_FColor colorF = { color.r/255.f, color.g/255.f, color.b/255.f, color.a/255.f };
@@ -153,5 +169,8 @@ namespace BaseFlux {
             DrawCircle(renderer, innerRadius, pos, color, false);
         }
     }
+
+
+
 
 }; //namespace

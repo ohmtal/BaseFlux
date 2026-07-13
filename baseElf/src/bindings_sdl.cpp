@@ -7,7 +7,8 @@
 #include <SDL3/SDL.h>
 #include "console/engineAPI.h"
 #include "console/consoleExtras.h"
-#include <core/volume.h>
+#include "core/volume.h"
+#include "math/mMathFn.h"
 
 #include <string>
 #include <format>
@@ -184,10 +185,18 @@ DefineEngineFunction(PointInRect, bool , (Point2I p, RectI rect),
                      ,"Check a point is in rect") {
     return (bool)SDL_PointInRect(&p, &rect);
 }
-
+DefineEngineFunction(PointInRectF, bool , (Point2F p, RectF rect),
+                     ,"Check a point is in rect") {
+    return (bool)SDL_PointInRectFloat(&p, &rect);
+}
 DefineEngineFunction(HasRectIntersection, bool , (RectI rectA, RectI rectB),
                      ,"Check rect intersection") {
     return (bool)SDL_HasRectIntersection(&rectA, &rectB);
+}
+
+DefineEngineFunction(HasRectIntersectionF, bool , (RectF rectA, RectF rectB),
+                     ,"Check rect intersection") {
+    return (bool)SDL_HasRectIntersectionFloat(&rectA, &rectB);
 }
 
 DefineEngineFunction(DrawFPS, void, (F32 x, F32 y)
@@ -209,6 +218,30 @@ DefineEngineFunction(DrawText, void, (F32 x, F32 y, String text,
                 ,(1.0, BLACK, false, DARKGRAY),"Draw a Text with optional shadow")
 {
     BaseFlux::DrawDebugText(app.getRenderer(),x,y,text.c_str(), scale, color, doShadow, shadowColor);
+}
+
+
+DefineEngineFunction(DrawLine, void, (F32 x1, F32 y1,F32 x2, F32 y2, Color color)
+        ,(WHITE),"Draw a Line") {
+    BaseFlux::DrawLine(app.getRenderer(), Point2F(x1,y1),Point2F(x2,y2), color);
+}
+
+DefineEngineFunction(DrawRect, void, (F32 x, F32 y,F32 w, F32 h, Color color, bool fill)
+        ,(WHITE, true),"Draw a Rect") {
+    BaseFlux::DrawRect(app.getRenderer(), RectF(x,y,w,h), color, fill);
+}
+
+DefineEngineFunction(DrawCircle, void, (F32 x, F32 y,F32 radius, Color color, bool fill)
+    ,(WHITE, true),"Draw a Circle") {
+    BaseFlux::DrawCircle(app.getRenderer(), radius, Point2F(x,y), color, fill);
+}
+DefineEngineFunction(DrawArc, void, (F32 x, F32 y,F32 radius,F32 startRad, F32 endRad, Color color, bool fill)
+,(WHITE, true),"Draw a Arc: startRad / endRad in radians ") {
+    BaseFlux::DrawArc(app.getRenderer(), radius,startRad, endRad, Point2F(x,y), color, fill);
+}
+DefineEngineFunction(DrawDonut, void, (F32 x, F32 y,F32 innerRadius,F32 outerRadius, Color color, bool fill)
+,(WHITE, true),"Draw a Arc") {
+    BaseFlux::DrawDonut(app.getRenderer(), innerRadius,outerRadius, Point2F(x,y), color, fill);
 }
 
 // -----------------------------------------------------------------------------
