@@ -67,7 +67,8 @@ namespace BaseFlux {
         WavData* get(std::string fileName, bool noAutoLoad = false);
         bool stop(std::string fileName);
         bool play(std::string fileName, float gain = 1.0f, bool loop = false);
-
+        bool stop(WavData* data);
+        bool play(WavData* data, float gain = 1.0f, bool loop = false);
 
 
     }; //class

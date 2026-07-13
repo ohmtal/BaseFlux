@@ -85,14 +85,98 @@ void InitBindings_SDL() {
     registerColors();
 }
 // -----------------------------------------------------------------------------
+// =============================================================================
+//  TextureObject
+// =============================================================================
+class TextureObject : public SimObject
+{
+    typedef SimObject Parent;
+    StringTableEntry mFileName=nullptr;
+    SDL_Texture* mTexture;
+public:
+    DECLARE_CONOBJECT(TextureObject);
+    TextureObject() {
+         mFileName = StringTable->EmptyString();
+    }
+    bool onAdd() override {
+        mTexture = app.getTexture(mFileName);
+        if (!mTexture) return false;
+        return Parent::onAdd();
+    }
+    // void onRemove() override;
+
+    SDL_Texture* get() { return mTexture; };
+    static void initPersistFields() {
+        addField("fileName", TypeString, Offset(mFileName,TextureObject));
+    }
+};
+IMPLEMENT_CONOBJECT(TextureObject);
+DefineEngineMethod(TextureObject, DrawSrcDstRect,bool, (RectF srcRect, RectF dstRect),
+                   ,"Draw a texture with source and destination rect" ) {
+    return app.getTextureManager().render(object->get(),&srcRect, &dstRect );
+}
+DefineEngineMethod(TextureObject, DrawRect,bool, (RectF dstRect),
+                   ,"Draw a texture with source and destination rect" ) {
+    return app.getTextureManager().render(object->get(),nullptr, &dstRect );
+}
+DefineEngineMethod(TextureObject, Draw,bool, (F32 x, F32 y),
+                   ,"Draw a texture with source and destination rect" ) {
+    SDL_Texture* tex = object->get();
+    if (!tex) return false;
+    RectF dstRect = {x,y, (F32)tex->w,(F32)tex->h};
+    return app.getTextureManager().render(object->get(),nullptr, &dstRect );
+}
+// =============================================================================
+//  SoundObject
+// =============================================================================
+class SoundObject : public SimObject
+{
+    typedef SimObject Parent;
+    StringTableEntry mFileName=nullptr;
+    bool mLoop = false;
+    F32 mGain = 1.f;
+    BaseFlux::WavData* mWaveData;
+public:
+    DECLARE_CONOBJECT(SoundObject);
+    SoundObject() {
+        mFileName = StringTable->EmptyString();
+    }
+    bool onAdd() override {
+        mWaveData = app.getSound(mFileName);
+        if (!mWaveData) return false;
+        return Parent::onAdd();
+    }
+    // void onRemove() override;
+
+    BaseFlux::WavData* get() { return mWaveData; };
+    static void initPersistFields() {
+        addField("fileName", TypeString, Offset(mFileName,SoundObject));
+        addField("gain", TypeF32, Offset(mGain,SoundObject));
+        addField("loop", TypeBool, Offset(mLoop,SoundObject));
+    }
+
+    bool play() {
+        return app.getAudioManager().play(mWaveData, mGain, mLoop);
+    }
+};
+IMPLEMENT_CONOBJECT(SoundObject);
+
+DefineEngineMethod(SoundObject, play,bool, (),
+                   ,"play the sound" ) {
+    return object->play();
+}
+
+// =============================================================================
 ConsoleFunctionGroupBegin( SDL, "SDL/BaseFlux functions");
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 DefineEngineFunction(ClearBackground, void , (Color color),
                      ,"Set the default background color - one call is enough") {
    app.getSettings().clearColor = color;
 
 }
+
+
 // -----------------------------------------------------------------------------
 // SDL
 // -----------------------------------------------------------------------------

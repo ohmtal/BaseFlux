@@ -90,15 +90,8 @@ namespace BaseFlux {
         }
     }
     //--------------------------------------------------------------------------
-    bool AudioManager::play(std::string fileName, float gain, bool loop) {
-        if (!isInitialized()) return false;
-        WavData* data = get(fileName);
-
-        if (!data || !data->stream)  {
-            SDL_Log("[error] Invalid filename: %s", fileName.c_str());
-            return false;
-        }
-
+    bool AudioManager::play(WavData* data, float gain , bool loop ) {
+        if (!isInitialized() || !data || !data->stream)  return false;
         SDL_ClearAudioStream(data->stream);
         SDL_SetAudioStreamGain(data->stream, gain);
 
@@ -110,20 +103,31 @@ namespace BaseFlux {
 
         SDL_PutAudioStreamData(data->stream, data->buffer, data->len);
         SDL_ResumeAudioStreamDevice(data->stream);
+        return true;
+    }
+    bool AudioManager::play(std::string fileName, float gain, bool loop) {
+        if (!isInitialized()) return false;
+        WavData* data = get(fileName);
 
+        if (!play(data,gain,loop))  {
+            SDL_Log("[error] Invalid filename: %s", fileName.c_str());
+            return false;
+        }
         return true;
     }
 
     //--------------------------------------------------------------------------
+    bool  AudioManager::stop(WavData* data) {
+        if (!isInitialized() || !data || !data->stream) return false;
+        SDL_SetAudioStreamGetCallback(data->stream, nullptr, nullptr);
+        SDL_ClearAudioStream(data->stream);
+        return true;
+    }
     bool AudioManager::stop(std::string fileName) {
         if (!isInitialized()) return false;
         WavData* data = get(fileName, false); // no autoload on stop!
-        if (!data || !data->stream) return false;
-
-        SDL_SetAudioStreamGetCallback(data->stream, nullptr, nullptr);
-        SDL_ClearAudioStream(data->stream);
-
-        return true;
+        // if (!data || !data->stream) return false;
+        return stop(data);
     }
     //--------------------------------------------------------------------------
     WavData* AudioManager::get(std::string fileName, bool noAutoLoad) {

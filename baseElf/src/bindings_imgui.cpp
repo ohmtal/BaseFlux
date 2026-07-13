@@ -296,7 +296,47 @@ DefineEngineFunction(ImSeparatorText, void, (const char* label),,"") { ImGui::Se
 DefineEngineFunction(ImButton, bool, (const char* label, Point2F size ),(Point2F(0.f,0.f)),"") {
     return ImGui::Button(label, ToImVec2(size));
 }
-// -----------------------------------------------------------------------------
+// =============================================================================
+//  ImGui Tab Bars
+// =============================================================================
+
+DefineEngineFunction(ImBeginTabBar, bool, (const char* str_id, S32 flags),(0) ,
+                     "Begins a ImGui TabBar\n")
+{
+    return ImGui::BeginTabBar(str_id, flags);
+}
+
+DefineEngineFunction(ImBeginTabItem, bool, (const char* label, String openVarName, S32 tabItemFlags),("", 0 )
+    ,"Begin a Tab Item ")
+{
+    //  IMGUI_API bool  BeginTabItem(const char* label, bool* p_open = NULL, ImGuiTabItemFlags flags = 0);
+    if (!openVarName.isEmpty()) {
+        bool value = Con::getBoolVariable(openVarName.c_str(), true);
+        if (ImGui::BeginTabItem(label, &value, tabItemFlags)) {
+            Con::setBoolVariable(openVarName, value);
+            return true;
+        }
+        return false;
+    }
+    return ImGui::BeginTabItem(label);
+}
+
+DefineEngineFunction(ImEndTabItem, void, (), , "Ends a ImGui TabBarItem")
+{
+    return ImGui::EndTabItem();
+}
+DefineEngineFunction(ImEndTabBar, void, (), ,"Ends a ImGui TabBar")
+{
+    return ImGui::EndTabBar();
+}
+
+DefineEngineFunction(ImTabItemButton, bool, (const char* label, S32 flags), ,"")
+{
+    return ImGui::TabItemButton(label, flags);
+}
+// =============================================================================
+//  ImGui Input
+// =============================================================================
 DefineEngineFunction(ImCheckbox, bool, (const char* text, const char* valueVarName),,
     "return true if changed add a varname as reference. Can be a global variable or a Object field.\n"
     "Example: Imcheckbox(\"test\", \"$myvar\"); "
@@ -351,6 +391,9 @@ DefineEngineFunction(ImInputText, bool, (const char* text, const char* valueVarN
 }
 
 // -----------------------------------------------------------------------------
+// =============================================================================
+//  ImGui Boxes
+// =============================================================================
 DefineEngineFunction(ImCombo, bool, (
     const char* label
     , const char* currentItemIndexVarName

@@ -73,6 +73,8 @@ namespace BaseFlux {
         // wraper for getAudioManager().play and getTextureManager.render:
         bool playSound(std::string fileName, float gain = 1.0f, bool loop = false);
         bool stopSound(std::string fileName  );
+        WavData* getSound(std::string fileName, bool noAutoLoad = false);
+
         bool renderTexture(std::string fileName , const SDL_FRect *srcrect, const SDL_FRect *dstrect);
         SDL_Texture* getTexture(std::string fileName, bool noAutoLoad = false);
         //----------------------------------------------------------------------

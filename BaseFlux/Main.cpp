@@ -277,6 +277,9 @@ namespace BaseFlux {
     bool Main::stopSound(std::string fileName  ) {
         return getAudioManager().stop(fileName);
     }
+    WavData* Main::getSound(std::string fileName, bool noAutoLoad) {
+        return getAudioManager().get(fileName, noAutoLoad);
+    }
     //--------------------------------------------------------------------------
     // Texture Wrapper
     bool Main::renderTexture(std::string fileName, const SDL_FRect* srcrect, const SDL_FRect* dstrect) {

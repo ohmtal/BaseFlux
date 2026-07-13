@@ -1,4 +1,13 @@
-exec("pong.elf");
+// exec("pong.elf");
+
+// drawing test: >>>
+#define RadarGreen "0.0 1.0 0.0 1.0"
+#define RadarBg "0.1 0.1 0.1 0.8"
+#define TargetRed "1.0 0.0 0.0 1.0"
+#define TextWhite "1.0 1.0 1.0 1.0"
+#define DummySize "200 200"
+// <<<
+
 
 echo("Hello World!");
 
@@ -17,6 +26,16 @@ function onInit() {
     };
     ImStorage.fullScreen = getFullScreen();
 
+    new TextureObject(IconTexture) { fileName = "texture/icon_32.png"; };
+    new SoundObject(Sound1) { fileName = "sound/sound1.wav"; };
+}
+/*
+ * onShutDown
+ */
+function onShutDown() {
+    //time to cleanup
+    ImStorage.delete();
+    IconTexture.delete();
 }
 
 /*
@@ -53,9 +72,10 @@ function onFruitContextClick(%index, %itemName) {
  */
 function onRender() {
     DrawFPS(0,0);
-    %y = 10;
+    %y = 20;
     %x = 10;
-    DrawText(%x,%y,"Hello Base11 SDL/BaseFlux todos:", 2, WHITE, true, SLATEGRAY);
+    if (isObject(IconTexture)) IconTexture.draw(%x,%y - 8);
+    DrawText(%x + 40,%y,"Hello Base11 SDL/BaseFlux todos:", 2, WHITE, true, SLATEGRAY);
     %y+= 30;DrawText(%x,%y,"[X] ConsoleTypes and Colors", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] ClearBackground", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] DrawText", 1.5, GREEN, true, SLATEGRAY);
@@ -68,130 +88,123 @@ function onRender() {
     %y+= 20;DrawText(%x,%y,"[ ] drawArc", 1.5, WHITE, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] drawDonut", 1.5, WHITE, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] getWindowSize", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] playSound", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] stopSound", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] getTexture", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] renderTexture", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] TextureObject", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] SoundObject", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] BaseFlux Settings window size/vsync/appname/icon/...", 1.5, WHITE, true, SLATEGRAY);
 
 
     // WARNING we have 2 different color systems !!! cl_White is Color4F and WHITE is Color(U8)
-    if (ImBegin("Window from ElfScript")) {
-        ImSeparatorText("Welcome");
-        ImTextColored(cl_NeonPink, "ElfScript with Imgui :)");
-        ImTextColored(cl_Green,"Testing ...");
-        ImSameLine();
-        ImTextColored(cl_Red,"... SameLine");
-        ImSpacing();
-        ImBullet(); if (ImTextLink("Click me")) echo("you clicked me...");
+    if (ImBegin("ImGui ElfScript") && ImBeginTabBar("ImGui ElfScript TABS")) {
+        if (ImBeginTabItem("Main")) {
+            ImSeparatorText("Welcome");
+            ImTextColored(cl_NeonPink, "ElfScript with Imgui :)");
+            ImTextColored(cl_Green,"Testing ...");
+            ImSameLine();
+            ImTextColored(cl_Red,"... SameLine");
+            ImSpacing();
+            ImBullet(); if (ImTextLink("Click me")) echo("you clicked me...");
 
-        ImSpacing();
-        if (ImButton("Hello Button")) {
-            echo("Button pressed!");
-        }
-
-
-        ImSeparator();
-        if (ImCheckbox("myBool:", "ImStorage.myBool")) {
-            echo("script ImCheckbox:" SPC ImStorage.myBool);
-        }
-        if (ImSliderFloat("MyFloat:", "ImStorage.myFloat")) {
-            echo("script ImSliderFloat:" SPC ImStorage.myFloat);
-        }
-
-        ImProgressBar(ImStorage.myFloat, "-FLT_MIN 0", "value:" SPC ImStorage.myFloat);
-        // Mouse context trigger
-        if (ImIsItemClicked(ImGuiMouseButton_Left)) {
-            ImOpenPopup("ImProgressBarPopup");
-        }
-        if (ImBeginPopup("ImProgressBarPopup")) {
-            ImText("Hello ImProgressBar :)");
-            if (ImButton("Reset value")) ImStorage.myFloat = 0;
-            ImEndPopup();
-        }
-
-        if (ImSliderInt("myInt:", "ImStorage.myInt")) {
-            echo("script ImSliderInt:" SPC ImStorage.myInt);
-        }
-
-        if (ImInputText("myString:", "ImStorage.myString")) {
-            echo("script ImInputText:" SPC ImStorage.myString);
-        }
+            ImSpacing();
+            if (ImButton("Play Sound")) {
+                // echo("Button pressed!");
+                Sound1.play();
+            }
 
 
-        //the tricky ones:
-        if (ImCombo("Fruits:", "ImStorage.myComboIndex", ImStorage.ComboValues)) {
-            echo("The selected fruit is" SPC ImStorage.myComboIndex SPC getField(ImStorage.ComboValues, ImStorage.myComboIndex));
-        }
-        if (ImListBox("Fruits:", "ImStorage.myComboIndex", ImStorage.ComboValues)) {
-            echo("The selected fruit is" SPC ImStorage.myComboIndex SPC getField(ImStorage.ComboValues, ImStorage.myComboIndex));
-        }
+            ImSeparator();
+            if (ImCheckbox("myBool:", "ImStorage.myBool")) {
+                echo("script ImCheckbox:" SPC ImStorage.myBool);
+            }
+            if (ImSliderFloat("MyFloat:", "ImStorage.myFloat")) {
+                echo("script ImSliderFloat:" SPC ImStorage.myFloat);
+            }
 
-        ImContextMenu("FruitActionMenu", "Inspect" TAB "Edit" TAB "-" TAB "Delete", "onFruitContextClick");
+            ImProgressBar(ImStorage.myFloat, "-FLT_MIN 0", "value:" SPC ImStorage.myFloat);
+            // Mouse context trigger
+            if (ImIsItemClicked(ImGuiMouseButton_Left)) {
+                ImOpenPopup("ImProgressBarPopup");
+            }
+            if (ImBeginPopup("ImProgressBarPopup")) {
+                ImText("Hello ImProgressBar :)");
+                if (ImButton("Reset value")) ImStorage.myFloat = 0;
+                ImEndPopup();
+            }
 
+            if (ImSliderInt("myInt:", "ImStorage.myInt")) {
+                echo("script ImSliderInt:" SPC ImStorage.myInt);
+            }
+
+            if (ImInputText("myString:", "ImStorage.myString")) {
+                echo("script ImInputText:" SPC ImStorage.myString);
+            }
+
+
+            //the tricky ones:
+            if (ImCombo("Fruits:", "ImStorage.myComboIndex", ImStorage.ComboValues)) {
+                echo("The selected fruit is" SPC ImStorage.myComboIndex SPC getField(ImStorage.ComboValues, ImStorage.myComboIndex));
+            }
+            if (ImListBox("Fruits:", "ImStorage.myComboIndex", ImStorage.ComboValues)) {
+                echo("The selected fruit is" SPC ImStorage.myComboIndex SPC getField(ImStorage.ComboValues, ImStorage.myComboIndex));
+            }
+
+            ImContextMenu("FruitActionMenu", "Inspect" TAB "Edit" TAB "-" TAB "Delete", "onFruitContextClick");
+
+            ImEndTabItem();
+        } //MAIN TAB
+
+        if (ImBeginTabItem("Radar Display")) {
+            %pos = ImGetCursorScreenPos();
+            ImDummy( DummySize );
+            %centerX = %pos.x + 100;
+            %centerY = %pos.y + 100;
+            ImDrawCircleFilled(%centerX, %centerY, 90, RadarBg, 32);
+            ImDrawCircle(%centerX, %centerY, 90, RadarGreen, 32, 1.5);
+            ImDrawCircle(%centerX, %centerY, 60, RadarGreen, 32, 1.0);
+            // Render target blip
+            ImDrawCircleFilled(%centerX + 40, %centerY - 30, 5, TargetRed);
+            // text
+            ImDrawText(%centerX - 20, %centerY - 85, TextWhite, "NORTH");
+            ImDrawText(%centerX + 40, %centerY - 35, TextWhite, "Obj_01");
+            ImEndTabItem();
+        } //RADAR TAB
+        //------------------ table test: ------------------
+        if (ImBeginTabItem("Inventory Database")) {
+
+            %tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+
+            if (ImBeginTable("ItemTable", 3, %tableFlags)) {
+
+                ImTableSetupColumn("Item ID", ImGuiTableColumnFlags_None, 0.0);
+                ImTableSetupColumn("Name", ImGuiTableColumnFlags_None, 0.0);
+                ImTableSetupColumn("Value (Gold)", ImGuiTableColumnFlags_None, 0.0);
+
+                ImTableHeadersRow();
+
+                ImTableNextRow();
+                if (ImTableSetColumnIndex(0)) { ImText("001"); }
+                if (ImTableSetColumnIndex(1)) { ImText("Health Potion"); }
+                if (ImTableSetColumnIndex(2)) { ImText("50"); }
+
+                ImTableNextRow();
+                if (ImTableSetColumnIndex(0)) { ImText("002"); }
+                if (ImTableSetColumnIndex(1)) { ImText("Steel Sword"); }
+                if (ImTableSetColumnIndex(2)) { ImText("350"); }
+
+                ImTableNextRow();
+                if (ImTableSetColumnIndex(0)) { ImText("003"); }
+                if (ImTableSetColumnIndex(1)) { ImText("Wooden Shield"); }
+                if (ImTableSetColumnIndex(2)) { ImText("120"); }
+
+                ImEndTable();
+            }
+            ImEndTabItem();
+        } // TABLE TAB
+
+
+        ImEndTabBar();
     }
     ImEnd();
 
-    //------------------ table test: ------------------
-    if (ImBegin("Inventory Database")) {
-
-        %tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
-
-        if (ImBeginTable("ItemTable", 3, %tableFlags)) {
-
-            ImTableSetupColumn("Item ID", ImGuiTableColumnFlags_None, 0.0);
-            ImTableSetupColumn("Name", ImGuiTableColumnFlags_None, 0.0);
-            ImTableSetupColumn("Value (Gold)", ImGuiTableColumnFlags_None, 0.0);
-
-            ImTableHeadersRow();
-
-            ImTableNextRow();
-            if (ImTableSetColumnIndex(0)) { ImText("001"); }
-            if (ImTableSetColumnIndex(1)) { ImText("Health Potion"); }
-            if (ImTableSetColumnIndex(2)) { ImText("50"); }
-
-            ImTableNextRow();
-            if (ImTableSetColumnIndex(0)) { ImText("002"); }
-            if (ImTableSetColumnIndex(1)) { ImText("Steel Sword"); }
-            if (ImTableSetColumnIndex(2)) { ImText("350"); }
-
-            ImTableNextRow();
-            if (ImTableSetColumnIndex(0)) { ImText("003"); }
-            if (ImTableSetColumnIndex(1)) { ImText("Wooden Shield"); }
-            if (ImTableSetColumnIndex(2)) { ImText("120"); }
-
-            ImEndTable();
-        }
-
-        ImEnd();
-
-
-        //FIXME  RenderPong();
-    }
-
-    //------------------ drawing test: ------------------
-    #define RadarGreen "0.0 1.0 0.0 1.0"
-    #define RadarBg "0.1 0.1 0.1 0.8"
-    #define TargetRed "1.0 0.0 0.0 1.0"
-    #define TextWhite "1.0 1.0 1.0 1.0"
-    #define DummySize "200 200"
-
-    if (ImBegin("Radar Display")) {
-        %pos = ImGetCursorScreenPos();
-        ImDummy( DummySize );
-        %centerX = %pos.x + 100;
-        %centerY = %pos.y + 100;
-        ImDrawCircleFilled(%centerX, %centerY, 90, RadarBg, 32);
-        ImDrawCircle(%centerX, %centerY, 90, RadarGreen, 32, 1.5);
-        ImDrawCircle(%centerX, %centerY, 60, RadarGreen, 32, 1.0);
-        // Render target blip
-        ImDrawCircleFilled(%centerX + 40, %centerY - 30, 5, TargetRed);
-        // text
-        ImDrawText(%centerX - 20, %centerY - 85, TextWhite, "NORTH");
-        ImDrawText(%centerX + 40, %centerY - 35, TextWhite, "Obj_01");
-
-        ImEnd();
-    }
 
 }
 
@@ -210,13 +223,7 @@ function onInputEvent( %deviceString, %actionString, %mouseX, %mouseY, %keyValue
     }
 }
 
-/*
- * onShutDown
- */
-function onShutDown() {
-    //time to cleanup
-    ImStorage.delete();
-}
+
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 // reload helper
