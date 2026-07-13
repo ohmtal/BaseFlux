@@ -1,0 +1,282 @@
+// exec("pong.elf");
+
+// Drawing test: >>>
+#define RadarGreen "0.0 1.0 0.0 1.0"
+#define RadarBg "0.1 0.1 0.1 0.8"
+#define TargetRed "1.0 0.0 0.0 1.0"
+#define TextWhite "1.0 1.0 1.0 1.0"
+#define DummySize "200 200"
+// <<<
+
+
+echo("Hello World!");
+
+/*
+ * OnInit is called after window is open
+ */
+function onInit() {
+    ClearBackground( SEABLUE ); //should be only called when changed! it's a setting
+    new ScriptObject(ImStorage) {
+        TypeBool    myBool = false;
+        TypeF32     myFloat = 0.0;
+        TypeS32     myInt = 0;
+        TypeString  myString = "Hello Input!";
+        TypeS32     myComboIndex = 0;
+        TypeString  ComboValues = "Apfel" TAB "Birne" TAB "Erdbeere" TAB "Kiwi";
+    };
+    ImStorage.fullScreen = getFullScreen();
+
+    new TextureObject(IconTexture) { fileName = "texture/icon_32.png"; };
+    new SoundObject(Sound1) { fileName = "sound/sound1.wav"; };
+
+    new SimSet(LogoList);
+}
+/*
+ * onShutDown
+ */
+function onShutDown() {
+    //time to cleanup
+    ImStorage.delete();
+    IconTexture.delete();
+    LogoList.deleteObjects();
+    LogoList.delete();
+}
+
+/*
+ *  OnUpdate
+ */
+
+function onUpdate(%dt) {
+    // Check for Ctrl + S to save the file
+    if (ImShortcut(ImGuiMod_Ctrl | ImGuiKey_R)) {
+        echo("Shortcut detected! Reload");
+        rl();
+    }
+
+    // Single key stroke check
+    if (ImIsKeyPressed(ImGuiKey_F5)) {
+        echo("F5 pressed!");
+    }
+
+
+}
+
+
+function onFruitContextClick(%index, %itemName) {
+    echo("Context menu triggered! Index:" SPC %index SPC "Name:" SPC %itemName);
+
+    if (%itemName $= "Delete") {
+        // Delete logic here
+    }
+}
+
+
+/*
+ * OnRender ... inside main Draw loop
+ */
+function onRender() {
+    DrawFPS(0,0);
+    %y = 20;
+    %x = 10;
+    if (isObject(IconTexture)) IconTexture.Draw(%x,%y - 8);
+    DrawText(%x + 40,%y,"Base11 SDL/BaseFlux todos:", 2, WHITE, true, SLATEGRAY);
+    %y+= 30;DrawText(%x,%y,"[X] ConsoleTypes and Colors", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] ClearBackground", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] DrawText", 1.5, GREEN, true, SLATEGRAY);
+    //not needed  %y+= 20;DrawText(%x,%y,"[ ] setColor", 1.5, WHITE, true, SLATEGRAY);
+    //not needed  %y+= 20;DrawText(%x,%y,"[ ] setScale", 1.5, WHITE, true, SLATEGRAY);
+    //not needed  %y+= 20;DrawText(%x,%y,"[ ] DrawPoint", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] DrawLine", 1.5, GREEN, true, SLATEGRAY);
+        DrawLine(200, %y, 400, %y+10,RED);
+    %y+= 20;DrawText(%x,%y,"[X] DrawRect", 1.5, GREEN, true, SLATEGRAY);
+        DrawRect(195, %y,10,10,RED,false);
+        DrawRect(215, %y,10,10,BLUE,true);
+    %y+= 20;DrawText(%x,%y,"[X] DrawCircle", 1.5, GREEN, true, SLATEGRAY);
+        DrawCircle(200, %y+5, 5,RED,false);
+        DrawCircle(220, %y+5, 5,BLUE,true);
+    %y+= 20;DrawText(%x,%y,"[X] DrawArc", 1.5, GREEN, true, SLATEGRAY);
+        DrawArc(200, %y+5, 5, 0,mDegToRad(180),RED,false);
+        DrawArc(220, %y+5, 5, mDegToRad(180),mDegToRad(359),BLUE,TRUE);
+    %y+= 20;DrawText(%x,%y,"[X] DrawDonut", 1.5, GREEN, true, SLATEGRAY);
+        DrawDonut(200, %y+5, 3, 6,RED,false);
+        DrawDonut(220, %y+5, 3, 6,BLUE,true);
+    %y+= 20;DrawText(%x,%y,"[X] GetWindowSize" SPC GetWindowSize(), 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] TextureObject", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] Texture object needs color and getSize()", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] SoundObject", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] BaseFlux Settings window size/vsync/appname/icon/...", 1.5, WHITE, true, SLATEGRAY);
+    // %y+= 20;DrawText(%x,%y,"[ ] load assets/main.elf from current folder.", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] add source editor with example", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] create web build", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] after some right clicks: Sim::getUniqueName( IconTexture ) - failed after 100 attempts", 1.5, RED, true, SLATEGRAY);
+
+
+    // WARNING we have 2 different color systems !!! cl_White is Color4F and WHITE is Color(U8)
+    if (ImBegin("ImGui ElfScript") && ImBeginTabBar("ImGui ElfScript TABS")) {
+        if (ImBeginTabItem("Main")) {
+            ImSeparatorText("Welcome");
+            ImTextColored(cl_NeonPink, "ElfScript with Imgui :)");
+            ImTextColored(cl_Green,"Testing ...");
+            ImSameLine();
+            ImTextColored(cl_Red,"... SameLine");
+            ImSpacing();
+            ImBullet(); if (ImTextLink("Click me")) echo("you clicked me...");
+
+            ImSpacing();
+            if (ImButton("Play Sound")) {
+                // echo("Button pressed!");
+                Sound1.play();
+            }
+
+
+            ImSeparator();
+            if (ImCheckbox("myBool:", "ImStorage.myBool")) {
+                echo("script ImCheckbox:" SPC ImStorage.myBool);
+            }
+            if (ImSliderFloat("MyFloat:", "ImStorage.myFloat")) {
+                echo("script ImSliderFloat:" SPC ImStorage.myFloat);
+            }
+
+            ImProgressBar(ImStorage.myFloat, "-FLT_MIN 0", "value:" SPC ImStorage.myFloat);
+            // Mouse context trigger
+            if (ImIsItemClicked(ImGuiMouseButton_Left)) {
+                ImOpenPopup("ImProgressBarPopup");
+            }
+            if (ImBeginPopup("ImProgressBarPopup")) {
+                ImText("Hello ImProgressBar :)");
+                if (ImButton("Reset value")) ImStorage.myFloat = 0;
+                ImEndPopup();
+            }
+
+            if (ImSliderInt("myInt:", "ImStorage.myInt")) {
+                echo("script ImSliderInt:" SPC ImStorage.myInt);
+            }
+
+            if (ImInputText("myString:", "ImStorage.myString")) {
+                echo("script ImInputText:" SPC ImStorage.myString);
+            }
+
+
+            //the tricky ones:
+            if (ImCombo("Fruits:", "ImStorage.myComboIndex", ImStorage.ComboValues)) {
+                echo("The selected fruit is" SPC ImStorage.myComboIndex SPC getField(ImStorage.ComboValues, ImStorage.myComboIndex));
+            }
+            if (ImListBox("Fruits:", "ImStorage.myComboIndex", ImStorage.ComboValues)) {
+                echo("The selected fruit is" SPC ImStorage.myComboIndex SPC getField(ImStorage.ComboValues, ImStorage.myComboIndex));
+            }
+
+            ImContextMenu("FruitActionMenu", "Inspect" TAB "Edit" TAB "-" TAB "Delete", "onFruitContextClick");
+
+            ImEndTabItem();
+        } //MAIN TAB
+
+        if (ImBeginTabItem("Radar Display")) {
+            %pos = ImGetCursorScreenPos();
+            ImDummy( DummySize );
+            %centerX = %pos.x + 100;
+            %centerY = %pos.y + 100;
+            ImDrawCircleFilled(%centerX, %centerY, 90, RadarBg, 32);
+            ImDrawCircle(%centerX, %centerY, 90, RadarGreen, 32, 1.5);
+            ImDrawCircle(%centerX, %centerY, 60, RadarGreen, 32, 1.0);
+            // Render target blip
+            ImDrawCircleFilled(%centerX + 40, %centerY - 30, 5, TargetRed);
+            // text
+            ImDrawText(%centerX - 20, %centerY - 85, TextWhite, "NORTH");
+            ImDrawText(%centerX + 40, %centerY - 35, TextWhite, "Obj_01");
+            ImEndTabItem();
+        } //RADAR TAB
+        //------------------ table test: ------------------
+        if (ImBeginTabItem("Inventory Database")) {
+
+            %tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+
+            if (ImBeginTable("ItemTable", 3, %tableFlags)) {
+
+                ImTableSetupColumn("Item ID", ImGuiTableColumnFlags_None, 0.0);
+                ImTableSetupColumn("Name", ImGuiTableColumnFlags_None, 0.0);
+                ImTableSetupColumn("Value (Gold)", ImGuiTableColumnFlags_None, 0.0);
+
+                ImTableHeadersRow();
+
+                ImTableNextRow();
+                if (ImTableSetColumnIndex(0)) { ImText("001"); }
+                if (ImTableSetColumnIndex(1)) { ImText("Health Potion"); }
+                if (ImTableSetColumnIndex(2)) { ImText("50"); }
+
+                ImTableNextRow();
+                if (ImTableSetColumnIndex(0)) { ImText("002"); }
+                if (ImTableSetColumnIndex(1)) { ImText("Steel Sword"); }
+                if (ImTableSetColumnIndex(2)) { ImText("350"); }
+
+                ImTableNextRow();
+                if (ImTableSetColumnIndex(0)) { ImText("003"); }
+                if (ImTableSetColumnIndex(1)) { ImText("Wooden Shield"); }
+                if (ImTableSetColumnIndex(2)) { ImText("120"); }
+
+                ImEndTable();
+            }
+            ImEndTabItem();
+        } // TABLE TAB
+
+
+        ImEndTabBar();
+    }
+    ImEnd();
+
+    // LogoList
+    %cnt = LogoList.getCount();
+    for (%i = 0; %i < %cnt; %i++) {
+        %obj = LogoList.getObject(%i);
+        IconTexture.Draw(%obj.x, %obj.y);
+    }
+
+}
+
+/*
+ * onInputEvent - basic keyboard and mouse supported
+ */
+function onInputEvent( %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
+    // echo("onInputEvent Device:" SPC %deviceString SPC "action:" SPC %actionString SPC "mx/my:" SPC %mouseX SPC %mouseY SPC "DOWN:" SPC %keyValue);
+    if (%deviceString $= "keyboard") {
+        invaderGame.Keys[%actionString] = %keyValue;
+        if (!%keyValue) {//keyup
+            if (%actionString $= "escape") {
+                quit();
+            }
+        }
+    }
+    else if (%deviceString $= "mouse" ) {
+        if (%keyValue == 1) {
+        echo("MOUSE! val:" SPC %keyValue SPC %actionString);
+            if (%actionString $= "button3") {
+                %logo = new SimObject();
+                %logo.x = %mouseX;
+                %logo.y = %mouseY;
+                LogoList.add(%logo);
+                echo("added logo:" SPC %logo);
+            }
+        }
+    }
+}
+
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// reload helper
+function rl() {
+    exec("main.elf");
+}
+
+function updateDocu() {
+    %file = "script_stub.elf";
+    if (exportConsoleDocu(%file))
+    {
+        echo ("Docu exported to:" SPC %file);
+        echo ("- In vim you can simple open it alongside the other file to use autocomplete");
+        echo (" In VSCode / VSCodium you can install the Script Package (FIXME add URL)");
+        echo (" and it should work automaticly as long you have it opened.");
+        echo (" FIXME: fine out and docu on how to get it work when it's closed.");
+    } else {
+        error("Failed to export" SPC %file SPC "!");
+    }
+}

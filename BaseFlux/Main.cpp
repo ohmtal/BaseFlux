@@ -58,14 +58,15 @@ namespace BaseFlux {
 
         mWindow = SDL_CreateWindow(
             getSettings().Caption.c_str()
-            , getSettings().ScreenSize[0]
-            , getSettings().ScreenSize[1]
+            , getSettings().ScreenSize.x
+            , getSettings().ScreenSize.y
             , flags);
 
         if (!mWindow) {
             SDL_Log("[error] SDL_CreateWindow failed: %s", SDL_GetError());
             return false;
         }
+        if (getSettings().FullScreen) SDL_SetWindowFullscreen(mWindow, true);
 
         if (!getSettings().IconFilename.empty()) {
             setWindowIcon(mWindow, getSettings().IconFilename.c_str());

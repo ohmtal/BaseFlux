@@ -19,6 +19,7 @@
 
 #include "ConsoleTypes.h"
 #include "ColorConstants.h"
+#include <openvdb/util/Name.h>
 
 extern BaseFlux::Main app;
 
@@ -81,14 +82,90 @@ void registerColors() {
 
 }
 
+
 // -----------------------------------------------------------------------------
-void InitBindings_SDL() {
-    registerColors();
+// =============================================================================
+//  SettingsObject (singelton)
+// =============================================================================
+class SettingsObject: public SimObject
+{
+    typedef SimObject Parent;
+    BaseFlux::Settings mSettings;
+
+    StringTableEntry mCompany;
+    StringTableEntry mCaption;
+    StringTableEntry mVersion;
+    StringTableEntry mIconFileName;
+    StringTableEntry mAssetPath;
+    StringTableEntry mSoundPathAppend;
+    StringTableEntry mTexturePathAppend;
+    StringTableEntry mIniFileName;
+public:
+    DECLARE_CONOBJECT(SettingsObject);
+    SettingsObject() {
+        mSettings = app.getSettings(); //create a copy
+        mCompany = StringTable->insert(mSettings.Company.c_str());
+        mCaption = StringTable->insert(mSettings.Caption.c_str());
+        mVersion  = StringTable->insert(mSettings.Version.c_str());
+        mIconFileName  = StringTable->insert(mSettings.IconFilename.c_str());
+        mAssetPath  = StringTable->insert(mSettings.AssetPath.c_str());
+        mSoundPathAppend  = StringTable->insert(mSettings.SoundPathAppend.c_str());
+        mTexturePathAppend  = StringTable->insert(mSettings.TexturePathAppend.c_str());
+        mIniFileName  = StringTable->insert(mSettings.IniFileName.c_str());
+    }
+
+    void Sync() {
+        mSettings.Company = mCompany;
+        mSettings.Caption = mCaption;
+        mSettings.Version = mVersion;
+        mSettings.IconFilename = mIconFileName;
+        mSettings.AssetPath = mAssetPath;
+        mSettings.SoundPathAppend = mSoundPathAppend;
+        mSettings.TexturePathAppend = mTexturePathAppend;
+        mSettings.IniFileName = mIniFileName;
+        app.getSettings() = mSettings;
+    }
+
+
+    static void initPersistFields() {
+        addField("ScreenSize", TypePoint2I, Offset(mSettings.ScreenSize,SettingsObject));
+        addField("FpsLimit", TypeS32, Offset(mSettings.FpsLimit,SettingsObject));
+        addField("WindowMaximized", TypeBool, Offset(mSettings.WindowMaximized,SettingsObject));
+        addField("FullScreen", TypeBool, Offset(mSettings.FullScreen,SettingsObject));
+        addField("EnableVSync", TypeBool, Offset(mSettings.EnableVSync,SettingsObject));
+        //FIXME ?!
+        addField("Company", TypeString, Offset(mCompany,SettingsObject));
+        addField("Caption", TypeString, Offset(mCaption,SettingsObject));
+        addField("Version", TypeString, Offset(mVersion,SettingsObject));
+
+        addField("IconFilename", TypeString, Offset( mIconFileName ,SettingsObject));
+
+        addField("AssetPath", TypeString, Offset(mAssetPath,SettingsObject));
+        addField("SoundPathAppend", TypeString, Offset(mSoundPathAppend,SettingsObject));
+        addField("TexturePathAppend", TypeString, Offset(mTexturePathAppend,SettingsObject));
+
+        addField("EnableDockSpace", TypeBool, Offset(mSettings.EnableDockSpace,SettingsObject));
+        addField("IniFileName", TypeString, Offset(mIniFileName,SettingsObject));
+
+        addField("sdlWindowFlagsOverwrite", TypeS32, Offset(mSettings.sdlWindowFlagsOverwrite,SettingsObject));
+
+        addField("clearColor", TypeColor, Offset(mSettings.clearColor,SettingsObject));
+    }
+    // std::string getPrefsPath();
+    // std::string getSafeCompany();
+    // std::string getSafeCaption();
+};
+IMPLEMENT_CONOBJECT(SettingsObject);
+DefineEngineMethod(SettingsObject, sync, void, (),,"Settings must be synced to get active!") {
+    object->Sync();
 }
-// -----------------------------------------------------------------------------
+
+SettingsObject* gSettingsObject;
+
 // =============================================================================
 //  TextureObject
 // =============================================================================
+// TODO: SDL_RenderTextureRotated
 class TextureObject : public SimObject
 {
     typedef SimObject Parent;
@@ -110,22 +187,107 @@ public:
     static void initPersistFields() {
         addField("fileName", TypeString, Offset(mFileName,TextureObject));
     }
+
+    bool DrawSrcDstRect(RectF srcRect, RectF dstRect, Color color=WHITE) {
+        SDL_Texture* tex = mTexture;
+        if (color.a < 1 || !tex) return false;
+        SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
+        SDL_SetTextureAlphaMod(tex, color.a);
+        SDL_SetTextureBlendMode(tex, (color.a < 255) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
+
+        return SDL_RenderTexture(app.getRenderer(), tex, &srcRect, &dstRect);
+    }
+    bool DrawRect( RectF dstRect, Color color=WHITE) {
+        SDL_Texture* tex = mTexture;
+        if (color.a < 1 || !tex) return false;
+        SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
+        SDL_SetTextureAlphaMod(tex, color.a);
+        SDL_SetTextureBlendMode(tex, (color.a < 255) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
+
+        return SDL_RenderTexture(app.getRenderer(), tex, nullptr, &dstRect);
+    }
+
+    bool Draw( F32 x, F32 y, Color color=WHITE) {
+        SDL_Texture* tex = mTexture;
+        if (color.a < 1 || !tex) return false;
+
+        F32 w = (F32)tex->w;
+        F32 h = (F32)tex->h;
+        RectF dstRect = {x - w * 0.5f,y - h * 0.5f, w, h};
+
+        SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
+        SDL_SetTextureAlphaMod(tex, color.a);
+        SDL_SetTextureBlendMode(tex, (color.a < 255) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
+
+        return SDL_RenderTexture(app.getRenderer(), tex, nullptr, &dstRect);
+    }
+
 };
 IMPLEMENT_CONOBJECT(TextureObject);
-DefineEngineMethod(TextureObject, DrawSrcDstRect,bool, (RectF srcRect, RectF dstRect),
-                   ,"Draw a texture with source and destination rect" ) {
-    return app.getTextureManager().render(object->get(),&srcRect, &dstRect );
-}
-DefineEngineMethod(TextureObject, DrawRect,bool, (RectF dstRect),
-                   ,"Draw a texture with source and destination rect" ) {
-    return app.getTextureManager().render(object->get(),nullptr, &dstRect );
-}
-DefineEngineMethod(TextureObject, Draw,bool, (F32 x, F32 y),
-                   ,"Draw a texture with source and destination rect" ) {
+
+DefineEngineMethod(TextureObject, getSize,Point2I, (RectF dstRect),
+                   ,"get the width and height of the loaded texture" ) {
     SDL_Texture* tex = object->get();
-    if (!tex) return false;
-    RectF dstRect = {x,y, (F32)tex->w,(F32)tex->h};
-    return app.getTextureManager().render(object->get(),nullptr, &dstRect );
+    if (!tex) return {0,0};
+    return {tex->w,tex->h};
+}
+
+DefineEngineMethod(TextureObject, DrawSrcDstRect,bool, (RectF srcRect, RectF dstRect, Color color), (WHITE)
+                   ,"Draw a texture with source and destination rect" ) {
+    return object->DrawSrcDstRect(srcRect, dstRect, color);
+}
+DefineEngineMethod(TextureObject, DrawRect,bool, (RectF dstRect, Color color), (WHITE)
+                   ,"Draw a texture with source and destination rect" ) {
+     return object->DrawRect( dstRect, color);
+}
+DefineEngineMethod(TextureObject, Draw,bool, (F32 x, F32 y, Color color), (WHITE)
+                   ,"Draw the texture centered at the position" ) {
+    return object->Draw(x,y,color);
+}
+// =============================================================================
+//  GameObject
+// =============================================================================
+class GameObject :public SimObject
+{
+    typedef SimObject Parent;
+public:
+    DECLARE_CONOBJECT(GameObject);
+    Point3F mPoint = {0.f,0.f,0.f};
+    Point3F mVelo = {0.f,0.f,0.f};
+    Color mColor = {0,0,0, 0};
+
+
+    static void initPersistFields() {
+        addField("position", TypePoint3F, Offset(mPoint,GameObject));
+        addField("x", TypeF32, Offset(mPoint.x,GameObject));
+        addField("y", TypeF32, Offset(mPoint.y,GameObject));
+        addField("z", TypeF32, Offset(mPoint.z,GameObject));
+
+        addField("velocity", TypePoint3F, Offset(mVelo,GameObject));
+        addField("veloX", TypeF32, Offset(mVelo.x,GameObject));
+        addField("veloY", TypeF32, Offset(mVelo.y,GameObject));
+        addField("veloZ", TypeF32, Offset(mVelo.z,GameObject));
+
+        addField("color", TypeColor, Offset(mColor,GameObject));
+        addField("r", TypeS8, Offset(mColor.r,GameObject));
+        addField("g", TypeS8, Offset(mColor.g,GameObject));
+        addField("b", TypeS8, Offset(mColor.b,GameObject));
+        addField("a", TypeS8, Offset(mColor.g,GameObject));
+    }
+};
+IMPLEMENT_CONOBJECT(GameObject);
+
+DefineEngineMethod(GameObject, moveLinear, void, (), ,"Move Linear position/velocity") {
+    F32 dt =  (F32)BaseFlux::getFrameTime();
+    object->mPoint.x += object->mVelo.x * dt;
+    object->mPoint.y += object->mVelo.y * dt;
+    object->mPoint.z += object->mVelo.z * dt;
+}
+
+DefineEngineMethod(GameObject, DrawTexture, bool, (SimObjectId texObjectID), ,"Draw2D") {
+    TextureObject* texObject = dynamic_cast<TextureObject*>(Sim::findObject(texObjectID));
+    if (!texObject) return false;
+    return texObject->Draw(object->mPoint.x, object->mPoint.y, object->mColor);
 }
 // =============================================================================
 //  SoundObject
@@ -181,6 +343,16 @@ DefineEngineFunction(ClearBackground, void , (Color color),
 // -----------------------------------------------------------------------------
 // SDL
 // -----------------------------------------------------------------------------
+DefineEngineFunction(SetColor, void , (Color color),
+                     ,"set the render color") {
+    SDL_SetRenderDrawColor(app.getRenderer(), color.r, color.g, color.b, color.a);
+}
+// ----------------------------------------------------------------------------
+DefineEngineFunction(SetScale, void , (F32 x, F32 y),
+                     ,"set the render color") {
+    SDL_SetRenderScale(app.getRenderer(), x, y);
+}
+// -----------------------------------------------------------------------------
 DefineEngineFunction(PointInRect, bool , (Point2I p, RectI rect),
                      ,"Check a point is in rect") {
     return (bool)SDL_PointInRect(&p, &rect);
@@ -206,19 +378,20 @@ DefineEngineFunction(DrawFPS, void, (F32 x, F32 y)
     U32 fps =  BaseFlux::getFPS();
     String text = String::ToString("%d fps",fps);
 
-    if (fps < 35) color = MAROON;
-    else if (fps < 15) color = RED;
+    if (fps < 15) color = RED;
+    else if (fps < 30) color = ORANGE;
 
     BaseFlux::DrawDebugText(app.getRenderer(),x,y,text.c_str(), 1.0f, color, true/*, shadowColor*/);
 }
 
-DefineEngineFunction(DrawText, void, (F32 x, F32 y, String text,
-                    F32 scale, Color color,
-                    bool doShadow, Color shadowColor)
-                ,(1.0, BLACK, false, DARKGRAY),"Draw a Text with optional shadow")
+DefineEngineFunction(DrawText, void, ( F32 x, F32 y,String text,
+                                      F32 scale, Color color,
+                                      bool doShadow, Color shadowColor)
+,(1.0, BLACK, false, DARKGRAY),"Draw a Text with optional shadow")
 {
     BaseFlux::DrawDebugText(app.getRenderer(),x,y,text.c_str(), scale, color, doShadow, shadowColor);
 }
+
 
 
 DefineEngineFunction(DrawLine, void, (F32 x1, F32 y1,F32 x2, F32 y2, Color color)
@@ -358,4 +531,18 @@ DefineEngineStringlyVariadicFunction( dError, void, 2, 0, "(debug error  string 
 }
 //-----------------------------------------------------------------------------
 ConsoleFunctionGroupEnd(BaseFlux);
+// -----------------------------------------------------------------------------
+// added at bottom
+void InitBindings_SDL() {
+    registerColors();
+
+    gSettingsObject = new SettingsObject();
+    gSettingsObject->registerObject(); //make available on Console
+    Con::setIntVariable("$Settings", gSettingsObject->getId());
+    // -----
+}
+void ShutdownBindings_SDL() {
+    Con::setIntVariable("$Settings", 0);
+    gSettingsObject->deleteObject();
+}
 //-----------------------------------------------------------------------------

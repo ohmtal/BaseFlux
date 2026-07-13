@@ -1,0 +1,280 @@
+#define LOGO_SPAWN_RATE 500
+
+//----------------------------------------------------------------------
+function createBaseDemo() {
+    %obj = new ScriptObject() {
+        class = "BaseDemo";
+    };
+
+
+    return %obj;
+}
+//----------------------------------------------------------------------
+function BaseDemo::onAdd(%this) {
+    ClearBackground( SEABLUE ); //set background color
+    new TextureObject(IconTexture) { fileName = "texture/icon_32.png"; };
+    new TextureObject(GrayTexture) { fileName = "texture/icon_32_gray.png"; };
+    new SoundObject(Sound1) { fileName = "sound/sound1.wav"; };
+    new SimSet(LogoList);
+    return true;
+}
+//----------------------------------------------------------------------
+function BaseDemo::OnRemove(%this) {
+    IconTexture.delete();
+    GrayTexture.delete();
+    Sound1.delete();
+    LogoList.deleteObjects();
+    LogoList.delete();
+}
+//----------------------------------------------------------------------
+function BaseDemo::OnUpdate(%this, %dt) {
+}
+//----------------------------------------------------------------------
+function BaseDemo::Render(%this) {
+
+    %y = 20;
+    %x = 10;
+    if (isObject(IconTexture)) IconTexture.Draw(%x + 16,%y + 8);
+    DrawText(%x + 40,%y,"Base11 SDL/BaseFlux todos:", 2, WHITE, true, SLATEGRAY);
+    %y+= 30;DrawText(%x,%y,"[X] ConsoleTypes and Colors", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] ClearBackground", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] DrawText", 1.5, GREEN, true, SLATEGRAY);
+    //not needed  %y+= 20;DrawText(%x,%y,"[ ] SetColor", 1.5, WHITE, true, SLATEGRAY);
+    //not needed  %y+= 20;DrawText(%x,%y,"[ ] SetScale", 1.5, WHITE, true, SLATEGRAY);
+    //not needed  %y+= 20;DrawText(%x,%y,"[ ] DrawPoint", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] DrawLine", 1.5, GREEN, true, SLATEGRAY);
+    DrawLine(200, %y, 400, %y+10,RED);
+    %y+= 20;DrawText(%x,%y,"[X] DrawRect", 1.5, GREEN, true, SLATEGRAY);
+    DrawRect(195, %y,10,10,RED,false);
+    DrawRect(215, %y,10,10,BLUE,true);
+    %y+= 20;DrawText(%x,%y,"[X] DrawCircle", 1.5, GREEN, true, SLATEGRAY);
+    DrawCircle(200, %y+5, 5,RED,false);
+    DrawCircle(220, %y+5, 5,BLUE,true);
+    %y+= 20;DrawText(%x,%y,"[X] DrawArc", 1.5, GREEN, true, SLATEGRAY);
+    DrawArc(200, %y+5, 5, 0,mDegToRad(180),RED,false);
+    DrawArc(220, %y+5, 5, mDegToRad(180),mDegToRad(359),BLUE,TRUE);
+    %y+= 20;DrawText(%x,%y,"[X] DrawDonut", 1.5, GREEN, true, SLATEGRAY);
+    DrawDonut(200, %y+5, 3, 6,RED,false);
+    DrawDonut(220, %y+5, 3, 6,BLUE,true);
+    %y+= 20;DrawText(%x,%y,"[X] GetWindowSize" SPC GetWindowSize(), 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] TextureObject", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X/X] Texture object needs color and getSize()", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] SoundObject", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] BaseFlux Settings window size/vsync/appname/icon/...", 1.5, GREEN, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] Basic GameObject hold positon/velocity and color", 1.5, GREEN, true, SLATEGRAY);
+    // %y+= 20;DrawText(%x,%y,"[ ] load assets/main.elf from current folder.", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] add source editor with example", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] create web build", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[ ] Texture rotate", 1.5, GRAY, true, SLATEGRAY);
+
+    // LogoList
+
+    %borders = GetWindowSize();
+    %dt = GetFrameTime();
+    // echo("FRAMETIME=" SPC %dt);
+    %cnt = LogoList.getCount();
+
+
+    // CPU = NoteBook dualcore i5-7200u
+    //  Version I  CPU bottleneck at ~ 1000 [DEBUG]
+    // [RelWithDebInfo] with SimObject
+    // 60 fps at 1700
+    // 30 fps at 4200
+    // ---------------
+    // [RelWithDebInfo] with GameObject
+    // 60 fps at 2800
+    // 30 fps at 6000!
+
+    // for (%i = 0; %i < %cnt; %i++) {
+    //     %logo = LogoList.getObject(%i);
+    //     %logo.x += %logo.VeloX * %dt;
+    //     if (%logo.x <= 0 || %logo.x >= %borders.x) %logo.VeloX *= -1;
+    //     %logo.y += %logo.VeloY * %dt;
+    //     if (%logo.y <= 0 || %logo.y >= %borders.y) %logo.VeloY *= -1;
+    //     GrayTexture.Draw(%logo.x, %logo.y, %logo.color);
+    // }
+
+    // Version I.a
+    // ---------------
+    // [RelWithDebInfo] with GameObject
+    // 60 fps at 3000
+    // 30 fps at 6200
+    // borders as local var is slightly faster ...
+    // still not hurray good but 3k is much better 1.7k
+    // intel gpu (HD 620) still kina idle at 15%
+
+    // %bx = %borders.x; %by = %borders.y;
+    // for (%i = 0; %i < %cnt; %i++) {
+    //     %logo = LogoList.getObject(%i);
+    //     %logo.x += %logo.VeloX * %dt;
+    //     if (%logo.x <= 0.0 || %logo.x >= %bx) %logo.VeloX *= -1.0;
+    //     %logo.y += %logo.VeloY * %dt;
+    //     if (%logo.y <= 0.0 || %logo.y >= %by) %logo.VeloY *= -1.0;
+    //     GrayTexture.Draw(%logo.x, %logo.y, %logo.color);
+    // }
+
+    // Version I.b
+    // ---------------
+    // [RelWithDebInfo] with pimped GameObject
+    // i could move the logic completly in to C++ but i want
+    // to keep it universal
+    // 60 fps at 3400
+    // 30 fps at 7200
+    // 15 fps at 15000
+
+    // %bx = %borders.x; %by = %borders.y;
+    // for (%i = 0; %i < %cnt; %i++) {
+    //     %logo = LogoList.getObject(%i);
+    //     %logo.moveLinear();
+    //     if (%logo.x <= 0.0 || %logo.x >= %bx) %logo.VeloX *= -1.0;
+    //     if (%logo.y <= 0.0 || %logo.y >= %by) %logo.VeloY *= -1.0;
+    //     GrayTexture.Draw(%logo.x, %logo.y, %logo.color);
+    // }
+
+    // // Version I.c
+    // // ---------------
+    // // [RelWithDebInfo] with pimped GameObject and ticker cheat
+    // // i could move the logic completly in to C++ but i want
+    // // to keep it universal
+    // // 60 fps at 3800 flappy
+    // // 30 fps at 8200
+    // // 15 fps at 16500
+    // $ticker++;
+    // %bx = %borders.x; %by = %borders.y;
+    // for (%i = 0; %i < %cnt; %i++) {
+    //     %logo = LogoList.getObject(%i);
+    //     %logo.moveLinear();
+    //     if ($ticker % 8 == 0) {
+    //         if (%logo.x <= 0.0 || %logo.x >= %bx) %logo.VeloX *= -1.0;
+    //         if (%logo.y <= 0.0 || %logo.y >= %by) %logo.VeloY *= -1.0;
+    //     }
+    //     GrayTexture.Draw(%logo.x, %logo.y, %logo.color);
+    // }
+
+    // Version I.d
+    // ---------------
+    // [RelWithDebInfo] with pimped GameObject and ticker cheat + GameObject drawTexture
+    // i could move the logic completly in to C++ but i want
+    // to keep it universal
+    // 60 fps at 11000 WoW! ...eehm Hurray ;)
+    // 30 fps at 22000 doubled
+    // 15 fps at 42000
+    // .... compiled with clang/clang++
+    // 60 fps at ~ 10k
+    // 30 fps at ~ 21k
+    // 15 fps at ~ 41k
+    // clang is slightly slower ?! ... i reset to default ^^
+
+    // $ticker++;
+    // %bx = %borders.x; %by = %borders.y;
+    // for (%i = 0; %i < %cnt; %i++) {
+    //     %logo = LogoList.getObject(%i);
+    //     %logo.moveLinear();
+    //     if ($ticker % 16 == 0) {
+    //         if (%logo.x <= 0.0 || %logo.x >= %bx) %logo.VeloX *= -1.0;
+    //         if (%logo.y <= 0.0 || %logo.y >= %by) %logo.VeloY *= -1.0;
+    //     }
+    //     %logo.drawTexture(GrayTexture.getId());
+    //     // GrayTexture.Draw(%logo.x, %logo.y, %logo.color);
+    // }
+
+    // Version I.e FINAL
+    // ---------------
+    // [RelWithDebInfo] with pimped GameObject set ticker to 2 which looks ok on "normal values"
+    // 60 fps
+    // 30 fps
+    // 15 fps
+
+
+    $ticker++;
+    %bx = %borders.x - 30; %by = %borders.y -30;
+    for (%i = 0; %i < %cnt; %i++) {
+        %logo = LogoList.getObject(%i);
+        %logo.moveLinear();
+        if ($ticker % 2 == 0) {
+            if (%logo.x <= 30.0 ) { %logo.VeloX *= -1.0; %logo.x = 30.01;}
+            else if ( %logo.x >= %bx) { %logo.VeloX *= -1.0; %logo.x = %bx - 0.01;}
+            if (%logo.y <= 30.0)  { %logo.VeloY *= -1.0; %logo.y = 30.01;}
+            else if ( %logo.y >= %by) { %logo.VeloY *= -1.0; %logo.y = %by - 0.01; }
+        }
+        %logo.drawTexture(GrayTexture.getId());
+        // GrayTexture.Draw(%logo.x, %logo.y, %logo.color);
+    }
+
+    // Version II CPU bottleneck at ~ 1200 [DEBUG],
+    // [RelWithDebInfo]
+    // 60 fps at 2200
+    // 30 fps at 4600
+    // %bx = %borders.x; %by = %borders.y;
+    // for (%i = 0; %i < %cnt; %i++) {
+    //     %logo = LogoList.getObject(%i);
+    //     %x = %logo.x; %y = %logo.y;
+    //
+    //     %x += %logo.VeloX * %dt;
+    //     if (%x <= 0 || %x >= %bx) %logo.VeloX *= -1;
+    //     %y += %logo.VeloY * %dt;
+    //     if (%y <= 0 || %y >= %borders.y) %logo.VeloY *= -1;
+    //     GrayTexture.Draw(%x, %y, %logo.color);
+    //     %logo.x = %x; %logo.y = %y;
+    // }
+    // Version III
+    // [RelWithDebInfo]
+    // 60 fps at 2200
+    // 30 fps at 4700
+    // same as above, i also set the types but dont have compiled
+    // with strict types so it's as before dynamic fields are strings!
+    // %bx = %borders.x; %by = %borders.y;
+    // for (%i = 0; %i < %cnt; %i++) {
+    //     %logo = LogoList.getObject(%i);
+    //     %x = %logo.x; %y = %logo.y;
+    //     %vx = %logo.VeloX;
+    //     %vy = %logo.VeloY;
+    //
+    //     %x += %vx * %dt;
+    //     if (%x <= 0 || %x >= %bx) %logo.VeloX *= -1;
+    //     %y += %vy * %dt;
+    //     if (%y <= 0 || %y >= %by) %logo.VeloY *= -1;
+    //     GrayTexture.Draw(%x, %y, %logo.color);
+    //     %logo.x = %x; %logo.y = %y;
+    // }
+
+    DrawFPS(0,0); DrawText(80,0, %cnt,1, "100 100 150");
+}
+//----------------------------------------------------------------------
+function BaseDemo::addLogo(%this,%x,%y) {
+
+    %logo = new GameObject() {
+        x = %x;
+        y = %y;
+        veloX = getRandom(-250,250);
+        veloY = getRandom(-250,250);
+        color = getRandom(0,255) SPC getRandom(0,255) SPC getRandom(0,255) SPC getRandom(128,255);
+    };
+    LogoList.add(%logo);
+    echo("added logo:" SPC %logo);
+}
+//----------------------------------------------------------------------
+/*
+ * onInputEvent - basic keyboard and mouse supported
+ */
+function BaseDemo::onInputEvent( %this, %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
+    // echo("onInputEvent Device:" SPC %deviceString SPC "action:" SPC %actionString SPC "mx/my:" SPC %mouseX SPC %mouseY SPC "DOWN:" SPC %keyValue);
+/*    if (%deviceString $= "keyboard") {
+        invaderGame.Keys[%actionString] = %keyValue;
+        if (!%keyValue) {//keyup
+            if (%actionString $= "escape") {
+                quit();
+            }
+        }
+    }
+    else */
+    if (%deviceString $= "mouse" ) {
+        if (%keyValue == 1) {
+            // echo("MOUSE! val:" SPC %keyValue SPC %actionString);
+            if (%actionString $= "button3") {
+                for (%i = 0; %i < LOGO_SPAWN_RATE; %i++) %this.addLogo(%mouseX, %mouseY);
+            }
+        }
+    }
+}
+

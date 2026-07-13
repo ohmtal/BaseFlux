@@ -11,7 +11,7 @@
 #include "console/console.h"
 #include "console/engineAPI.h"
 #include "console/script.h"
-
+#include "core/strings/stringUnit.h"
 
 // ----  BaseFlux
 #include <SDL3/SDL.h>
@@ -26,14 +26,24 @@ BaseFlux::Main app;
 ImConsole gConsole;
 SDL_Point gMousePos = {0,0};
 extern void InitBindings_SDL();
+extern void ShutdownBindings_SDL();
 extern void InitBindings_ImGui();
+
 //-----------------------------------------------------------------------------
 // console redirect ....
 void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
-    char lBuffer[1024];
-    snprintf(lBuffer, sizeof(lBuffer), "%s", message);
-    gConsole.AddLog("%s", message);
+    U32 count = StringUnit::getUnitCount(message, "\n");
+
+    if (count < 2) {
+        gConsole.AddLog("%s", message);
+    } else {
+        for (U32 i = 0; i < count; i++) {
+            gConsole.AddLog("%s", StringUnit::getUnit(message, i, "\n"));
+        }
+    }
+
+
 }
 //------------------------------------------------------------------------------
 void MyLogger(U32 level, const char *consoleLine)
@@ -87,6 +97,10 @@ int main(int argc, char* argv[]) {
 
         // .sdlWindowFlagsOverwrite = SDL_WINDOW_BORDERLESS
     };
+    // -------------------------------------------------------------------------
+    if (Con::isFunction("OnLoad")) Con::executef("OnLoad");
+    // -------------------------------------------------------------------------
+
     if ( !app.InitSDL() ) return 1;
     app.initImGui();
 
@@ -160,11 +174,14 @@ int main(int argc, char* argv[]) {
     };
 
     app.OnShutDown = [&]() {
+        ShutdownBindings_SDL();
         engineGlue::shutDown();
         if (Con::isFunction("OnShutDown")) Con::executef("OnShutDown");
     };
 
     app.Execute();
+
+
 
     return 0;
 }

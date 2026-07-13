@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.24)
 # -----------------------------------------------------------------------------
+# set(CMAKE_C_COMPILER "clang")
+# set(CMAKE_CXX_COMPILER "clang++")
+# -----------------------------------------------------------------------------
 # Project settings - this is all you have to modify:
+# project(baseElf LANGUAGES C CXX)
 project(baseElf)
 set(PROJECT_SRC
     src/main.cpp

@@ -1,0 +1,24 @@
+function createBlank() {
+    %obj = new ScriptObject() {
+        class = "Blank";
+    };
+
+    return %obj;
+}
+//----------------------------------------------------------------------
+function Blank::onAdd(%this) {
+    ClearBackground(SLATEGRAY); //only set once
+    return true;
+}
+//----------------------------------------------------------------------
+function Blank::OnRemove(%this) {
+}
+//----------------------------------------------------------------------
+function Blank::OnUpdate(%this, %dt) {
+}
+//----------------------------------------------------------------------
+function Blank::Render(%this) {
+}
+//----------------------------------------------------------------------
+function Blank::onInputEvent( %this, %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
+}

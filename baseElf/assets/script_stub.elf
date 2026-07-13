@@ -302,47 +302,6 @@ NOTE: this cant be used with arrays like setFieldValue@param fieldName The name 
    /// @}
 };
 /*!
-@brief A script-level OOP object which allows binding of a class, superClass and arguments along with declaration of methods.
-ScriptObjects are extrodinarily powerful objects that allow defining of any type of data required. They can optionally have
-a class and a superclass defined for added control of multiple ScriptObjects through a simple class definition.
-@tsexample
-new ScriptObject(Game)
-{
-   class = "DeathMatchGame";
-   superClass = GameCore;
-   genre = "Action FPS"; // Note the new, non-Torque variable
-};
-@endtsexample
-@see SimObject
-@ingroup Console
- */
-class  ScriptObject : public SimObject {
-  public:
-   /*! @name Ungrouped
-   @{ */
-   /*! */
-   /// @}
-   /*! @name Object
-   @{ */
-   /*! */
-   /// @}
-   /*! @name Editing
-   @{ */
-   /*! */
-   /// @}
-   /*! @name Persistence
-   @{ */
-   /*! */
-   /// @}
-};
-/// Stub class
-/// 
-/// @note This is a stub class to ensure a proper class hierarchy. No 
-///       information was available for this class.
-class  ImStorage : public ScriptObject {
-  public:
-};
-/*!
 @brief A collection of SimObjects.
 It is often necessary to keep track of an arbitrary set of SimObjects. For instance, Torque's networking code needs to not only keep track of the set of objects which need to be ghosted, but also the set of objects which must <i>always</i> be ghosted. It does this by working with two sets. The first of these is the RootGroup (which is actually a SimGroup) and the second is the GhostAlwaysSet, which contains objects which must always be ghosted to the client.
 Some general notes on SimSets:
@@ -451,6 +410,103 @@ class  SimSet : public SimObject {
    @{ */
    /*! */
    /// @}
+};
+/// Stub class
+/// 
+/// @note This is a stub class to ensure a proper class hierarchy. No 
+///       information was available for this class.
+class  LogoList : public SimSet {
+  public:
+};
+class  SoundObject : public SimObject {
+  public:
+   /*! play the sound */
+   bool play() {}
+   /*!
+    */
+   string fileName;
+   /*!
+    */
+   float gain;
+   /*!
+    */
+   bool loop;
+};
+/// Stub class
+/// 
+/// @note This is a stub class to ensure a proper class hierarchy. No 
+///       information was available for this class.
+class  Sound1 : public SoundObject {
+  public:
+};
+class  TextureObject : public SimObject {
+  public:
+   /*! get the width and height of the loaded texture */
+   Point2I getSize( RectF dstRect ) {}
+   /*! Draw a texture with source and destination rect */
+   bool DrawSrcDstRect( RectF srcRect, RectF dstRect, Color color=WHITE ) {}
+   /*! Draw a texture with source and destination rect */
+   bool DrawRect( RectF dstRect, Color color=WHITE ) {}
+   /*! Draw the texture centered at the position */
+   bool Draw( float x, float y, Color color=WHITE ) {}
+   /*!
+    */
+   string fileName;
+};
+/// Stub class
+/// 
+/// @note This is a stub class to ensure a proper class hierarchy. No 
+///       information was available for this class.
+class  IconTexture : public TextureObject {
+  public:
+};
+/*!
+@brief A script-level OOP object which allows binding of a class, superClass and arguments along with declaration of methods.
+ScriptObjects are extrodinarily powerful objects that allow defining of any type of data required. They can optionally have
+a class and a superclass defined for added control of multiple ScriptObjects through a simple class definition.
+@tsexample
+new ScriptObject(Game)
+{
+   class = "DeathMatchGame";
+   superClass = GameCore;
+   genre = "Action FPS"; // Note the new, non-Torque variable
+};
+@endtsexample
+@see SimObject
+@ingroup Console
+ */
+class  ScriptObject : public SimObject {
+  public:
+   /*! @name Ungrouped
+   @{ */
+   /*! */
+   /// @}
+   /*! @name Object
+   @{ */
+   /*! */
+   /// @}
+   /*! @name Editing
+   @{ */
+   /*! */
+   /// @}
+   /*! @name Persistence
+   @{ */
+   /*! */
+   /// @}
+};
+class  BaseDemo : public ScriptObject {
+  public:
+   Script onInputEvent( string this, string deviceString, string actionString, string mouseX, string mouseY, string keyValue )...) {}
+   Script render( string this )...) {}
+   Script onUpdate()...) {}
+   Script onRemove( string this )...) {}
+   Script onAdd( string this )...) {}
+};
+class  Main : public ScriptObject {
+  public:
+   Script loop( string this )...) {}
+   Script loadModule( string this, string setNewModuleIndex )...) {}
+   Script init( string this )...) {}
 };
 /*!
 @brief A collection of SimObjects that are owned by the group.
@@ -1521,16 +1577,18 @@ function Message::onRemove(%this)
    /*! */
    /// @}
 };
+//------------------------------------------------------------------
+//                  F U N C T I O N S 
+//------------------------------------------------------------------
 namespace Global {
+   Script createBaseDemo()...) {}
    Script updateDocu()...) {}
    Script rl()...) {}
-   Script onShutDown()...) {}
    Script onInputEvent( string deviceString, string actionString, string mouseX, string mouseY, string keyValue )...) {}
    Script onRender()...) {}
-   Script onFruitContextClick( string index, string itemName )...) {}
    Script onUpdate( string dt )...) {}
+   Script onShutDown()...) {}
    Script onInit()...) {}
-   Script RenderPong()...) {}
    /*! @name SDL
    
    SDL/BaseFlux functions
@@ -1538,14 +1596,32 @@ namespace Global {
    /*! */
    /*! Set the default background color - one call is enough */
    void ClearBackground( Color color ) {}
+   /*! set the render color */
+   void SetColor( Color color ) {}
+   /*! set the render color */
+   void SetScale( float x, float y ) {}
    /*! Check a point is in rect */
    bool PointInRect( Point2I p, RectI rect ) {}
+   /*! Check a point is in rect */
+   bool PointInRectF( Point2F p, RectF rect ) {}
    /*! Check rect intersection */
    bool HasRectIntersection( RectI rectA, RectI rectB ) {}
+   /*! Check rect intersection */
+   bool HasRectIntersectionF( RectF rectA, RectF rectB ) {}
    /*! Draw FPS as position */
    void DrawFPS( float x, float y ) {}
    /*! Draw a Text with optional shadow */
    void DrawText( float x, float y, String text, float scale=1.0, Color color=BLACK, bool doShadow=false, Color shadowColor=DARKGRAY ) {}
+   /*! Draw a Line */
+   void DrawLine( float x1, float y1, float x2, float y2, Color color=WHITE ) {}
+   /*! Draw a Rect */
+   void DrawRect( float x, float y, float w, float h, Color color=WHITE, bool fill=true ) {}
+   /*! Draw a Circle */
+   void DrawCircle( float x, float y, float radius, Color color=WHITE, bool fill=true ) {}
+   /*! Draw a Arc: startRad / endRad in radians  */
+   void DrawArc( float x, float y, float radius, float startRad, float endRad, Color color=WHITE, bool fill=true ) {}
+   /*! Draw a Arc */
+   void DrawDonut( float x, float y, float innerRadius, float outerRadius, Color color=WHITE, bool fill=true ) {}
    /// @}
    /*! @name BaseFlux
    
@@ -1571,185 +1647,6 @@ namespace Global {
    /*! debug warn( string message... )  */
    void dWarn(...) {}
    void dError(debug error  string message... )...) {}
-   /// @}
-   /*! @name ImGui
-   
-   ImGui/BaseFlux functions
-   @{ */
-   /*! */
-   void ImSetNextWindowSize( Point2F size, int condition=0 ) {}
-   bool ImBegin( String name, String openVarName="", int windowFlags=0 ) {}
-   void ImEnd() {}
-   void ImBeginGroup() {}
-   void ImEndGroup() {}
-   void ImSameLine( float offsetX=0.0f, float spacing=-1.0f ) {}
-   void ImNewLine() {}
-   void ImSpacing() {}
-   void ImDummy( Point2F size ) {}
-   void ImPushID( string str_id ) {}
-   void ImPopID() {}
-   void ImText( String text ) {}
-   void ImTextColored( Color4F color, String text ) {}
-   bool ImTextLink( string label ) {}
-   /*! draw a small circle + keep the cursor on the same line */
-   void ImBullet() {}
-   /*! a ProgressBar */
-   void ImProgressBar( float fraction, Point2F size=Point2F(-FLT_MIN, 0.f), String overlay="" ) {}
-   void ImSeparator() {}
-   void ImSeparatorText( string label ) {}
-   bool ImButton( string label, Point2F size=Point2F(0.f,0.f) ) {}
-   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
-Example: Imcheckbox("test", "$myvar"); Example: Imcheckbox("test", "MyObject.myvar"); Example: Imcheckbox("test", %obj.getId() @ ".myvar");  */
-   bool ImCheckbox( string text, string valueVarName ) {}
-   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
- */
-   bool ImSliderFloat( string text, string valueVarName, float min=0.f, float max=1.f, string format="%.3f", int flags=0 ) {}
-   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
- */
-   bool ImSliderInt( string text, string valueVarName, int min=0, int max=100, string format="%d", int flags=0 ) {}
-   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
- */
-   bool ImInputText( string text, string valueVarName, int flags=0 ) {}
-   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
-@var currentItemIndexVarName is the name of variable where the current item index lives
-@var ItemsTabSeparated tab separated list of items 
- */
-   bool ImCombo( string label, string currentItemIndexVarName, string ItemsTabSeparated ) {}
-   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
-@var currentItemIndexVarName is the name of variable where the current item index lives
-@var ItemsTabSeparated tab separated list of items 
- */
-   bool ImListBox( string label, string currentItemIndexVarName, string ItemsTabSeparated, int height_in_items=-1 ) {}
-   bool ImBeginPopupContextItem( String contextId="", int popupFlags=0 ) {}
-   bool ImBeginPopupContextWindow( String contextId="", int popupFlags=0 ) {}
-   bool ImBeginPopup( String contextId="", int popupFlags=0 ) {}
-   bool ImBeginPopupModal( String name, String openVarName="", int windowFlags=0 ) {}
-   bool ImIsPopupOpen( String contextId, int popupFlags=0 ) {}
-   /*! call to mark popup as open (don't call every frame!). */
-   void ImOpenPopup( String contextId="", int popupFlags=0 ) {}
-   void ImEndPopup() {}
-   /*! Append to menu-bar of current window (requires ImGuiWindowFlags_MenuBar flag set on parent window).
-Only call ImEndMenuBar() if this returns true.
- */
-   bool ImBeginMenuBar() {}
-   /*! Only call if ImBeginMenuBar() returned true.
- */
-   void ImEndMenuBar() {}
-   /*! Create and append to a full screen menu-bar.
-Only call ImEndMainMenuBar() if this returns true.
- */
-   bool ImBeginMainMenuBar() {}
-   /*! Only call if ImBeginMainMenuBar() returned true.
- */
-   void ImEndMainMenuBar() {}
-   /*! Create a sub-menu entry. Only call ImEndMenu() if this returns true.
- */
-   bool ImBeginMenu( string label, bool enabled=true ) {}
-   /*! Only call if ImBeginMenu() returned true.
- */
-   void ImEndMenu() {}
-   /*! Renders a standard menu item. Returns true when activated.
- */
-   bool ImMenuItem( string label, string shortcut="", bool selected=false, bool enabled=true ) {}
-   /*! Renders a menu item with a checkbox toggle tied to a script variable.
-Returns true if the state changed.
- */
-   bool ImMenuItemToggle( string label, string shortcut="", string boolVarName="", bool enabled=true ) {}
-   /*! Opens a context menu on right-click for the previous widget.
-@param contextId Unique ID for the popup (optional)
-@param ItemsTabSeparated TAB-separated list of menu items
-@param callbackFunctionName Script function called on click (receives index and item name)
- */
-   void ImContextMenu( string contextId, string ItemsTabSeparated="", string callbackFunctionName="" ) {}
-   /*! Renders a TAB-separated list of items as MenuItems.
-Returns the index of the clicked item, or -1 if nothing was clicked.
- */
-   S32 ImMenuRows( string ItemsTabSeparated ) {}
-   /*! Returns true if the last item is hovered by the mouse.
-@param flags ImGuiHoveredFlags configuration options.
- */
-   bool ImIsItemHovered( int flags=0 ) {}
-   /*! Returns true if the last item was clicked.
-@param mouseButton 0 = Left, 1 = Right, 2 = Middle.
- */
-   bool ImIsItemClicked( int mouseButton=0 ) {}
-   /*! Returns true if the last item was double-clicked.
- */
-   bool ImIsItemDoubleClicked() {}
-   /*! Returns true if the mouse button went from down to up in this frame globally.
- */
-   bool ImIsMouseClicked( int mouseButton=0, bool repeat=false ) {}
-   /*! Returns true if the mouse button is currently held down globally.
- */
-   bool ImIsMouseDown( int mouseButton=0 ) {}
-   /*! Returns true if the specific ImGuiKey is currently held down.
-@param imguiKey The native ImGuiKey enum integer value.
- */
-   bool ImIsKeyDown( int imguiKey ) {}
-   /*! Returns true if the specific ImGuiKey was pressed down this frame.
- */
-   bool ImIsKeyPressed( int imguiKey, bool repeat=true ) {}
-   /*! Evaluates a full key chord shortcut (e.g., Ctrl+S).
-Automatically handles modifier routing and avoids execution if an input text field is active.
-@param imguiKeyChord ImGuiKey combined with modifiers like ImGuiMod_Ctrl.
- */
-   bool ImShortcut( int imguiKeyChord, int flags=0 ) {}
-   /*! Returns true if the last item is currently active (e.g., being dragged, slider adjusting, input typed into).
- */
-   bool ImIsItemActive() {}
-   /*! Returns true if the last item has keyboard focus.
- */
-   bool ImIsItemFocused() {}
-   /*! Draws a line using raw coordinates and a native Color4F struct.
- */
-   void ImDrawLine( float p1_x, float p1_y, float p2_x, float p2_y, Color4F color, float thickness=1.0f ) {}
-   /*! Draws an unfilled rectangle using flat coordinates.
- */
-   void ImDrawRect( float min_x, float min_y, float max_x, float max_y, Color4F color, float rounding=0.0f, int flags=0, float thickness=1.0f ) {}
-   /*! Draws a filled rectangle using flat coordinates.
- */
-   void ImDrawRectFilled( float min_x, float min_y, float max_x, float max_y, Color4F color, float rounding=0.0f, int flags=0 ) {}
-   /*! Draws an unfilled circle using flat coordinates.
- */
-   void ImDrawCircle( float center_x, float center_y, float radius, Color4F color, int segments=0, float thickness=1.0f ) {}
-   /*! Draws a filled circle using flat coordinates.
- */
-   void ImDrawCircleFilled( float center_x, float center_y, float radius, Color4F color, int segments=0 ) {}
-   /*! Draws a text string directly onto the current window draw list using flat coordinates.
-@param pos_x X position on screen.
-@param pos_y Y position on screen.
-@param color Native Color4F struct.
-@param text The string message to draw.
- */
-   void ImDrawText( float pos_x, float pos_y, Color4F color, string text ) {}
-   /*! Returns the current screen coordinate position of the cursor as a native Point2F.
- */
-   Point2F ImGetCursorScreenPos() {}
-   /*! Begins a ImGui table framework.
-Only call ImEndTable() if this returns true.
-@param flags Combination of ImGuiTableFlags enums.
- */
-   bool ImBeginTable( string str_id, int column, int flags=0, float outer_size_x=0.0f, float outer_size_y=0.0f, float inner_width=0.0f ) {}
-   /*! Only call if ImBeginTable() returned true.
- */
-   void ImEndTable() {}
-   /*! Submits configuration properties for a single column. Must be called before ImTableHeadersRow().
-@param flags Combination of ImGuiTableColumnFlags enums.
- */
-   void ImTableSetupColumn( string label, int flags=0, float init_width_or_weight=0.0f, int user_id=0 ) {}
-   /*! Submits a header row layout automatically based on your ImTableSetupColumn definitions.
- */
-   void ImTableHeadersRow() {}
-   /*! Appends a new row to the table grid layout.
- */
-   void ImTableNextRow( int row_flags=0, float min_row_height=0.0f ) {}
-   /*! Moves the cell cursor to the specific column index within the current row.
-Returns true if the column is visible and should be rendered.
- */
-   bool ImTableSetColumnIndex( int column_index ) {}
-   /*! Freezes specific top rows or left columns so they stay visible when scrolling.
- */
-   void ImTableSetupScrollFreeze( int cols, int rows ) {}
    /// @}
    /*! return the OS where it was compiled.Win64 | Win32 | Linux | OpenBSD | FreeBSD | MacOSX | Android | Emscripten */
    String getOS() {}
@@ -3238,4 +3135,376 @@ This does not create the actual file. It simply creates a random name for a file
 @param dumpEngine Optional parameter specifying whether or not classes defined in the engine should be dumped.
 @ingroup Docu */
    bool exportConsoleDocu( String fileName, bool forDoxyGen=false, bool append=false, bool dumpScript=true, bool dumpEngine=true ) {}
+   /*! @name ImGui
+   
+   ImGui/BaseFlux functions
+   @{ */
+   /*! */
+   void ImSetNextWindowSize( ImVec2 size, int condition=0 ) {}
+   bool ImBegin( String name, String openVarName="", int windowFlags=0 ) {}
+   void ImEnd() {}
+   void ImBeginGroup() {}
+   void ImEndGroup() {}
+   void ImSameLine( float offsetX=0.0f, float spacing=-1.0f ) {}
+   void ImNewLine() {}
+   void ImSpacing() {}
+   void ImDummy( ImVec2 size ) {}
+   void ImPushID( string str_id ) {}
+   void ImPopID() {}
+   void ImText( String text ) {}
+   void ImTextColored( ImVec4 color, String text ) {}
+   bool ImTextLink( string label ) {}
+   /*! draw a small circle + keep the cursor on the same line */
+   void ImBullet() {}
+   /*! a ProgressBar */
+   void ImProgressBar( float fraction, ImVec2 size=ImVec2(-FLT_MIN, 0.f), String overlay="" ) {}
+   void ImSeparator() {}
+   void ImSeparatorText( string label ) {}
+   bool ImButton( string label, ImVec2 size=ImVec2(0.f,0.f) ) {}
+   /*! Begins a ImGui TabBar
+ */
+   bool ImBeginTabBar( string str_id, int flags=0 ) {}
+   /*! Begin a Tab Item  */
+   bool ImBeginTabItem( string label, String openVarName="", int tabItemFlags=0 ) {}
+   /*! Ends a ImGui TabBarItem */
+   void ImEndTabItem() {}
+   /*! Ends a ImGui TabBar */
+   void ImEndTabBar() {}
+   bool ImTabItemButton( string label, int flags ) {}
+   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
+Example: Imcheckbox("test", "$myvar"); Example: Imcheckbox("test", "MyObject.myvar"); Example: Imcheckbox("test", %obj.getId() @ ".myvar");  */
+   bool ImCheckbox( string text, string valueVarName ) {}
+   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
+ */
+   bool ImSliderFloat( string text, string valueVarName, float min=0.f, float max=1.f, string format="%.3f", int flags=0 ) {}
+   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
+ */
+   bool ImSliderInt( string text, string valueVarName, int min=0, int max=100, string format="%d", int flags=0 ) {}
+   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
+ */
+   bool ImInputText( string text, string valueVarName, int flags=0 ) {}
+   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
+@var currentItemIndexVarName is the name of variable where the current item index lives
+@var ItemsTabSeparated tab separated list of items 
+ */
+   bool ImCombo( string label, string currentItemIndexVarName, string ItemsTabSeparated ) {}
+   /*! return true if changed add a varname as reference. Can be a global variable or a Object field.
+@var currentItemIndexVarName is the name of variable where the current item index lives
+@var ItemsTabSeparated tab separated list of items 
+ */
+   bool ImListBox( string label, string currentItemIndexVarName, string ItemsTabSeparated, int height_in_items=-1 ) {}
+   bool ImBeginPopupContextItem( String contextId="", int popupFlags=0 ) {}
+   bool ImBeginPopupContextWindow( String contextId="", int popupFlags=0 ) {}
+   bool ImBeginPopup( String contextId="", int popupFlags=0 ) {}
+   bool ImBeginPopupModal( String name, String openVarName="", int windowFlags=0 ) {}
+   bool ImIsPopupOpen( String contextId, int popupFlags=0 ) {}
+   /*! call to mark popup as open (don't call every frame!). */
+   void ImOpenPopup( String contextId="", int popupFlags=0 ) {}
+   void ImEndPopup() {}
+   /*! Append to menu-bar of current window (requires ImGuiWindowFlags_MenuBar flag set on parent window).
+Only call ImEndMenuBar() if this returns true.
+ */
+   bool ImBeginMenuBar() {}
+   /*! Only call if ImBeginMenuBar() returned true.
+ */
+   void ImEndMenuBar() {}
+   /*! Create and append to a full screen menu-bar.
+Only call ImEndMainMenuBar() if this returns true.
+ */
+   bool ImBeginMainMenuBar() {}
+   /*! Only call if ImBeginMainMenuBar() returned true.
+ */
+   void ImEndMainMenuBar() {}
+   /*! Create a sub-menu entry. Only call ImEndMenu() if this returns true.
+ */
+   bool ImBeginMenu( string label, bool enabled=true ) {}
+   /*! Only call if ImBeginMenu() returned true.
+ */
+   void ImEndMenu() {}
+   /*! Renders a standard menu item. Returns true when activated.
+ */
+   bool ImMenuItem( string label, string shortcut="", bool selected=false, bool enabled=true ) {}
+   /*! Renders a menu item with a checkbox toggle tied to a script variable.
+Returns true if the state changed.
+ */
+   bool ImMenuItemToggle( string label, string shortcut="", string boolVarName="", bool enabled=true ) {}
+   /*! Opens a context menu on right-click for the previous widget.
+@param contextId Unique ID for the popup (optional)
+@param ItemsTabSeparated TAB-separated list of menu items
+@param callbackFunctionName Script function  (not method!) called on click (receives index and item name)
+ */
+   void ImContextMenu( string contextId, string ItemsTabSeparated="", string callbackFunctionName="" ) {}
+   /*! Renders a TAB-separated list of items as MenuItems.
+Returns the index of the clicked item, or -1 if nothing was clicked.
+ */
+   S32 ImMenuRows( string ItemsTabSeparated ) {}
+   /*! Returns true if the last item is hovered by the mouse.
+@param flags ImGuiHoveredFlags configuration options.
+ */
+   bool ImIsItemHovered( int flags=0 ) {}
+   /*! Returns true if the last item was clicked.
+@param mouseButton 0 = Left, 1 = Right, 2 = Middle.
+ */
+   bool ImIsItemClicked( int mouseButton=0 ) {}
+   /*! Returns true if the last item was double-clicked.
+ */
+   bool ImIsItemDoubleClicked() {}
+   /*! Returns true if the mouse button went from down to up in this frame globally.
+ */
+   bool ImIsMouseClicked( int mouseButton=0, bool repeat=false ) {}
+   /*! Returns true if the mouse button is currently held down globally.
+ */
+   bool ImIsMouseDown( int mouseButton=0 ) {}
+   /*! Returns true if the specific ImGuiKey is currently held down.
+@param imguiKey The native ImGuiKey enum integer value.
+ */
+   bool ImIsKeyDown( int imguiKey ) {}
+   /*! Returns true if the specific ImGuiKey was pressed down this frame.
+ */
+   bool ImIsKeyPressed( int imguiKey, bool repeat=true ) {}
+   /*! Evaluates a full key chord shortcut (e.g., Ctrl+S).
+Automatically handles modifier routing and avoids execution if an input text field is active.
+@param imguiKeyChord ImGuiKey combined with modifiers like ImGuiMod_Ctrl.
+ */
+   bool ImShortcut( int imguiKeyChord, int flags=0 ) {}
+   /*! Returns true if the last item is currently active (e.g., being dragged, slider adjusting, input typed into).
+ */
+   bool ImIsItemActive() {}
+   /*! Returns true if the last item has keyboard focus.
+ */
+   bool ImIsItemFocused() {}
+   /*! Draws a line using raw coordinates and a native ImVec4 struct.
+ */
+   void ImDrawLine( float p1_x, float p1_y, float p2_x, float p2_y, ImVec4 color, float thickness=1.0f ) {}
+   /*! Draws an unfilled rectangle using flat coordinates.
+ */
+   void ImDrawRect( float min_x, float min_y, float max_x, float max_y, ImVec4 color, float rounding=0.0f, int flags=0, float thickness=1.0f ) {}
+   /*! Draws a filled rectangle using flat coordinates.
+ */
+   void ImDrawRectFilled( float min_x, float min_y, float max_x, float max_y, ImVec4 color, float rounding=0.0f, int flags=0 ) {}
+   /*! Draws an unfilled circle using flat coordinates.
+ */
+   void ImDrawCircle( float center_x, float center_y, float radius, ImVec4 color, int segments=0, float thickness=1.0f ) {}
+   /*! Draws a filled circle using flat coordinates.
+ */
+   void ImDrawCircleFilled( float center_x, float center_y, float radius, ImVec4 color, int segments=0 ) {}
+   /*! Draws a text string directly onto the current window draw list using flat coordinates.
+@param pos_x X position on screen.
+@param pos_y Y position on screen.
+@param color Native ImVec4 struct.
+@param text The string message to draw.
+ */
+   void ImDrawText( float pos_x, float pos_y, ImVec4 color, string text ) {}
+   /*! Returns the current screen coordinate position of the cursor as a native ImVec2.
+ */
+   ImVec2 ImGetCursorScreenPos() {}
+   /*! Begins a ImGui table framework.
+Only call ImEndTable() if this returns true.
+@param flags Combination of ImGuiTableFlags enums.
+ */
+   bool ImBeginTable( string str_id, int column, int flags=0, float outer_size_x=0.0f, float outer_size_y=0.0f, float inner_width=0.0f ) {}
+   /*! Only call if ImBeginTable() returned true.
+ */
+   void ImEndTable() {}
+   /*! Submits configuration properties for a single column. Must be called before ImTableHeadersRow().
+@param flags Combination of ImGuiTableColumnFlags enums.
+ */
+   void ImTableSetupColumn( string label, int flags=0, float init_width_or_weight=0.0f, int user_id=0 ) {}
+   /*! Submits a header row layout automatically based on your ImTableSetupColumn definitions.
+ */
+   void ImTableHeadersRow() {}
+   /*! Appends a new row to the table grid layout.
+ */
+   void ImTableNextRow( int row_flags=0, float min_row_height=0.0f ) {}
+   /*! Moves the cell cursor to the specific column index within the current row.
+Returns true if the column is visible and should be rendered.
+ */
+   bool ImTableSetColumnIndex( int column_index ) {}
+   /*! Freezes specific top rows or left columns so they stay visible when scrolling.
+ */
+   void ImTableSetupScrollFreeze( int cols, int rows ) {}
+   /// @}
 };
+//------------------------------------------------------------------
+//                  C O N S T A N T S 
+//------------------------------------------------------------------
+--- Script Constants Dump ---
+  cl_Ghost = "0.700000 0.700000 1.000000 0.500000"
+  cl_Shadow = "0.000000 0.000000 0.000000 0.400000"
+  cl_AcidGreen = "0.500000 1.000000 0.000000 1.000000"
+  cl_NeonPink = "1.000000 0.000000 0.500000 1.000000"
+  cl_Sand = "0.760000 0.700000 0.500000 1.000000"
+  cl_Seafoam = "0.600000 0.850000 0.750000 1.000000"
+  cl_DeepSea = "0.000000 0.080000 0.200000 1.000000"
+  cl_Coral = "1.000000 0.500000 0.310000 1.000000"
+  cl_Aquamarine = "0.500000 1.000000 0.830000 1.000000"
+  cl_Transparent = "0.000000 0.000000 0.000000 0.000000"
+  cl_Slate = "0.180000 0.240000 0.310000 1.000000"
+  cl_SkyBlue = "0.530000 0.810000 0.980000 1.000000"
+  cl_Emerald = "0.160000 0.710000 0.440000 1.000000"
+  cl_Crimson = "0.860000 0.080000 0.240000 1.000000"
+  cl_Pink = "1.000000 0.400000 0.700000 1.000000"
+  cl_Lime = "0.750000 1.000000 0.000000 1.000000"
+  cl_Brown = "0.600000 0.300000 0.000000 1.000000"
+  cl_Purple = "0.500000 0.000000 0.500000 1.000000"
+  cl_Orange = "1.000000 0.500000 0.000000 1.000000"
+  cl_LightGray = "0.750000 0.750000 0.750000 1.000000"
+  cl_Gray = "0.500000 0.500000 0.500000 1.000000"
+  cl_Magenta = "1.000000 0.000000 1.000000 1.000000"
+  cl_Cyan = "0.000000 1.000000 1.000000 1.000000"
+  cl_Green = "0.000000 1.000000 0.000000 1.000000"
+  cl_Red = "1.000000 0.000000 0.000000 1.000000"
+  cl_White = "1.000000 1.000000 1.000000 1.000000"
+  cl_NONE = "-1.000000 -1.000000 -1.000000 -1.000000"
+  ImGuiMouseButton_Middle = 2
+  ImGuiMouseButton_Right = 1
+  ImGuiKey_Escape = 526
+  ImGuiKey_Delete = 522
+  cl_ElectricBlue = "0.000000 1.000000 1.000000 1.000000"
+  ImGuiKey_Home = 519
+  ImGuiKey_PageDown = 518
+  ImGuiKey_PageUp = 517
+  ImGuiKey_DownArrow = 516
+  ImGuiKey_UpArrow = 515
+  ImGuiKey_RightArrow = 514
+  FLT_MAX = 3.40282e+38
+  ImGuiMouseButton_Left = 0
+  ImGuiTableFlags_NoSavedSettings = 16
+  ImGuiWindowFlags_AlwaysVerticalScrollbar = 16384
+  ImGuiTableFlags_ContextMenuInBody = 32
+  WHITE = "255 255 255 255"
+  DARKBROWN = "76 63 47 255"
+  ImGuiWindowFlags_NoBackground = 128
+  ImGuiWindowFlags_NoNav = 196608
+  ImGuiKey_End = 520
+  ImGuiKey_H = 553
+  ImGuiKey_Backspace = 523
+  ImGuiWindowFlags_NoSavedSettings = 256
+  LIME = "0 158 47 255"
+  ImGuiKey_F1 = 572
+  cl_DarkGray = "0.250000 0.250000 0.250000 1.000000"
+  ImGuiKey_F = 551
+  ImGuiKey_E = 550
+  ImGuiKey_F3 = 574
+  ImGuiKey_Space = 524
+  ImGuiTableFlags_Sortable = 8
+  ImGuiKey_G = 552
+  MAROON = "190 33 55 255"
+  RED = "230 41 55 255"
+  cl_Glass = "1.000000 1.000000 1.000000 0.250000"
+  ImGuiTableFlags_None = 0
+  ImGuiWindowFlags_NoInputs = 197120
+  ORANGE = "255 161 0 255"
+  ImGuiMod_Alt = 16384
+  ImGuiWindowFlags_AlwaysAutoResize = 64
+  ImGuiKey_5 = 541
+  ImGuiWindowFlags_UnsavedDocument = 262144
+  ImGuiKey_M = 558
+  ImGuiWindowFlags_NoScrollWithMouse = 16
+  ImGuiKey_P = 561
+  SEABLUE = "20 20 50 255"
+  ImGuiKey_6 = 542
+  GRAY = "130 130 130 255"
+  ImGuiKey_Insert = 521
+  ImGuiWindowFlags_None = 0
+  cl_Yellow = "1.000000 1.000000 0.000000 1.000000"
+  BLUE = "0 121 241 255"
+  ImGuiWindowFlags_NoDecoration = 43
+  DARKGREEN = "0 117 44 255"
+  ImGuiMod_Shift = 8192
+  cl_Blue = "0.000000 0.000000 1.000000 1.000000"
+  ImGuiWindowFlags_NoMouseInputs = 512
+  ImGuiKey_F9 = 580
+  ImGuiWindowFlags_NoNavFocus = 131072
+  ImGuiTableColumnFlags_None = 0
+  LIGHTGRAY = "200 200 200 255"
+  ImGuiKey_7 = 543
+  ImGuiTableFlags_BordersInnerH = 128
+  ImGuiWindowFlags_NoFocusOnAppearing = 4096
+  ImGuiKey_N = 559
+  ImGuiKey_K = 556
+  ImGuiKey_X = 569
+  ImGuiWindowFlags_NoBringToFrontOnFocus = 8192
+  ImGuiKey_0 = 536
+  DARKPURPLE = "112 31 126 255"
+  PURPLE = "200 122 255 255"
+  GREEN = "0 228 48 255"
+  ImGuiTableFlags_RowBg = 64
+  ImGuiWindowFlags_NoScrollbar = 8
+  SLATEGRAY = "45 45 45 255"
+  ImGuiTableFlags_BordersOuterV = 1024
+  BLACK = "0 0 0 255"
+  BROWN = "127 106 79 255"
+  ImGuiKey_Tab = 512
+  ImGuiWindowFlags_NoTitleBar = 1
+  ImGuiKey_S = 564
+  ImGuiKey_W = 568
+  VIOLET = "135 60 190 255"
+  DARKGRAY = "80 80 80 255"
+  ImGuiTableFlags_ScrollX = 16777216
+  cl_Black = "0.000000 0.000000 0.000000 1.000000"
+  YELLOW = "253 249 0 255"
+  ImGuiKey_Q = 562
+  cl_Kelp = "0.130000 0.290000 0.130000 1.000000"
+  BEIGE = "211 176 131 255"
+  PINK = "255 109 194 255"
+  ImGuiTableFlags_Resizable = 1
+  MAGENTA = "255 0 255 255"
+  ImGuiKey_F2 = 573
+  ImGuiMod_None = 0
+  DARKBLUE = "0 82 172 255"
+  BLANK = "0 0 0 0"
+  RAYWHITE = "245 245 245 255"
+  FLT_MIN = 1.17549e-38
+  ImGuiTableFlags_BordersOuterH = 256
+  ImGuiTableFlags_BordersInnerV = 512
+  ImGuiTableFlags_Reorderable = 2
+  ImGuiTableFlags_Borders = 1920
+  ImGuiTableColumnFlags_DefaultHide = 2
+  ImGuiTableColumnFlags_WidthFixed = 16
+  SKYBLUE = "102 191 255 255"
+  ImGuiTableColumnFlags_WidthStretch = 8
+  ImGuiMod_Ctrl = 4096
+  ImGuiMod_Super = 32768
+  GOLD = "255 203 0 255"
+  ImGuiKey_A = 546
+  ImGuiWindowFlags_NoCollapse = 32
+  ImGuiKey_B = 547
+  ImGuiKey_C = 548
+  ImGuiWindowFlags_MenuBar = 1024
+  ImGuiTableFlags_Hideable = 4
+  ImGuiKey_Y = 570
+  ImGuiKey_Enter = 525
+  ImGuiKey_D = 549
+  ImGuiKey_J = 555
+  ImGuiWindowFlags_NoMove = 4
+  ImGuiKey_L = 557
+  cl_Gold = "1.000000 0.840000 0.000000 1.000000"
+  ImGuiWindowFlags_AlwaysHorizontalScrollbar = 32768
+  ImGuiKey_O = 560
+  ImGuiKey_R = 563
+  ImGuiTableFlags_ScrollY = 33554432
+  ImGuiKey_T = 565
+  ImGuiKey_U = 566
+  ImGuiKey_1 = 537
+  ImGuiKey_2 = 538
+  ImGuiKey_3 = 539
+  ImGuiTableColumnFlags_Disabled = 1
+  ImGuiKey_I = 554
+  ImGuiKey_4 = 540
+  ImGuiKey_Z = 571
+  ImGuiKey_F5 = 576
+  ImGuiKey_8 = 544
+  ImGuiKey_9 = 545
+  ImGuiKey_F4 = 575
+  ImGuiKey_V = 567
+  ImGuiKey_F6 = 577
+  ImGuiWindowFlags_NoResize = 2
+  ImGuiKey_F7 = 578
+  ImGuiWindowFlags_HorizontalScrollbar = 2048
+  ImGuiKey_F8 = 579
+  ImGuiKey_F10 = 581
+  ImGuiKey_F11 = 582
+  ImGuiKey_F12 = 583
+  ImGuiKey_LeftArrow = 513
+--- End of Dump (178 items) ---
