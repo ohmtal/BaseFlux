@@ -1,0 +1,141 @@
+// =============================================================================
+// Squash (Pong) Game Setup
+// =============================================================================
+if (!$Squash::Initialized) {
+    $Squash::BallX = 150.0;
+    $Squash::BallY = 100.0;
+    $Squash::BallSpeedX = 4.0;
+    $Squash::BallSpeedY = 3.0;
+    $Squash::BallRadius = 8.0;
+
+    $Squash::PaddleY = 100.0;
+    $Squash::PaddleWidth = 15.0;
+    $Squash::PaddleHeight = 60.0;
+    $Squash::PaddleSpeed = 6.0;
+
+    $Squash::Score = 0;
+    $Squash::GameOver = false;
+    $Squash::Initialized = true;
+}
+
+// =============================================================================
+// Game Loop (Run this inside your main ImGui frame update)
+// =============================================================================
+function RenderPong() {
+    // Define window flags: No resizing, no scrollbars, fixed size for a perfect canvas
+    %windowFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
+
+    // Set fixed size for the game field before drawing
+    ImSetNextWindowSize("400 300", 0);
+
+    if (ImBegin("ElfScript Squash", "", %windowFlags)) {
+
+        // 1. Get current window drawing boundaries
+        %pos = ImGetCursorScreenPos();
+        %fieldLeft   = %pos.x;
+        %fieldTop    = %pos.y;
+        %fieldRight  = %pos.x + 380; // Field width: 380px
+        %fieldBottom = %pos.y + 240; // Field height: 240px
+
+        // Reserve space for our game box canvas
+        ImDummy("380 240");
+
+        // Render the court background box using your color constants
+        ImDrawRectFilled(%fieldLeft, %fieldTop, %fieldRight, %fieldBottom, cl_Slate);
+
+        // Draw score board text at the top center
+        ImDrawText(%fieldLeft + 160, %fieldTop + 10, cl_Gold, "SCORE: " @ $Squash::Score);
+
+        if ($Squash::GameOver) {
+            // Render Game Over screen overlays
+            ImDrawRectFilled(%fieldLeft, %fieldTop, %fieldRight, %fieldBottom, cl_Shadow);
+            ImDrawText(%fieldLeft + 130, %fieldTop + 100, cl_Crimson, "GAME OVER");
+            ImDrawText(%fieldLeft + 100, %fieldTop + 130, cl_White, "Press SPACE to Restart");
+
+            // Listen for restart hotkey
+            if (ImIsKeyPressed(ImGuiKey_Space)) {
+                $Squash::BallX = 150.0;
+                $Squash::BallY = 100.0;
+                $Squash::BallSpeedX = 4.0;
+                $Squash::BallSpeedY = 3.0;
+                $Squash::Score = 0;
+                $Squash::GameOver = false;
+            }
+        }
+        else {
+            // =====================================================================
+            // GAME PHYSICS & INPUT PROCESSING
+            // =====================================================================
+
+            // Player input tracking via your native ImGuiKey layout
+            if (ImIsKeyDown(ImGuiKey_UpArrow) || ImIsKeyDown(ImGuiKey_W)) {
+                $Squash::PaddleY -= $Squash::PaddleSpeed;
+            }
+            if (ImIsKeyDown(ImGuiKey_DownArrow) || ImIsKeyDown(ImGuiKey_S)) {
+                $Squash::PaddleY += $Squash::PaddleSpeed;
+            }
+
+            // Keep paddle clamped firmly inside window top/bottom boundaries
+            if ($Squash::PaddleY < 0) { $Squash::PaddleY = 0; }
+            %maxPaddleY = 240 - $Squash::PaddleHeight;
+            if ($Squash::PaddleY > %maxPaddleY) { $Squash::PaddleY = %maxPaddleY; }
+
+            // Update Ball coordinates based on velocity vectors
+            $Squash::BallX += $Squash::BallSpeedX;
+            $Squash::BallY += $Squash::BallSpeedY;
+
+            // Bounce mechanics: Top and Bottom walls
+            if ($Squash::BallY <= $Squash::BallRadius || $Squash::BallY >= (240 - $Squash::BallRadius)) {
+                $Squash::BallSpeedY = -$Squash::BallSpeedY; // Reverse vertical speed
+            }
+
+            // Bounce mechanics: Right back wall (Squash wall)
+            if ($Squash::BallX >= (380 - $Squash::BallRadius)) {
+                $Squash::BallSpeedX = -$Squash::BallSpeedX; // Reverse horizontal speed
+            }
+
+            // Paddle absolute coordinates in screen space
+            %paddleLeft   = %fieldLeft + 10;
+            %paddleRight  = %paddleLeft + $Squash::PaddleWidth;
+            %paddleTop    = %fieldTop + $Squash::PaddleY;
+            %paddleBottom = %paddleTop + $Squash::PaddleHeight;
+
+            // Ball absolute coordinates in screen space
+            %absBallX = %fieldLeft + $Squash::BallX;
+            %absBallY = %fieldTop + $Squash::BallY;
+
+            // Collision logic: Check if Ball intersects with the player's Paddle
+            if ($Squash::BallSpeedX < 0) { // Ball moving towards left side
+                if (%absBallX - $Squash::BallRadius <= %paddleRight && %absBallX + $Squash::BallRadius >= %paddleLeft) {
+                    if (%absBallY >= %paddleTop && %absBallY <= %paddleBottom) {
+                        // Successful deflection! Bounce back and accelerate slightly
+                        $Squash::BallSpeedX = -$Squash::BallSpeedX * 1.05;
+                        $Squash::Score++;
+
+                        // Tiny positional fix to prevent sticky multibounce glitches
+                        $Squash::BallX = (%paddleRight - %fieldLeft) + $Squash::BallRadius;
+echo("Paddle Collision BALLX:" SPC $Squash::BallX);
+                    }
+                }
+            }
+
+            // Failure state check: Out of bounds on the left wall
+            if ($Squash::BallX < 0) {
+                $Squash::GameOver = true;
+            }
+
+            // =====================================================================
+            // VISUAL RENDERING
+            // =====================================================================
+
+            // Render Paddle (Emerald green rectangle)
+            ImDrawRectFilled(%paddleLeft, %paddleTop, %paddleRight, %paddleBottom, cl_Emerald);
+
+            // Render Ball (Bright Amber/Gold circle)
+            ImDrawCircleFilled(%absBallX, %absBallY, $Squash::BallRadius, cl_Gold, 16);
+        }
+
+        ImEnd();
+    }
+}
+

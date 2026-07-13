@@ -25,7 +25,8 @@
 BaseFlux::Main app;
 ImConsole gConsole;
 SDL_Point gMousePos = {0,0};
-extern void InitBindings();
+extern void InitBindings_SDL();
+extern void InitBindings_ImGui();
 //-----------------------------------------------------------------------------
 // console redirect ....
 void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
@@ -71,7 +72,8 @@ void initConsole() {
 int main(int argc, char* argv[]) {
     initConsole();
     engineGlue::init(MyLogger, (BaseFlux::Tools::getBasePath()+"/assets").c_str());
-    InitBindings();
+    InitBindings_SDL();
+    InitBindings_ImGui();
     Con::executeFile("main.elf");
 
     bool doUpdateCall = Con::isFunction("OnUpdate");

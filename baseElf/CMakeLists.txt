@@ -49,6 +49,9 @@ else()
   set (ELFSCRIPT_INCLUDES
    ${ELF_MODULE}
   )
+  # optinal doc exporter
+  list(APPEND ELFSCRIPT_SRC ${ELF_MODULE}/addons/console/consoleDocExporter.cpp)
+
 endif()
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<< ElfScript ========================
 
