@@ -5,7 +5,7 @@ project(baseElf)
 set(PROJECT_SRC
     src/main.cpp
     src/bindings_sdl.cpp
-    src/bindings_imgui.cpp
+    # moved to ElfScript src/bindings_imgui.cpp
     src/myPlatformProcess.cc
     src/ConsoleTypes.cpp
 )
@@ -51,6 +51,8 @@ else()
   )
   # optinal doc exporter
   list(APPEND ELFSCRIPT_SRC ${ELF_MODULE}/addons/console/consoleDocExporter.cpp)
+  # ImGui Bindings
+  list(APPEND ELFSCRIPT_SRC ${ELF_MODULE}/addons/ImGui/bindings_imgui.cpp)
 
 endif()
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<< ElfScript ========================

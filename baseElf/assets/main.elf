@@ -75,7 +75,7 @@ function onRender() {
     %y = 20;
     %x = 10;
     if (isObject(IconTexture)) IconTexture.draw(%x,%y - 8);
-    DrawText(%x + 40,%y,"Hello Base11 SDL/BaseFlux todos:", 2, WHITE, true, SLATEGRAY);
+    DrawText(%x + 40,%y,"Base11 SDL/BaseFlux todos:", 2, WHITE, true, SLATEGRAY);
     %y+= 30;DrawText(%x,%y,"[X] ConsoleTypes and Colors", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] ClearBackground", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] DrawText", 1.5, GREEN, true, SLATEGRAY);
@@ -87,7 +87,7 @@ function onRender() {
     %y+= 20;DrawText(%x,%y,"[ ] drawCircle", 1.5, WHITE, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] drawArc", 1.5, WHITE, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] drawDonut", 1.5, WHITE, true, SLATEGRAY);
-    %y+= 20;DrawText(%x,%y,"[ ] getWindowSize", 1.5, WHITE, true, SLATEGRAY);
+    %y+= 20;DrawText(%x,%y,"[X] getWindowSize", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] TextureObject", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] SoundObject", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[ ] BaseFlux Settings window size/vsync/appname/icon/...", 1.5, WHITE, true, SLATEGRAY);
