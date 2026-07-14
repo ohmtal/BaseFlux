@@ -3,6 +3,7 @@
 #define LOGO_START_SPEED 100
 #define MAG_DIR_VALUE 15
 #define MAG_MAX 10000
+#define BOUNCY 5.0
 //----------------------------------------------------------------------
 function createBaseDemo() {
     %obj = new ScriptObject() {
@@ -87,23 +88,26 @@ function BaseDemo::Render(%this) {
 
         $ticker++;
 
-        //FIXME bottom and right border miss match ....
         %bx = %borders.x - BORDER; %by = %borders.y -BORDER;
         %cp = (%bx - BORDER) / 2 SPC (%by - BORDER) / 2 SPC 0;
         // %cp = (%bx - BORDER) / 2 SPC (%by - BORDER)  SPC 0;
         // echo(%cp);
 
+        // is half ...
         #define TEX_SIZE 16
 
-        DrawRect(BORDER - TEX_SIZE, BORDER - TEX_SIZE, %bx - BORDER + TEX_SIZE, %by - BORDER + TEX_SIZE, "10 10 10 255");
-        DrawRect(BORDER - TEX_SIZE, BORDER - TEX_SIZE, %bx - BORDER + TEX_SIZE, %by - BORDER + TEX_SIZE, WHITE, false);
+        DrawRect(BORDER - TEX_SIZE, BORDER - TEX_SIZE, %bx - BORDER + TEX_SIZE * 2, %by - BORDER + TEX_SIZE * 2, "10 10 10 255");
+        DrawRect(BORDER - TEX_SIZE, BORDER - TEX_SIZE, %bx - BORDER + TEX_SIZE * 2, %by - BORDER + TEX_SIZE * 2, WHITE, false);
 
 
         $magnetism += $magDirection;
         if ( $magnetism > MAG_MAX ) $magDirection = -MAG_DIR_VALUE;
-        else if ( $magnetism < -MAG_MAX ) $magDirection = MAG_DIR_VALUE;
+        else if ( $magnetism < -MAG_MAX ) {
+            $magDirection = MAG_DIR_VALUE;
+            %this.impulse();
+        }
 
-        %damping = 0.8; //1
+        %damping = BOUNCY; //1
 
         DrawCircle(%cp.x, %cp.y, mAbs($magnetism) / 50,  $magnetism < 0 ? RED : ORANGE);
         if ($magDirection > 0) DrawLine(BORDER, %by, %bx, %by , ORANGE);
