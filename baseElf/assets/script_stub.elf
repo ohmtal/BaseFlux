@@ -1,3 +1,6 @@
+//------------------------------------------------------------------
+//                    C L A S S E S  
+//------------------------------------------------------------------
 /*!
 @brief Base class for almost all objects involved in the simulation.
 @ingroup Console
@@ -411,34 +414,6 @@ class  SimSet : public SimObject {
    /*! */
    /// @}
 };
-/// Stub class
-/// 
-/// @note This is a stub class to ensure a proper class hierarchy. No 
-///       information was available for this class.
-class  LogoList : public SimSet {
-  public:
-};
-class  SoundObject : public SimObject {
-  public:
-   /*! play the sound */
-   bool play() {}
-   /*!
-    */
-   string fileName;
-   /*!
-    */
-   float gain;
-   /*!
-    */
-   bool loop;
-};
-/// Stub class
-/// 
-/// @note This is a stub class to ensure a proper class hierarchy. No 
-///       information was available for this class.
-class  Sound1 : public SoundObject {
-  public:
-};
 class  TextureObject : public SimObject {
   public:
    /*! get the width and height of the loaded texture */
@@ -452,13 +427,6 @@ class  TextureObject : public SimObject {
    /*!
     */
    string fileName;
-};
-/// Stub class
-/// 
-/// @note This is a stub class to ensure a proper class hierarchy. No 
-///       information was available for this class.
-class  IconTexture : public TextureObject {
-  public:
 };
 /*!
 @brief A script-level OOP object which allows binding of a class, superClass and arguments along with declaration of methods.
@@ -493,20 +461,6 @@ class  ScriptObject : public SimObject {
    @{ */
    /*! */
    /// @}
-};
-class  BaseDemo : public ScriptObject {
-  public:
-   Script onInputEvent( string this, string deviceString, string actionString, string mouseX, string mouseY, string keyValue )...) {}
-   Script render( string this )...) {}
-   Script onUpdate()...) {}
-   Script onRemove( string this )...) {}
-   Script onAdd( string this )...) {}
-};
-class  Main : public ScriptObject {
-  public:
-   Script loop( string this )...) {}
-   Script loadModule( string this, string setNewModuleIndex )...) {}
-   Script init( string this )...) {}
 };
 /*!
 @brief A collection of SimObjects that are owned by the group.
@@ -560,12 +514,118 @@ class  SimGroup : public SimSet {
    /*! */
    /// @}
 };
-/// Stub class
-/// 
-/// @note This is a stub class to ensure a proper class hierarchy. No 
-///       information was available for this class.
-class  RootGroup : public SimGroup {
+class  SettingsObject : public SimObject {
   public:
+   /*! Settings must be synced to get active! */
+   void sync() {}
+   /*!
+    */
+   Point2I ScreenSize;
+   /*!
+    */
+   int FpsLimit;
+   /*!
+    */
+   bool WindowMaximized;
+   /*!
+    */
+   bool FullScreen;
+   /*!
+    */
+   bool EnableVSync;
+   /*!
+    */
+   string Company;
+   /*!
+    */
+   string Caption;
+   /*!
+    */
+   string Version;
+   /*!
+    */
+   string IconFilename;
+   /*!
+    */
+   string AssetPath;
+   /*!
+    */
+   string SoundPathAppend;
+   /*!
+    */
+   string TexturePathAppend;
+   /*!
+    */
+   bool EnableDockSpace;
+   /*!
+    */
+   string IniFileName;
+   /*!
+    */
+   int sdlWindowFlagsOverwrite;
+   /*!
+    */
+   Color clearColor;
+};
+class  GameObject : public SimObject {
+  public:
+   /*! Move Linear position/velocity */
+   void moveLinear() {}
+   /*! Draw2D */
+   bool DrawTexture( SimObjectId texObjectID ) {}
+   /*!
+    */
+   Point3F position;
+   /*!
+    */
+   float x;
+   /*!
+    */
+   float y;
+   /*!
+    */
+   float z;
+   /*!
+    */
+   Point3F velocity;
+   /*!
+    */
+   float veloX;
+   /*!
+    */
+   float veloY;
+   /*!
+    */
+   float veloZ;
+   /*!
+    */
+   Color color;
+   /*!
+    */
+   char r;
+   /*!
+    */
+   char g;
+   /*!
+    */
+   char b;
+   /*!
+    */
+   char a;
+};
+class  SoundObject : public SimObject {
+  public:
+   /*! play the sound */
+   bool play() {}
+   /*!
+    */
+   string fileName;
+   /*!
+    */
+   float gain;
+   /*!
+    */
+   bool loop;
 };
 /*!
 @brief Data structure for storing indexed sequences of key/value pairs.
@@ -1581,14 +1641,6 @@ function Message::onRemove(%this)
 //                  F U N C T I O N S 
 //------------------------------------------------------------------
 namespace Global {
-   Script createBaseDemo()...) {}
-   Script updateDocu()...) {}
-   Script rl()...) {}
-   Script onInputEvent( string deviceString, string actionString, string mouseX, string mouseY, string keyValue )...) {}
-   Script onRender()...) {}
-   Script onUpdate( string dt )...) {}
-   Script onShutDown()...) {}
-   Script onInit()...) {}
    /*! @name SDL
    
    SDL/BaseFlux functions
@@ -3328,7 +3380,9 @@ Returns true if the column is visible and should be rendered.
 //------------------------------------------------------------------
 //                  C O N S T A N T S 
 //------------------------------------------------------------------
+/*
 --- Script Constants Dump ---
+  LOGO_SPAWN_RATE = 250
   cl_Ghost = "0.700000 0.700000 1.000000 0.500000"
   cl_Shadow = "0.000000 0.000000 0.000000 0.400000"
   cl_AcidGreen = "0.500000 1.000000 0.000000 1.000000"
@@ -3507,4 +3561,5 @@ Returns true if the column is visible and should be rendered.
   ImGuiKey_F11 = 582
   ImGuiKey_F12 = 583
   ImGuiKey_LeftArrow = 513
---- End of Dump (178 items) ---
+--- End of Dump (179 items) ---
+*/
