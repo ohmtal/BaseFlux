@@ -1,4 +1,4 @@
-#define LOGO_SPAWN_RATE 500
+#define LOGO_SPAWN_RATE 250
 
 //----------------------------------------------------------------------
 function createBaseDemo() {
@@ -14,7 +14,7 @@ function BaseDemo::onAdd(%this) {
     ClearBackground( SEABLUE ); //set background color
     new TextureObject(IconTexture) { fileName = "texture/icon_32.png"; };
     new TextureObject(GrayTexture) { fileName = "texture/icon_32_gray.png"; };
-    new SoundObject(Sound1) { fileName = "sound/sound1.wav"; };
+
     new SimSet(LogoList);
     return true;
 }
@@ -22,7 +22,7 @@ function BaseDemo::onAdd(%this) {
 function BaseDemo::OnRemove(%this) {
     IconTexture.delete();
     GrayTexture.delete();
-    Sound1.delete();
+
     LogoList.deleteObjects();
     LogoList.delete();
 }
@@ -35,7 +35,7 @@ function BaseDemo::Render(%this) {
     %y = 20;
     %x = 10;
     if (isObject(IconTexture)) IconTexture.Draw(%x + 16,%y + 8);
-    DrawText(%x + 40,%y,"Base11 SDL/BaseFlux todos:", 2, WHITE, true, SLATEGRAY);
+    DrawText(%x + 40,%y,"Base11 SDL/BaseFlux", 2, WHITE, true, SLATEGRAY);
     %y+= 30;DrawText(%x,%y,"[X] ConsoleTypes and Colors", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] ClearBackground", 1.5, GREEN, true, SLATEGRAY);
     %y+= 20;DrawText(%x,%y,"[X] DrawText", 1.5, GREEN, true, SLATEGRAY);
@@ -248,7 +248,7 @@ function BaseDemo::addLogo(%this,%x,%y) {
         y = %y;
         veloX = getRandom(-250,250);
         veloY = getRandom(-250,250);
-        color = getRandom(0,255) SPC getRandom(0,255) SPC getRandom(0,255) SPC getRandom(128,255);
+        color = getRandom(0,255) SPC getRandom(0,255) SPC getRandom(0,255) SPC getRandom(32,255);
     };
     LogoList.add(%logo);
     echo("added logo:" SPC %logo);

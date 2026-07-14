@@ -1,3 +1,13 @@
+// Drawing test: >>>
+#define RadarGreen "0.0 1.0 0.0 1.0"
+#define RadarBg "0.1 0.1 0.1 0.8"
+#define TargetRed "1.0 0.0 0.0 1.0"
+#define TextWhite "1.0 1.0 1.0 1.0"
+#define DummySize "200 200"
+// <<<
+
+//----------------------------------------------------------------------
+
 function createImGuiDemo() {
     %obj = new ScriptObject() {
         class = "ImGuiDemo";
@@ -18,13 +28,14 @@ function ImGuiDemo::onAdd(%this) {
         TypeString  ComboValues = "Apfel" TAB "Birne" TAB "Erdbeere" TAB "Kiwi";
     };
 
-
+     new SoundObject(Sound1) { fileName = "sound/sound1.wav"; };
 
     return true;
 }
 //----------------------------------------------------------------------
 function ImGuiDemo::OnRemove(%this) {
-     ImStorage.delete();
+    ImStorage.delete();
+    Sound1.delete();
 }
 //----------------------------------------------------------------------
 function ImGuiDemo::OnUpdate(%this, %dt) {
