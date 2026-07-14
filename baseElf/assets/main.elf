@@ -102,9 +102,6 @@ function onShutDown() {
  *  OnUpdate
  */
 function onUpdate(%dt) {
-
-
-
     if (isObject($Main.module)) $Main.module.onUpdate(%dt);
 
 }

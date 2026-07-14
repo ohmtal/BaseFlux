@@ -284,6 +284,103 @@ DefineEngineMethod(GameObject, moveLinear, void, (), ,"Move Linear position/velo
     object->mPoint.z += object->mVelo.z * dt;
 }
 
+DefineEngineMethod(GameObject, moveGravity, void, (F32 gravityX, F32 gravityY, F32 gravityZ),
+                        (0.f, 9.81f, 0.f) ,
+                    "Move with gravity acceleration default: 0,-9.81,0") {
+    F32 dt = (F32)BaseFlux::getFrameTime();
+
+    object->mVelo.x += gravityX * dt;
+    object->mVelo.y += gravityY * dt;
+    object->mVelo.z += gravityZ * dt;
+
+    object->mPoint.x += object->mVelo.x * dt;
+    object->mPoint.y += object->mVelo.y * dt;
+    object->mPoint.z += object->mVelo.z * dt;
+}
+
+// DefineEngineMethod(GameObject, moveOrbital, void, (Point3F centerPoint, F32 centerMass),
+//                    ,"Move in a gravitational field") {
+//     F32 dt = (F32)BaseFlux::getFrameTime();
+//
+//     Point3F direction =   centerPoint - object->mPoint;
+//     F32 distance = direction.len();
+//
+//     if (distance > 0.001f) {
+//         direction.normalize();
+//
+//         F32 G = 6.674f;
+//         F32 gravityPull = (G * centerMass) / (distance * distance);
+//
+//         object->mVelo.x += direction.x * gravityPull * dt;
+//         object->mVelo.y += direction.y * gravityPull * dt;
+//         object->mVelo.z += direction.z * gravityPull * dt;
+//     }
+//
+//     object->mPoint.x += object->mVelo.x * dt;
+//     object->mPoint.y += object->mVelo.y * dt;
+//     object->mPoint.z += object->mVelo.z * dt;
+// }
+DefineEngineMethod(GameObject, moveOrbital, void, (Point3F centerPoint, F32 centerMass), ,"Move in a gravitational field") {
+    F32 dt = (F32)BaseFlux::getFrameTime();
+
+    Point3F direction = centerPoint - object->mPoint;
+    F32 distance = direction.len();
+
+    F32 softening = 0.1f;
+
+    if (distance > 0.00001f) {
+        direction.normalize();
+
+        F32 G = 6.674f;
+
+        F32 gravityPull = (G * centerMass) / (distance * distance + softening);
+
+        object->mVelo.x += direction.x * gravityPull * dt;
+        object->mVelo.y += direction.y * gravityPull * dt;
+        object->mVelo.z += direction.z * gravityPull * dt;
+    }
+
+    object->mPoint.x += object->mVelo.x * dt;
+    object->mPoint.y += object->mVelo.y * dt;
+    object->mPoint.z += object->mVelo.z * dt;
+}
+
+DefineEngineMethod(GameObject, moveOrbital2D, void,
+    (Point3F centerPoint, F32 gravity, F32 softening, F32 maxSpeed),
+                   (10.f, 150.f, 350.f) ,"2D Safe Orbital Movement")
+{
+    F32 dt = (F32)BaseFlux::getFrameTime();
+
+    Point3F direction = centerPoint - object->mPoint;
+    direction.z = 0.f;
+
+    F32 distance = direction.len();
+
+    // F32 G = 9.81f;
+
+    if (distance > 0.0001f) {
+        direction.normalize();
+        F32 gravityPull = (gravity * 1000.f) / (distance * distance + softening);
+
+        object->mVelo.x += direction.x * gravityPull * dt;
+        object->mVelo.y += direction.y * gravityPull * dt;
+    }
+
+    // F32 drag = 0.995f;
+    // object->mVelo.x *= drag;
+    // object->mVelo.y *= drag;
+
+    F32 currentSpeed = sqrt(object->mVelo.x * object->mVelo.x + object->mVelo.y * object->mVelo.y);
+    if (currentSpeed > maxSpeed && currentSpeed > 0.0f) {
+        object->mVelo.x = (object->mVelo.x / currentSpeed) * maxSpeed;
+        object->mVelo.y = (object->mVelo.y / currentSpeed) * maxSpeed;
+    }
+
+    object->mPoint.x += object->mVelo.x * dt;
+    object->mPoint.y += object->mVelo.y * dt;
+}
+
+
 DefineEngineMethod(GameObject, DrawTexture, bool, (SimObjectId texObjectID), ,"Draw2D") {
     TextureObject* texObject = dynamic_cast<TextureObject*>(Sim::findObject(texObjectID));
     if (!texObject) return false;

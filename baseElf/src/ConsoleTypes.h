@@ -26,12 +26,51 @@ typedef SDL_FRect RectF;
 typedef SDL_Rect RectI;
 typedef SDL_Point Point2I;
 typedef SDL_FPoint Point2F;
-typedef struct Point3F
-{
-    float x;
-    float y;
-    float z;
-} Point3F;
+
+// from OhmFlux
+struct Point3F {
+    F32 x = 0.f, y=0.f, z=0.f;
+
+    F32 distSq(const Point3F& other) const {
+        F32 dx = x - other.x;
+        F32 dy = y - other.y;
+        F32 dz = z - other.z;
+        return dx*dx + dy*dy + dz*dz;
+    }
+
+    F32 lenSquared() const {
+        return (x * x + y * y + z * z);
+    }
+    F32 len() const {
+        return sqrt(x*x + y*y + z*z);
+    }
+
+    Point3F operator+(const Point3F& v) const { return {x + v.x, y + v.y, z + v.z}; }
+    Point3F operator-(const Point3F& v) const { return {x - v.x, y - v.y, z - v.z}; }
+    Point3F operator*(const Point3F& v) const { return {x * v.x, y * v.y, z * v.z}; }
+    Point3F operator/(const Point3F& v) const {
+        return {
+            x / v.x != 0.f ? v.x : 1e-9f,
+            y / v.y != 0.f ? v.y : 1e-9f,
+            z / v.z != 0.f ? v.z : 1e-9f
+        };
+    }
+
+    bool operator==(const Point3F& v) const { return (x == v.x && y == v.y && z == v.z); }
+
+    Point3F& operator+=(const Point2F& v) { x += v.x; y += v.y; return *this; }
+
+    F32 dot(const Point3F& v) const { return (x * v.x + y * v.y + z * v.z); }
+
+    Point2F toPoint2F() const { return { x,y}; }
+
+    bool isZero() const { return (x == 0.f && y == 0.f && z == 0.f); }
+
+    void normalize() {
+        F32 l = len();
+        if (l > 0.0f) { x /= l; y /= l; z /= l;}
+    }
+};
 
 //
 
