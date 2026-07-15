@@ -3,7 +3,7 @@
 #define LOGO_START_SPEED 100
 #define MAG_DIR_VALUE 15
 #define MAG_MAX 10000
-#define BOUNCY 5.0
+#define BOUNCY 6.66
 //----------------------------------------------------------------------
 function createBaseDemo() {
     %obj = new ScriptObject() {
