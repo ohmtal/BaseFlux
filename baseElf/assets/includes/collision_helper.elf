@@ -1,0 +1,52 @@
+//----------------------------------------------------------------------
+/*
+ * SolveLineCollision
+ * return
+ *  if collided: the solved position as string "x y"
+ *  or 0
+ */
+function SolveLineCollision(%rect, %x1, %y1, %x2, %y2) {
+    if (HasRectLineIntersectionF(%rect, %x1, %y1, %x2, %y2)) {
+        %lineDx = %x2 - %x1;
+        %lineDy = %y2 - %y1;
+
+        %normalX = -%lineDy;
+        %normalY = %lineDx;
+
+        %len = mSqrt(%normalX * %normalX + %normalY * %normalY);
+        if (%len > 0) {
+            %normalX /= %len;
+            %normalY /= %len;
+        }
+
+        %rectX = %rect.x;
+        %rectY = %rect.y;
+        %rectW = %rect.width;
+        %rectH = %rect.height;
+
+        %playerCenterX = %rectX + %rectW / 2.0;
+        %playerCenterY = %rectY + %rectH / 2.0;
+        %toPlayerX = %playerCenterX - %x1;
+        %toPlayerY = %playerCenterY - %y1;
+
+        %side = %toPlayerX * %normalX + %toPlayerY * %normalY;
+        if (%side < 0) {
+            %normalX = -%normalX;
+            %normalY = -%normalY;
+        }
+
+        %radiusProj = (%rectW / 2.0) * mAbs(%normalX) + (%rectH / 2.0) * mAbs(%normalY);
+        %distanceToLine = mAbs(%toPlayerX * %normalX + %toPlayerY * %normalY);
+        %overlap = %radiusProj - %distanceToLine + 0.5;
+
+        %newX = %rectX;
+        %newY = %rectY;
+        if (%overlap > 0) {
+            %newX += %normalX * %overlap;
+            %newY += %normalY * %overlap;
+        }
+
+        return %newX SPC %newY;
+    }
+    return 0;
+}

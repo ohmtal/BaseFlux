@@ -15,6 +15,7 @@
 
 #include "BaseFlux/Main.h"
 #include "BaseFlux/Draw.h"
+#include "BaseFlux/Collision.h"
 #include <console/script.h>
 
 #include "ConsoleTypes.h"
@@ -22,6 +23,7 @@
 #include <openvdb/util/Name.h>
 
 extern BaseFlux::Main app;
+extern SDL_Point gMousePos;
 
 
 /* constant example:
@@ -29,6 +31,7 @@ extern BaseFlux::Main app;
  Con::setScriptConstant("_LEFT_", 1); //real constant using preprocessor*
  Con::setScriptConstant("_RIGHT_", 2); //real constant using preprocessor
 */
+
 
 
 // -----------------------------------------------------------------------------
@@ -207,7 +210,7 @@ public:
         return SDL_RenderTexture(app.getRenderer(), tex, nullptr, &dstRect);
     }
 
-    bool Draw( F32 x, F32 y, Color color=WHITE) {
+    bool DrawCentered( F32 x, F32 y, Color color=WHITE) {
         SDL_Texture* tex = mTexture;
         if (color.a < 1 || !tex) return false;
 
@@ -240,10 +243,11 @@ DefineEngineMethod(TextureObject, DrawRect,bool, (RectF dstRect, Color color), (
                    ,"Draw a texture with source and destination rect" ) {
      return object->DrawRect( dstRect, color);
 }
-DefineEngineMethod(TextureObject, Draw,bool, (F32 x, F32 y, Color color), (WHITE)
+DefineEngineMethod(TextureObject, DrawCentered,bool, (F32 x, F32 y, Color color), (WHITE)
                    ,"Draw the texture centered at the position" ) {
-    return object->Draw(x,y,color);
+    return object->DrawCentered(x,y,color);
 }
+
 // =============================================================================
 //  GameObject
 // =============================================================================
@@ -253,6 +257,7 @@ class GameObject :public SimObject
 public:
     DECLARE_CONOBJECT(GameObject);
     Point3F mPoint = {0.f,0.f,0.f};
+    Point3F mSize = {0.f,0.f,0.f};
     Point3F mVelo = {0.f,0.f,0.f};
     Color mColor = {0,0,0, 0};
 
@@ -268,15 +273,33 @@ public:
         addField("veloY", TypeF32, Offset(mVelo.y,GameObject));
         addField("veloZ", TypeF32, Offset(mVelo.z,GameObject));
 
+        addField("size", TypePoint2F, Offset(mSize.x,GameObject));
+        addField("width", TypeF32, Offset(mSize.x,GameObject));
+        addField("heigth", TypeF32, Offset(mSize.y,GameObject));
+
         addField("color", TypeColor, Offset(mColor,GameObject));
         addField("r", TypeS8, Offset(mColor.r,GameObject));
         addField("g", TypeS8, Offset(mColor.g,GameObject));
         addField("b", TypeS8, Offset(mColor.b,GameObject));
         addField("a", TypeS8, Offset(mColor.g,GameObject));
     }
-};
+
+    RectF getRectF() {
+       return {mPoint.x, mPoint.y, mSize.x, mSize.y};
+    }
+    Point2F getCenter2F() {
+        return {mPoint.x + mSize.x / 2, mPoint.y + mSize.y / 2.f};
+    }
+
+}; //CLASS
 IMPLEMENT_CONOBJECT(GameObject);
 
+DefineEngineMethod(GameObject, getRectF, RectF, (), ,"get the current rect") {
+    return object->getRectF();
+}
+DefineEngineMethod(GameObject, getCenter2F, Point2F, (), ,"get the center point") {
+    return object->getCenter2F();
+}
 DefineEngineMethod(GameObject, moveLinear, void, (), ,"Move Linear position/velocity") {
     F32 dt =  (F32)BaseFlux::getFrameTime();
     object->mPoint.x += object->mVelo.x * dt;
@@ -298,28 +321,6 @@ DefineEngineMethod(GameObject, moveGravity, void, (F32 gravityX, F32 gravityY, F
     object->mPoint.z += object->mVelo.z * dt;
 }
 
-// DefineEngineMethod(GameObject, moveOrbital, void, (Point3F centerPoint, F32 centerMass),
-//                    ,"Move in a gravitational field") {
-//     F32 dt = (F32)BaseFlux::getFrameTime();
-//
-//     Point3F direction =   centerPoint - object->mPoint;
-//     F32 distance = direction.len();
-//
-//     if (distance > 0.001f) {
-//         direction.normalize();
-//
-//         F32 G = 6.674f;
-//         F32 gravityPull = (G * centerMass) / (distance * distance);
-//
-//         object->mVelo.x += direction.x * gravityPull * dt;
-//         object->mVelo.y += direction.y * gravityPull * dt;
-//         object->mVelo.z += direction.z * gravityPull * dt;
-//     }
-//
-//     object->mPoint.x += object->mVelo.x * dt;
-//     object->mPoint.y += object->mVelo.y * dt;
-//     object->mPoint.z += object->mVelo.z * dt;
-// }
 DefineEngineMethod(GameObject, moveOrbital, void, (Point3F centerPoint, F32 centerMass), ,"Move in a gravitational field") {
     F32 dt = (F32)BaseFlux::getFrameTime();
 
@@ -381,11 +382,72 @@ DefineEngineMethod(GameObject, moveOrbital2D, void,
 }
 
 
-DefineEngineMethod(GameObject, DrawTexture, bool, (SimObjectId texObjectID), ,"Draw2D") {
+DefineEngineMethod(GameObject, DrawTexture, bool, (SimObjectId texObjectID, bool center),(true) ,"Draw2D") {
     TextureObject* texObject = dynamic_cast<TextureObject*>(Sim::findObject(texObjectID));
     if (!texObject) return false;
-    return texObject->Draw(object->mPoint.x, object->mPoint.y, object->mColor);
+    if (object->mSize.x <= 0.f || object->mSize.y <= 0.f ) {
+        object->mSize.x = (F32)texObject->get()->w;
+        object->mSize.y = (F32)texObject->get()->h;
+    }
+    RectF rect;
+    if (center) rect = {
+        object->mPoint.x - object->mSize.x / 2.f,object->mPoint.y - object->mSize.y / 2.f
+        , object->mSize.x, object->mSize.y };
+    else rect = { object->mPoint.x,object->mPoint.y, object->mSize.x, object->mSize.y };
+    return texObject->DrawRect( rect , object->mColor);
 }
+
+DefineEngineMethod(GameObject, solveCollideLine,bool, (RectF linePoints, F32 bounceStrength)
+        ,(0.2f),"check collision agains a line .. using Points as parameter x1,x2,y1,y2 (packed in a RectF)")
+{
+    BaseFlux::Collision::Info info;
+    RectF myRect = object->getRectF();
+    if ( BaseFlux::Collision::getInfoRectLine(myRect
+      , linePoints.x, linePoints.y, linePoints.w, linePoints.h
+      , info)) {
+
+        BaseFlux::Collision::solveOberlap(myRect, info);
+        object->mPoint.x = myRect.x;
+        object->mPoint.y = myRect.y;
+
+///
+        if (bounceStrength > 0.f) {
+            float dotProduct = (object->mVelo.x * info.mNormal.x) + (object->mVelo.y * info.mNormal.y);
+            if (dotProduct < 0.0f) {
+                float impulse = -(1.0f + bounceStrength) * dotProduct;
+                object->mVelo.x += info.mNormal.x * impulse;
+                object->mVelo.y += info.mNormal.y * impulse;
+            }
+        }
+///
+
+        return true;
+    }
+    return false;
+}
+
+
+DefineEngineMethod(GameObject, getCollideRectF,bool, (SimObjectId gameObjectID, bool alsoNullVelo)
+    ,(false),"Check collide and move out")
+{
+    if (object->mSize.x <= 0.f || object->mSize.y <= 0.f ) return false; //invalid size!
+    GameObject* other = dynamic_cast<GameObject*>(Sim::findObject(gameObjectID));
+    if (!other) return false;
+    BaseFlux::Collision::Info info;
+    RectF myRect = object->getRectF();
+    if (BaseFlux::Collision::getInfoRectF(myRect, other->getRectF(), info)) {
+        BaseFlux::Collision::solveOberlap(myRect, info);
+        object->mPoint.x = myRect.x;
+        object->mPoint.y = myRect.y;
+        if (alsoNullVelo) { //else let the script decide
+            object->mVelo.x = 0.f;
+            object->mVelo.y = 0.f;
+        }
+        return true;
+    }
+    return false;
+}
+
 // =============================================================================
 //  SoundObject
 // =============================================================================
@@ -445,9 +507,19 @@ DefineEngineFunction(SetColor, void , (Color color),
     SDL_SetRenderDrawColor(app.getRenderer(), color.r, color.g, color.b, color.a);
 }
 // ----------------------------------------------------------------------------
-DefineEngineFunction(SetScale, void , (F32 x, F32 y),
-                     ,"set the render color") {
+DefineEngineFunction(BeginBlendMode, void, (),,"") {
+    SDL_SetRenderDrawBlendMode(app.getRenderer(), SDL_BLENDMODE_BLEND );
+
+}
+DefineEngineFunction(EndBlendMode, void,(),,"") {
+    SDL_SetRenderDrawBlendMode(app.getRenderer(), SDL_BLENDMODE_NONE );
+}
+// ----------------------------------------------------------------------------
+DefineEngineFunction(BeginScale, void , (F32 x, F32 y),,"") {
     SDL_SetRenderScale(app.getRenderer(), x, y);
+}
+DefineEngineFunction(EndScale, void , (),,"") {
+    SDL_SetRenderScale(app.getRenderer(), 1.f, 1.f);
 }
 // -----------------------------------------------------------------------------
 DefineEngineFunction(PointInRect, bool , (Point2I p, RectI rect),
@@ -467,6 +539,29 @@ DefineEngineFunction(HasRectIntersectionF, bool , (RectF rectA, RectF rectB),
                      ,"Check rect intersection") {
     return (bool)SDL_HasRectIntersectionFloat(&rectA, &rectB);
 }
+DefineEngineFunction(GetRectIntersectionF, RectF , (RectF rectA, RectF rectB),
+                     ,"get rect intersection (overlap)") {
+    RectF result = {0.f,0.f,0.f};
+    SDL_GetRectIntersectionFloat(&rectA, &rectB, &result);
+    return result;
+}
+DefineEngineFunction(GetRectUnionF, RectF , (RectF rectA, RectF rectB),
+                     ,"get rect unio both rects combined to one big.") {
+    RectF result = {0.f,0.f,0.f};
+    SDL_GetRectUnionFloat(&rectA, &rectB, &result);
+    return result;
+}
+// extern SDL_DECLSPEC bool SDLCALL SDL_GetRectEnclosingPointsFloat(const SDL_FPoint *points, int count, const SDL_FRect *clip, SDL_FRect *result);
+
+DefineEngineFunction(HasRectLineIntersectionF, bool , (RectF rect, F32 x1,F32 y1, F32 x2, F32 y2),
+                     ,"check if a rect and a line intersects") {
+
+    return SDL_GetRectAndLineIntersectionFloat(&rect, &x1, &y1, &x2, &y2);
+}
+
+
+
+// ------
 
 DefineEngineFunction(DrawFPS, void, (F32 x, F32 y)
 ,, "Draw FPS as position")
@@ -496,9 +591,18 @@ DefineEngineFunction(DrawLine, void, (F32 x1, F32 y1,F32 x2, F32 y2, Color color
     BaseFlux::DrawLine(app.getRenderer(), Point2F(x1,y1),Point2F(x2,y2), color);
 }
 
+DefineEngineFunction(DrawLineRect, void, (RectF points, Color color)
+,(WHITE),"Draw a Line using rect w=x2 h=y2 as parameter") {
+    BaseFlux::DrawLine(app.getRenderer(), Point2F(points.x,points.y),Point2F(points.w,points.h), color);
+}
+
 DefineEngineFunction(DrawRect, void, (F32 x, F32 y,F32 w, F32 h, Color color, bool fill)
         ,(WHITE, true),"Draw a Rect") {
     BaseFlux::DrawRect(app.getRenderer(), RectF(x,y,w,h), color, fill);
+}
+DefineEngineFunction(DrawRectRec, void, (RectF rect, Color color, bool fill)
+,(WHITE, true),"Draw a Rect") {
+    BaseFlux::DrawRect(app.getRenderer(), rect, color, fill);
 }
 
 DefineEngineFunction(DrawCircle, void, (F32 x, F32 y,F32 radius, Color color, bool fill)
@@ -513,6 +617,7 @@ DefineEngineFunction(DrawDonut, void, (F32 x, F32 y,F32 innerRadius,F32 outerRad
 ,(WHITE, true),"Draw a Arc") {
     BaseFlux::DrawDonut(app.getRenderer(), innerRadius,outerRadius, Point2F(x,y), color, fill);
 }
+
 
 // -----------------------------------------------------------------------------
 ConsoleFunctionGroupEnd(SDL);
@@ -541,6 +646,9 @@ ConsoleFunction(getRealTime, S32, 1,1, "") {
 
 ConsoleFunction(getFPS, S32, 1,1, "") {
     return (S32)BaseFlux::getFPS();
+}
+DefineEngineFunction(GetMousePosition, Point2I, (),, "") {
+    return gMousePos;
 }
 
 
@@ -571,7 +679,7 @@ DefineEngineFunction(include,bool, (String fileName),, "include(fileName)" "exec
 
 DefineEngineStringlyVariadicFunction( dEcho, void, 2, 0, "debug echo ( string message... ) ")
 {
-    #ifdef FLUX_DEBUG
+    #ifdef TORQUE_DEBUG
     U32 len = 0;
     S32 i;
     for(i = 1; i < argc; i++)
@@ -591,7 +699,7 @@ DefineEngineStringlyVariadicFunction( dEcho, void, 2, 0, "debug echo ( string me
 
 DefineEngineStringlyVariadicFunction( dWarn, void, 2, 0, "debug warn( string message... ) " )
 {
-    #ifdef FLUX_DEBUG
+    #ifdef TORQUE_DEBUG
     U32 len = 0;
     S32 i;
     for(i = 1; i < argc; i++)
@@ -611,7 +719,7 @@ DefineEngineStringlyVariadicFunction( dWarn, void, 2, 0, "debug warn( string mes
 
 DefineEngineStringlyVariadicFunction( dError, void, 2, 0, "(debug error  string message... ) ")
 {
-    #ifdef FLUX_DEBUG
+    #ifdef TORQUE_DEBUG
     U32 len = 0;
     S32 i;
     for(i = 1; i < argc; i++)

@@ -305,6 +305,40 @@ NOTE: this cant be used with arrays like setFieldValue@param fieldName The name 
    /// @}
 };
 /*!
+@brief A script-level OOP object which allows binding of a class, superClass and arguments along with declaration of methods.
+ScriptObjects are extrodinarily powerful objects that allow defining of any type of data required. They can optionally have
+a class and a superclass defined for added control of multiple ScriptObjects through a simple class definition.
+@tsexample
+new ScriptObject(Game)
+{
+   class = "DeathMatchGame";
+   superClass = GameCore;
+   genre = "Action FPS"; // Note the new, non-Torque variable
+};
+@endtsexample
+@see SimObject
+@ingroup Console
+ */
+class  ScriptObject : public SimObject {
+  public:
+   /*! @name Ungrouped
+   @{ */
+   /*! */
+   /// @}
+   /*! @name Object
+   @{ */
+   /*! */
+   /// @}
+   /*! @name Editing
+   @{ */
+   /*! */
+   /// @}
+   /*! @name Persistence
+   @{ */
+   /*! */
+   /// @}
+};
+/*!
 @brief A collection of SimObjects.
 It is often necessary to keep track of an arbitrary set of SimObjects. For instance, Torque's networking code needs to not only keep track of the set of objects which need to be ghosted, but also the set of objects which must <i>always</i> be ghosted. It does this by working with two sets. The first of these is the RootGroup (which is actually a SimGroup) and the second is the GhostAlwaysSet, which contains objects which must always be ghosted to the client.
 Some general notes on SimSets:
@@ -397,54 +431,6 @@ class  SimSet : public SimObject {
 @param obj The object to test for potential membership.
 @return True if the object may be added to the set, false otherwise. */
    bool acceptsAsChild( SimObject obj ) {}
-   /*! @name Ungrouped
-   @{ */
-   /*! */
-   /// @}
-   /*! @name Object
-   @{ */
-   /*! */
-   /// @}
-   /*! @name Editing
-   @{ */
-   /*! */
-   /// @}
-   /*! @name Persistence
-   @{ */
-   /*! */
-   /// @}
-};
-class  TextureObject : public SimObject {
-  public:
-   /*! get the width and height of the loaded texture */
-   Point2I getSize( RectF dstRect ) {}
-   /*! Draw a texture with source and destination rect */
-   bool DrawSrcDstRect( RectF srcRect, RectF dstRect, Color color=WHITE ) {}
-   /*! Draw a texture with source and destination rect */
-   bool DrawRect( RectF dstRect, Color color=WHITE ) {}
-   /*! Draw the texture centered at the position */
-   bool Draw( float x, float y, Color color=WHITE ) {}
-   /*!
-    */
-   string fileName;
-};
-/*!
-@brief A script-level OOP object which allows binding of a class, superClass and arguments along with declaration of methods.
-ScriptObjects are extrodinarily powerful objects that allow defining of any type of data required. They can optionally have
-a class and a superclass defined for added control of multiple ScriptObjects through a simple class definition.
-@tsexample
-new ScriptObject(Game)
-{
-   class = "DeathMatchGame";
-   superClass = GameCore;
-   genre = "Action FPS"; // Note the new, non-Torque variable
-};
-@endtsexample
-@see SimObject
-@ingroup Console
- */
-class  ScriptObject : public SimObject {
-  public:
    /*! @name Ungrouped
    @{ */
    /*! */
@@ -567,12 +553,34 @@ class  SettingsObject : public SimObject {
     */
    Color clearColor;
 };
+class  TextureObject : public SimObject {
+  public:
+   /*! get the width and height of the loaded texture */
+   Point2I getSize( RectF dstRect ) {}
+   /*! Draw a texture with source and destination rect */
+   bool DrawSrcDstRect( RectF srcRect, RectF dstRect, Color color=WHITE ) {}
+   /*! Draw a texture with source and destination rect */
+   bool DrawRect( RectF dstRect, Color color=WHITE ) {}
+   /*! Draw the texture centered at the position */
+   bool DrawCentered( float x, float y, Color color=WHITE ) {}
+   /*!
+    */
+   string fileName;
+};
 class  GameObject : public SimObject {
   public:
    /*! Move Linear position/velocity */
    void moveLinear() {}
+   /*! Move with gravity acceleration default: 0,-9.81,0 */
+   void moveGravity( float gravityX=0.f, float gravityY=9.81f, float gravityZ=0.f ) {}
+   /*! Move in a gravitational field */
+   void moveOrbital( Point3F centerPoint, float centerMass ) {}
+   /*! 2D Safe Orbital Movement */
+   void moveOrbital2D( Point3F centerPoint, float gravity=10.f, float softening=150.f, float maxSpeed=350.f ) {}
    /*! Draw2D */
-   bool DrawTexture( SimObjectId texObjectID ) {}
+   bool DrawTexture( SimObjectId texObjectID, bool center=true ) {}
+   /*! Check collide and move out */
+   bool getCollideRectF( SimObjectId gameObjectID, bool alsoNullVelo=false ) {}
    /*!
     */
    Point3F position;
@@ -597,6 +605,15 @@ class  GameObject : public SimObject {
    /*!
     */
    float veloZ;
+   /*!
+    */
+   Point2F size;
+   /*!
+    */
+   float width;
+   /*!
+    */
+   float heigth;
    /*!
     */
    Color color;
@@ -1650,8 +1667,10 @@ namespace Global {
    void ClearBackground( Color color ) {}
    /*! set the render color */
    void SetColor( Color color ) {}
-   /*! set the render color */
-   void SetScale( float x, float y ) {}
+   void BeginBlendMode() {}
+   void EndBlendMode() {}
+   void BeginScale( float x, float y ) {}
+   void EndScale() {}
    /*! Check a point is in rect */
    bool PointInRect( Point2I p, RectI rect ) {}
    /*! Check a point is in rect */
@@ -1660,6 +1679,12 @@ namespace Global {
    bool HasRectIntersection( RectI rectA, RectI rectB ) {}
    /*! Check rect intersection */
    bool HasRectIntersectionF( RectF rectA, RectF rectB ) {}
+   /*! get rect intersection (overlap) */
+   RectF GetRectIntersectionF( RectF rectA, RectF rectB ) {}
+   /*! get rect unio both rects combined to one big. */
+   RectF GetRectUnionF( RectF rectA, RectF rectB ) {}
+   /*! check if a rect and a line intersects */
+   bool HasRectLineIntersectionF( RectF rect, float x1, float y1, float x2, float y2 ) {}
    /*! Draw FPS as position */
    void DrawFPS( float x, float y ) {}
    /*! Draw a Text with optional shadow */
@@ -1668,6 +1693,8 @@ namespace Global {
    void DrawLine( float x1, float y1, float x2, float y2, Color color=WHITE ) {}
    /*! Draw a Rect */
    void DrawRect( float x, float y, float w, float h, Color color=WHITE, bool fill=true ) {}
+   /*! Draw a Rect */
+   void DrawRectRec( RectF rect, Color color=WHITE, bool fill=true ) {}
    /*! Draw a Circle */
    void DrawCircle( float x, float y, float radius, Color color=WHITE, bool fill=true ) {}
    /*! Draw a Arc: startRad / endRad in radians  */
@@ -1686,6 +1713,7 @@ namespace Global {
    float getFrameTime(...) {}
    int getRealTime(...) {}
    int getFPS(...) {}
+   Point2I GetMousePosition() {}
    bool setWindowSize( int x, int y ) {}
    Point2I getWindowSize() {}
    /*! bool value */
@@ -3382,10 +3410,19 @@ Returns true if the column is visible and should be rendered.
 //------------------------------------------------------------------
 /*
 --- Script Constants Dump ---
-  LOGO_SPAWN_RATE = 250
+  RadarBg = "0.1 0.1 0.1 0.8"
+  RadarGreen = "0.0 1.0 0.0 1.0"
+  TEX_SIZE = 16
+  BOUNCY = 6.66
+  MAG_MAX = 10000
+  MAG_DIR_VALUE = 15
+  LOGO_START_SPEED = 100
+  LOGO_SPAWN_RATE = 50
   cl_Ghost = "0.700000 0.700000 1.000000 0.500000"
+  TextWhite = "1.0 1.0 1.0 1.0"
   cl_Shadow = "0.000000 0.000000 0.000000 0.400000"
   cl_AcidGreen = "0.500000 1.000000 0.000000 1.000000"
+  LOGO_SIZE = 32
   cl_NeonPink = "1.000000 0.000000 0.500000 1.000000"
   cl_Sand = "0.760000 0.700000 0.500000 1.000000"
   cl_Seafoam = "0.600000 0.850000 0.750000 1.000000"
@@ -3401,6 +3438,7 @@ Returns true if the column is visible and should be rendered.
   cl_Lime = "0.750000 1.000000 0.000000 1.000000"
   cl_Brown = "0.600000 0.300000 0.000000 1.000000"
   cl_Purple = "0.500000 0.000000 0.500000 1.000000"
+  TargetRed = "1.0 0.0 0.0 1.0"
   cl_Orange = "1.000000 0.500000 0.000000 1.000000"
   cl_LightGray = "0.750000 0.750000 0.750000 1.000000"
   cl_Gray = "0.500000 0.500000 0.500000 1.000000"
@@ -3414,6 +3452,7 @@ Returns true if the column is visible and should be rendered.
   ImGuiMouseButton_Right = 1
   ImGuiKey_Escape = 526
   ImGuiKey_Delete = 522
+  DummySize = "200 200"
   cl_ElectricBlue = "0.000000 1.000000 1.000000 1.000000"
   ImGuiKey_Home = 519
   ImGuiKey_PageDown = 518
@@ -3501,6 +3540,7 @@ Returns true if the column is visible and should be rendered.
   ImGuiKey_Q = 562
   cl_Kelp = "0.130000 0.290000 0.130000 1.000000"
   BEIGE = "211 176 131 255"
+  BORDER = 60
   PINK = "255 109 194 255"
   ImGuiTableFlags_Resizable = 1
   MAGENTA = "255 0 255 255"
@@ -3561,5 +3601,5 @@ Returns true if the column is visible and should be rendered.
   ImGuiKey_F11 = 582
   ImGuiKey_F12 = 583
   ImGuiKey_LeftArrow = 513
---- End of Dump (179 items) ---
+--- End of Dump (191 items) ---
 */

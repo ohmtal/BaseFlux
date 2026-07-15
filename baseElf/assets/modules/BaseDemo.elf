@@ -4,6 +4,7 @@
 #define MAG_DIR_VALUE 15
 #define MAG_MAX 10000
 #define BOUNCY 6.66
+#define LOGO_SIZE 32
 //----------------------------------------------------------------------
 function createBaseDemo() {
     %obj = new ScriptObject() {
@@ -42,7 +43,7 @@ function BaseDemo::Render(%this) {
    if ($showBla) {
         %y = 20;
         %x = 10;
-        if (isObject(IconTexture)) IconTexture.Draw(%x + 16,%y + 8);
+        if (isObject(IconTexture)) IconTexture.DrawCentered(%x + 16,%y + 8);
         DrawText(%x + 40,%y,"Base11 SDL/BaseFlux", 2, WHITE, true, SLATEGRAY);
         %y+= 30;DrawText(%x,%y,"[X] ConsoleTypes and Colors", 1.5, GREEN, true, SLATEGRAY);
         %y+= 20;DrawText(%x,%y,"[X] ClearBackground", 1.5, GREEN, true, SLATEGRAY);
@@ -116,7 +117,7 @@ function BaseDemo::Render(%this) {
         for (%i = 0; %i < %cnt; %i++) {
             %logo = LogoList.getObject(%i);
             %logo.moveLinear();
-            %logo.moveGravity(0, 4 * $magDirection,0);
+            %logo.moveGravity(0, 4 * $magDirection);
             %logo.moveOrbital2D(%cp, $magnetism, 5, LOGO_START_SPEED);
             if ($ticker % 2 == 0) {
                 if (%logo.x <= BORDER.0 ) { %logo.VeloX *= -%damping; %logo.x = BORDER.01;}
@@ -125,7 +126,6 @@ function BaseDemo::Render(%this) {
                 else if ( %logo.y >= %by) { %logo.VeloY *= -%damping; %logo.y = %by - 0.01; }
             }
             %logo.drawTexture(GrayTexture.getId());
-            // GrayTexture.Draw(%logo.x, %logo.y, %logo.color);
         }
 
         // -----------------
@@ -152,6 +152,7 @@ function BaseDemo::addLogo(%this,%x,%y) {
         veloX = getRandom(-LOGO_START_SPEED,LOGO_START_SPEED);
         veloY = getRandom(-LOGO_START_SPEED,LOGO_START_SPEED);
         color = getRandom(0,255) SPC getRandom(0,255) SPC getRandom(0,255) SPC getRandom(32,255);
+        size = LOGO_SIZE SPC LOGO_SIZE;
     };
     LogoList.add(%logo);
     // echo("added logo:" SPC %logo);
