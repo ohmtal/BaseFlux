@@ -93,6 +93,7 @@ namespace BaseFlux {
         bool initImGui();
         void shutDown();
         bool Execute();
+        void IterateFrame();
         void TerminateApplication(void);
     }; //class
 }; //namespace

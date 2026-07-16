@@ -72,10 +72,11 @@ function BaseDemo::Render(%this) {
         %y+= 20;DrawText(%x,%y,"[X] BaseFlux Settings window size/vsync/appname/icon/...", 1.5, GREEN, true, SLATEGRAY);
         %y+= 20;DrawText(%x,%y,"[X] Basic GameObject hold positon/velocity and color", 1.5, GREEN, true, SLATEGRAY);
         // %y+= 20;DrawText(%x,%y,"[ ] load assets/main.elf from current folder.", 1.5, WHITE, true, SLATEGRAY);
-        %y+= 20;DrawText(%x,%y,"[ ] add source editor with example", 1.5, WHITE, true, SLATEGRAY);
-        %y+= 20;DrawText(%x,%y,"[ ] create web build", 1.5, WHITE, true, SLATEGRAY);
-        %y+= 20;DrawText(%x,%y,"[ ] primitives Draw color ignore alpha!", 1.5, RED, true, SLATEGRAY);
+        %y+= 20;DrawText(%x,%y,"[X] create web build", 1.5, GREEN, true, SLATEGRAY);
+        %y+= 20;DrawText(%x,%y,"[X] primitives Draw color ignore alpha! << BeginBlendMode/EndBlendMode", 1.5, GREEN, true, SLATEGRAY);
+        %y+= 20;DrawText(%x,%y,"[ ] add source editor with example", 1.5, GRAY, true, SLATEGRAY);
         %y+= 20;DrawText(%x,%y,"[ ] Texture rotate", 1.5, GRAY, true, SLATEGRAY);
+        %y+= 60;DrawText(%x,%y,"right click for fun ;)", 1.5, ORANGE, true, SLATEGRAY);
     } else {
 
         // physic playground -----------------

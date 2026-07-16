@@ -15,8 +15,9 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include <thread>
-#include <chrono>
+// not compatible with my non threading emscripten
+// #include <thread>
+// #include <chrono>
 
 
 namespace BaseFluxDemo {
@@ -130,15 +131,21 @@ namespace BaseFluxDemo {
                     mTickAvg = sum / 10;
                     sum = 0.f;
                 }
+
+                static bool needASchedulerHereAlso = false;
+                if (needASchedulerHereAlso == false && BaseFlux::getGameTime() > 1.f) {
+                    mBaseFlux.getAudioManager().play("dungeon_witch.wav");
+                    needASchedulerHereAlso = true;
+                }
             };
 
             mMyst.onCollide = [this]() { mBaseFlux.getAudioManager().play("beep.wav", 0.04f,false); };
 
             // schedule welcome sound
-            std::thread([this]() {
-                std::this_thread::sleep_for(std::chrono::milliseconds((1000)));
-                mBaseFlux.getAudioManager().play("dungeon_witch.wav");
-            }).detach();
+            // std::thread([this]() {
+            //     std::this_thread::sleep_for(std::chrono::milliseconds((1000)));
+            //     mBaseFlux.getAudioManager().play("dungeon_witch.wav");
+            // }).detach();
 
             // call an invalid sound:
              mBaseFlux.getAudioManager().play("not existing wav");

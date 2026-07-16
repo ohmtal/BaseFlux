@@ -20,7 +20,7 @@
 
 #include "ConsoleTypes.h"
 #include "ColorConstants.h"
-#include <openvdb/util/Name.h>
+
 
 extern BaseFlux::Main app;
 extern SDL_Point gMousePos;

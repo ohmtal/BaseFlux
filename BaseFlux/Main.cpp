@@ -1,5 +1,16 @@
+//-----------------------------------------------------------------------------
+// Copyright (c) 2026 Thomas Hühn (XXTH)
+// SPDX-License-Identifier: MIT
+//-----------------------------------------------------------------------------
+// BaseFlux Main
+//-----------------------------------------------------------------------------
 
 #include "Main.h"
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 namespace BaseFlux {
     double gFrameTime = 0.f; // Global for timming
     double gGameTime  = 0.f;
@@ -135,7 +146,139 @@ namespace BaseFlux {
         mShutDownComplete = true;
     }
     //--------------------------------------------------------------------------
+    void Main::IterateFrame() {
+        bool usingImGui = mImGuiIO != nullptr;
 
+        mTickCount = SDL_GetPerformanceCounter();
+        gFrameTime = (double)(mTickCount - mLastTick) / (double)mPerformanceFrequency;
+
+
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (usingImGui)  ImGui_ImplSDL3_ProcessEvent(&event);
+            if (usingImGui)  ImGui_ImplSDL3_ProcessEvent(&event);
+            switch (event.type) {
+                case SDL_EVENT_QUIT: mRunning = false; break;
+                case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                    if (event.window.windowID == SDL_GetWindowID(mWindow)) {
+                        mRunning = false;
+                    }
+                    break;
+            }
+
+            if (OnEvent)
+                OnEvent(event);
+        }
+
+        // ~~~ ImGui Begin ~~~
+        if (usingImGui) {
+
+            ImGui_ImplSDLRenderer3_NewFrame();
+            ImGui_ImplSDL3_NewFrame();
+            ImGui::NewFrame();
+
+            if (getSettings().EnableDockSpace)
+            {
+                ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode; //<< this makes it transparent
+                mDockSpaceId = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
+            }
+
+        }
+
+        SDL_SetRenderDrawColor(mRenderer
+        , mSettings.clearColor.r
+        , mSettings.clearColor.g
+        , mSettings.clearColor.b
+        , mSettings.clearColor.a
+        );
+        SDL_RenderClear(mRenderer);
+
+        if (OnRender) OnRender(mRenderer);
+
+
+
+        // ~~~ ImGui End ~~~
+        if (usingImGui) {
+            ImGui::Render();
+            ImDrawData* drawData = ImGui::GetDrawData();
+            if (drawData)
+            {
+                ImGui_ImplSDLRenderer3_RenderDrawData(drawData, mRenderer);
+            }
+        }
+
+        SDL_RenderPresent(mRenderer);
+
+
+
+        // FIXME
+        // FPS Limiter
+        // if ( getSettings().FpsLimit > 0  && frameLimit > 0) {
+        //     if (frameTime < frameLimit) {
+        //         SDL_Delay(frameLimit - frameTime);
+        //     }
+        //     frameTime = SDL_GetTicks() - frameStart;
+        // }
+
+        // changed to tick style  all 16ms
+        static double accumulator = 0.f;
+        accumulator += gFrameTime;
+        if (accumulator >= 0.016) {
+
+            if (OnUpdate) OnUpdate(accumulator);
+            accumulator = 0.f;
+        }
+
+
+        // fps update every 1 second:
+        static double lFpsTimer = 0;
+        static Uint32 lFrameCounter = 0;
+
+        lFpsTimer += gFrameTime;
+        lFrameCounter++;
+
+        if (lFpsTimer >= 1.0f) { // Every 1 second
+            gFPS = lFrameCounter;
+            lFrameCounter = 0;
+            lFpsTimer -= 1.0f;
+        }
+
+        gGameTime += gFrameTime;
+        //NOTE keep this at last point
+        mLastTick = mTickCount;
+    }
+    //--------------------------------------------------------------------------
+#ifdef __EMSCRIPTEN__
+    void HandleAudioResume() {
+        // This JavaScript snippet checks if the context is suspended and resumes it.
+        // In SDL, the AudioContext is usually stored on the 'Module' or 'SDL2' object.
+        MAIN_THREAD_EM_ASM({
+            if (window.audioContext && window.audioContext.state === 'suspended') {
+                window.audioContext.resume();
+            }
+        });
+    }
+    void emscripten_loop_wrapper(void* arg)
+    {
+        if (!arg) {
+            SDL_Log("[error] emscripten_loop_wrapper arg is null!")	;
+            return;
+        }
+        // On the first mouse click or key press, try to resume
+        static bool audioResumed = false;
+        if (!audioResumed) {
+            // Check for any SDL input event
+            SDL_PumpEvents();
+            SDL_Event event;
+            if (SDL_PeepEvents(&event, 1, SDL_PEEKEVENT, SDL_EVENT_MOUSE_BUTTON_DOWN, SDL_EVENT_KEY_DOWN) > 0) {
+                HandleAudioResume();
+                audioResumed = true;
+            }
+        }
+        Main* app = static_cast<Main*>(arg);
+        app->IterateFrame();
+    }
+#endif
     //--------------------------------------------------------------------------
     bool Main::Execute() {
         if (!mWindow || !mRenderer) {
@@ -143,7 +286,7 @@ namespace BaseFlux {
             return false;
         }
 
-        bool usingImGui = mImGuiIO != nullptr;
+
 
 
         //changed to performanceCounter
@@ -158,104 +301,16 @@ namespace BaseFlux {
 
         mRunning = true;
 
+
+#ifdef __EMSCRIPTEN__
+        emscripten_set_main_loop_arg(emscripten_loop_wrapper, this, 0, 1);
+        emscripten_set_main_loop_timing(EM_TIMING_RAF, 1); //force RAF
+#else
         while (mRunning) {
-            mTickCount = SDL_GetPerformanceCounter();
-            gFrameTime = (double)(mTickCount - mLastTick) / (double)mPerformanceFrequency;
-
-
-            SDL_Event event;
-            while (SDL_PollEvent(&event)) {
-                if (usingImGui)  ImGui_ImplSDL3_ProcessEvent(&event);
-                switch (event.type) {
-                    case SDL_EVENT_QUIT: mRunning = false; break;
-                    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-                        if (event.window.windowID == SDL_GetWindowID(mWindow)) {
-                            mRunning = false;
-                        }
-                        break;
-                }
-
-                if (OnEvent)
-                    OnEvent(event);
-            }
-
-            // ~~~ ImGui Begin ~~~
-            if (usingImGui) {
-
-                ImGui_ImplSDLRenderer3_NewFrame();
-                ImGui_ImplSDL3_NewFrame();
-                ImGui::NewFrame();
-
-                if (getSettings().EnableDockSpace)
-                {
-                    ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode; //<< this makes it transparent
-                    mDockSpaceId = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
-                }
-
-            }
-
-            SDL_SetRenderDrawColor(mRenderer
-                , mSettings.clearColor.r
-                , mSettings.clearColor.g
-                , mSettings.clearColor.b
-                , mSettings.clearColor.a
-            );
-            SDL_RenderClear(mRenderer);
-
-            if (OnRender) OnRender(mRenderer);
-
-
-
-            // ~~~ ImGui End ~~~
-            if (usingImGui) {
-                ImGui::Render();
-                ImDrawData* drawData = ImGui::GetDrawData();
-                if (drawData)
-                {
-                    ImGui_ImplSDLRenderer3_RenderDrawData(drawData, mRenderer);
-                }
-            }
-
-            SDL_RenderPresent(mRenderer);
-
-
-
-            // FIXME
-            // FPS Limiter
-            // if ( getSettings().FpsLimit > 0  && frameLimit > 0) {
-            //     if (frameTime < frameLimit) {
-            //         SDL_Delay(frameLimit - frameTime);
-            //     }
-            //     frameTime = SDL_GetTicks() - frameStart;
-            // }
-
-            // changed to tick style  all 16ms
-            static double accumulator = 0.f;
-            accumulator += gFrameTime;
-            if (accumulator >= 0.016) {
-
-                if (OnUpdate) OnUpdate(accumulator);
-                accumulator = 0.f;
-            }
-
-
-            // fps update every 1 second:
-            static double lFpsTimer = 0;
-            static Uint32 lFrameCounter = 0;
-
-            lFpsTimer += gFrameTime;
-            lFrameCounter++;
-
-            if (lFpsTimer >= 1.0f) { // Every 1 second
-                gFPS = lFrameCounter;
-                lFrameCounter = 0;
-                lFpsTimer -= 1.0f;
-            }
-
-            gGameTime += gFrameTime;
-            //NOTE keep this at last point
-            mLastTick = mTickCount;
+            IterateFrame();
         }
+#endif
+
         shutDown();
         return true;
     }
