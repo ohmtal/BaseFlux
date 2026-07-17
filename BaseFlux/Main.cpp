@@ -156,7 +156,6 @@ namespace BaseFlux {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (usingImGui)  ImGui_ImplSDL3_ProcessEvent(&event);
-            if (usingImGui)  ImGui_ImplSDL3_ProcessEvent(&event);
             switch (event.type) {
                 case SDL_EVENT_QUIT: mRunning = false; break;
                 case SDL_EVENT_WINDOW_CLOSE_REQUESTED:

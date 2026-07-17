@@ -191,6 +191,41 @@ public:
         addField("fileName", TypeString, Offset(mFileName,TextureObject));
     }
 
+//     bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
+//                                   const SDL_FRect *srcrect, const SDL_FRect *dstrect,
+//                                   double angle, const SDL_FPoint *center,
+//                                   SDL_FlipMode flip);
+
+    bool DrawRotatedSrcDstRect(RectF srcRect, RectF dstRect,
+            F32 angle, Point2F centerPoint,
+            SDL_FlipMode flip = SDL_FLIP_NONE,
+            Color color=WHITE) {
+        SDL_Texture* tex = mTexture;
+        if (color.a < 1 || !tex) return false;
+        SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
+        SDL_SetTextureAlphaMod(tex, color.a);
+        SDL_SetTextureBlendMode(tex, (color.a < 255) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
+
+        return SDL_RenderTextureRotated(app.getRenderer(), tex, &srcRect, &dstRect,
+                    angle, &centerPoint, flip);
+    }
+    bool DrawRotatedCentered(F32 x, F32 y, F32 angle, SDL_FlipMode flip = SDL_FLIP_NONE, Color color=WHITE) {
+        SDL_Texture* tex = mTexture;
+        if (color.a < 1 || !tex) return false;
+
+        F32 w = (F32)tex->w;
+        F32 h = (F32)tex->h;
+        RectF dstRect = {x - w * 0.5f,y - h * 0.5f, w, h};
+        Point2F centerPoint = { w/2, h/2 };
+
+        SDL_SetTextureColorMod(tex, color.r, color.g, color.b);
+        SDL_SetTextureAlphaMod(tex, color.a);
+        SDL_SetTextureBlendMode(tex, (color.a < 255) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
+
+        return SDL_RenderTextureRotated(app.getRenderer(), tex, nullptr, &dstRect,
+                    angle, &centerPoint, flip);
+    }
+
     bool DrawSrcDstRect(RectF srcRect, RectF dstRect, Color color=WHITE) {
         SDL_Texture* tex = mTexture;
         if (color.a < 1 || !tex) return false;
@@ -235,10 +270,14 @@ DefineEngineMethod(TextureObject, getSize,Point2I, (RectF dstRect),
     return {tex->w,tex->h};
 }
 
-DefineEngineMethod(TextureObject, DrawSrcDstRect,bool, (RectF srcRect, RectF dstRect, Color color), (WHITE)
-                   ,"Draw a texture with source and destination rect" ) {
-    return object->DrawSrcDstRect(srcRect, dstRect, color);
+DefineEngineMethod(TextureObject, DrawRotatedSrcDstRect,bool,
+        (RectF srcRect, RectF dstRect,F32 angle, Point2F centerPoint, S32 sdl_flip,  Color color),
+        (0,WHITE)
+        ,"Draw a rotated and optional flipped texture with source and destination rect."
+        "@flip: see also SDL_FLIP_ constants" ) {
+    return object->DrawRotatedSrcDstRect(srcRect, dstRect,angle, centerPoint, (SDL_FlipMode)sdl_flip, color);
 }
+
 DefineEngineMethod(TextureObject, DrawRect,bool, (RectF dstRect, Color color), (WHITE)
                    ,"Draw a texture with source and destination rect" ) {
      return object->DrawRect( dstRect, color);
@@ -247,6 +286,16 @@ DefineEngineMethod(TextureObject, DrawCentered,bool, (F32 x, F32 y, Color color)
                    ,"Draw the texture centered at the position" ) {
     return object->DrawCentered(x,y,color);
 }
+
+
+DefineEngineMethod(TextureObject, DrawRotatedCentered,bool, (F32 x, F32 y, F32 angle , S32 flip, Color color)
+    , (0,WHITE)
+    ,"Draw a centered rotated (optional flipped) texture at the position"
+    "@flip: see also SDL_FLIP_ constants" ) {
+    return object->DrawRotatedCentered(x,y,angle, (SDL_FlipMode)flip, color);
+}
+
+
 
 // =============================================================================
 //  GameObject
@@ -260,6 +309,9 @@ public:
     Point3F mSize = {0.f,0.f,0.f};
     Point3F mVelo = {0.f,0.f,0.f};
     Color mColor = {0,0,0, 0};
+
+    F32   mRotateAngle = 0.f;
+    S32   mFlip = 0; //SDL_FlipMode
 
 
     static void initPersistFields() {
@@ -282,6 +334,10 @@ public:
         addField("g", TypeS8, Offset(mColor.g,GameObject));
         addField("b", TypeS8, Offset(mColor.b,GameObject));
         addField("a", TypeS8, Offset(mColor.g,GameObject));
+
+
+        addField("rotate", TypeF32, Offset(mRotateAngle,GameObject), "angle in degree");
+        addField("flip", TypeS32, Offset(mFlip,GameObject), "is flipped (SDL_FlipMode)");
     }
 
     RectF getRectF() {
@@ -394,6 +450,13 @@ DefineEngineMethod(GameObject, DrawTexture, bool, (SimObjectId texObjectID, bool
         object->mPoint.x - object->mSize.x / 2.f,object->mPoint.y - object->mSize.y / 2.f
         , object->mSize.x, object->mSize.y };
     else rect = { object->mPoint.x,object->mPoint.y, object->mSize.x, object->mSize.y };
+
+    if (object->mRotateAngle != 0.f || object->mFlip != 0) {
+        RectF srcRect = {0.f,0.f,(F32)texObject->get()->w, (F32)texObject->get()->h};
+        return texObject->DrawRotatedSrcDstRect(srcRect, rect,
+                object->mRotateAngle, {object->mSize.x / 2.f, object->mSize.y / 2.f },
+                (SDL_FlipMode)object->mFlip, object->mColor);
+    }
     return texObject->DrawRect( rect , object->mColor);
 }
 
@@ -636,9 +699,15 @@ DefineEngineFunction(setFullScreen, bool,(bool value),, "bool value") {
     return SDL_SetWindowFullscreen(app.getWindow(),value);
 }
 
+ConsoleFunction(getGameTime, F32, 1,1, "") {
+    return (F32) BaseFlux::getGameTime();
+}
+
 ConsoleFunction(getFrameTime, F32, 1,1, "") {
     return (F32) BaseFlux::getFrameTime();
 }
+
+
 
 ConsoleFunction(getRealTime, S32, 1,1, "") {
     return Sim::getCurrentTime();
@@ -739,6 +808,9 @@ ConsoleFunctionGroupEnd(BaseFlux);
 // -----------------------------------------------------------------------------
 // added at bottom
 void InitBindings_SDL() {
+
+    Con::registerEnumS32<SDL_ScaleMode>("", false);
+    Con::registerEnumS32<SDL_FlipMode>("", false);
     registerColors();
 
     gSettingsObject = new SettingsObject();

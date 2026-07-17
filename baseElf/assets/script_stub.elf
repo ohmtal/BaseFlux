@@ -305,40 +305,6 @@ NOTE: this cant be used with arrays like setFieldValue@param fieldName The name 
    /// @}
 };
 /*!
-@brief A script-level OOP object which allows binding of a class, superClass and arguments along with declaration of methods.
-ScriptObjects are extrodinarily powerful objects that allow defining of any type of data required. They can optionally have
-a class and a superclass defined for added control of multiple ScriptObjects through a simple class definition.
-@tsexample
-new ScriptObject(Game)
-{
-   class = "DeathMatchGame";
-   superClass = GameCore;
-   genre = "Action FPS"; // Note the new, non-Torque variable
-};
-@endtsexample
-@see SimObject
-@ingroup Console
- */
-class  ScriptObject : public SimObject {
-  public:
-   /*! @name Ungrouped
-   @{ */
-   /*! */
-   /// @}
-   /*! @name Object
-   @{ */
-   /*! */
-   /// @}
-   /*! @name Editing
-   @{ */
-   /*! */
-   /// @}
-   /*! @name Persistence
-   @{ */
-   /*! */
-   /// @}
-};
-/*!
 @brief A collection of SimObjects.
 It is often necessary to keep track of an arbitrary set of SimObjects. For instance, Torque's networking code needs to not only keep track of the set of objects which need to be ghosted, but also the set of objects which must <i>always</i> be ghosted. It does this by working with two sets. The first of these is the RootGroup (which is actually a SimGroup) and the second is the GhostAlwaysSet, which contains objects which must always be ghosted to the client.
 Some general notes on SimSets:
@@ -431,6 +397,56 @@ class  SimSet : public SimObject {
 @param obj The object to test for potential membership.
 @return True if the object may be added to the set, false otherwise. */
    bool acceptsAsChild( SimObject obj ) {}
+   /*! @name Ungrouped
+   @{ */
+   /*! */
+   /// @}
+   /*! @name Object
+   @{ */
+   /*! */
+   /// @}
+   /*! @name Editing
+   @{ */
+   /*! */
+   /// @}
+   /*! @name Persistence
+   @{ */
+   /*! */
+   /// @}
+};
+class  TextureObject : public SimObject {
+  public:
+   /*! get the width and height of the loaded texture */
+   Point2I getSize( RectF dstRect ) {}
+   /*! Draw a rotated and optional flipped texture with source and destination rect.@flip: see also SDL_FLIP_ constants */
+   bool DrawRotatedSrcDstRect( RectF srcRect, RectF dstRect, float angle, Point2F centerPoint, int sdl_flip=0, Color color=WHITE ) {}
+   /*! Draw a texture with source and destination rect */
+   bool DrawRect( RectF dstRect, Color color=WHITE ) {}
+   /*! Draw the texture centered at the position */
+   bool DrawCentered( float x, float y, Color color=WHITE ) {}
+   /*! Draw a centered rotated (optional flipped) texture at the position@flip: see also SDL_FLIP_ constants */
+   bool DrawRotatedCentered( float x, float y, float angle, int flip=0, Color color=WHITE ) {}
+   /*!
+    */
+   string fileName;
+};
+/*!
+@brief A script-level OOP object which allows binding of a class, superClass and arguments along with declaration of methods.
+ScriptObjects are extrodinarily powerful objects that allow defining of any type of data required. They can optionally have
+a class and a superclass defined for added control of multiple ScriptObjects through a simple class definition.
+@tsexample
+new ScriptObject(Game)
+{
+   class = "DeathMatchGame";
+   superClass = GameCore;
+   genre = "Action FPS"; // Note the new, non-Torque variable
+};
+@endtsexample
+@see SimObject
+@ingroup Console
+ */
+class  ScriptObject : public SimObject {
+  public:
    /*! @name Ungrouped
    @{ */
    /*! */
@@ -553,22 +569,12 @@ class  SettingsObject : public SimObject {
     */
    Color clearColor;
 };
-class  TextureObject : public SimObject {
-  public:
-   /*! get the width and height of the loaded texture */
-   Point2I getSize( RectF dstRect ) {}
-   /*! Draw a texture with source and destination rect */
-   bool DrawSrcDstRect( RectF srcRect, RectF dstRect, Color color=WHITE ) {}
-   /*! Draw a texture with source and destination rect */
-   bool DrawRect( RectF dstRect, Color color=WHITE ) {}
-   /*! Draw the texture centered at the position */
-   bool DrawCentered( float x, float y, Color color=WHITE ) {}
-   /*!
-    */
-   string fileName;
-};
 class  GameObject : public SimObject {
   public:
+   /*! get the current rect */
+   RectF getRectF() {}
+   /*! get the center point */
+   Point2F getCenter2F() {}
    /*! Move Linear position/velocity */
    void moveLinear() {}
    /*! Move with gravity acceleration default: 0,-9.81,0 */
@@ -579,6 +585,8 @@ class  GameObject : public SimObject {
    void moveOrbital2D( Point3F centerPoint, float gravity=10.f, float softening=150.f, float maxSpeed=350.f ) {}
    /*! Draw2D */
    bool DrawTexture( SimObjectId texObjectID, bool center=true ) {}
+   /*! check collision agains a line .. using Points as parameter x1,x2,y1,y2 (packed in a RectF) */
+   bool solveCollideLine( RectF linePoints, float bounceStrength=0.2f ) {}
    /*! Check collide and move out */
    bool getCollideRectF( SimObjectId gameObjectID, bool alsoNullVelo=false ) {}
    /*!
@@ -629,6 +637,16 @@ class  GameObject : public SimObject {
    /*!
     */
    char a;
+   /*!
+   angle in degree
+   
+    */
+   float rotate;
+   /*!
+   is flipped (SDL_FlipMode)
+   
+    */
+   int flip;
 };
 class  SoundObject : public SimObject {
   public:
@@ -1691,6 +1709,8 @@ namespace Global {
    void DrawText( float x, float y, String text, float scale=1.0, Color color=BLACK, bool doShadow=false, Color shadowColor=DARKGRAY ) {}
    /*! Draw a Line */
    void DrawLine( float x1, float y1, float x2, float y2, Color color=WHITE ) {}
+   /*! Draw a Line using rect w=x2 h=y2 as parameter */
+   void DrawLineRect( RectF points, Color color=WHITE ) {}
    /*! Draw a Rect */
    void DrawRect( float x, float y, float w, float h, Color color=WHITE, bool fill=true ) {}
    /*! Draw a Rect */
@@ -1710,6 +1730,7 @@ namespace Global {
    bool getFullScreen(...) {}
    /*! bool value */
    bool setFullScreen( bool value ) {}
+   float getGameTime(...) {}
    float getFrameTime(...) {}
    int getRealTime(...) {}
    int getFPS(...) {}
@@ -3410,16 +3431,12 @@ Returns true if the column is visible and should be rendered.
 //------------------------------------------------------------------
 /*
 --- Script Constants Dump ---
-  RadarBg = "0.1 0.1 0.1 0.8"
-  RadarGreen = "0.0 1.0 0.0 1.0"
   TEX_SIZE = 16
   BOUNCY = 6.66
-  MAG_MAX = 10000
   MAG_DIR_VALUE = 15
   LOGO_START_SPEED = 100
   LOGO_SPAWN_RATE = 50
   cl_Ghost = "0.700000 0.700000 1.000000 0.500000"
-  TextWhite = "1.0 1.0 1.0 1.0"
   cl_Shadow = "0.000000 0.000000 0.000000 0.400000"
   cl_AcidGreen = "0.500000 1.000000 0.000000 1.000000"
   LOGO_SIZE = 32
@@ -3438,7 +3455,6 @@ Returns true if the column is visible and should be rendered.
   cl_Lime = "0.750000 1.000000 0.000000 1.000000"
   cl_Brown = "0.600000 0.300000 0.000000 1.000000"
   cl_Purple = "0.500000 0.000000 0.500000 1.000000"
-  TargetRed = "1.0 0.0 0.0 1.0"
   cl_Orange = "1.000000 0.500000 0.000000 1.000000"
   cl_LightGray = "0.750000 0.750000 0.750000 1.000000"
   cl_Gray = "0.500000 0.500000 0.500000 1.000000"
@@ -3451,8 +3467,6 @@ Returns true if the column is visible and should be rendered.
   ImGuiMouseButton_Middle = 2
   ImGuiMouseButton_Right = 1
   ImGuiKey_Escape = 526
-  ImGuiKey_Delete = 522
-  DummySize = "200 200"
   cl_ElectricBlue = "0.000000 1.000000 1.000000 1.000000"
   ImGuiKey_Home = 519
   ImGuiKey_PageDown = 518
@@ -3460,12 +3474,19 @@ Returns true if the column is visible and should be rendered.
   ImGuiKey_DownArrow = 516
   ImGuiKey_UpArrow = 515
   ImGuiKey_RightArrow = 514
+  ImGuiKey_LeftArrow = 513
+  ImGuiKey_F12 = 583
+  ImGuiKey_F11 = 582
+  ImGuiKey_F10 = 581
+  ImGuiKey_F9 = 580
   FLT_MAX = 3.40282e+38
+  ImGuiWindowFlags_AlwaysVerticalScrollbar = 16384
+  ImGuiKey_Tab = 512
+  SDL_FLIP_VERTICAL = 2
   ImGuiMouseButton_Left = 0
   ImGuiTableFlags_NoSavedSettings = 16
-  ImGuiWindowFlags_AlwaysVerticalScrollbar = 16384
-  ImGuiTableFlags_ContextMenuInBody = 32
-  WHITE = "255 255 255 255"
+  ImGuiKey_F8 = 579
+  ImGuiWindowFlags_HorizontalScrollbar = 2048
   DARKBROWN = "76 63 47 255"
   ImGuiWindowFlags_NoBackground = 128
   ImGuiWindowFlags_NoNav = 196608
@@ -3478,41 +3499,57 @@ Returns true if the column is visible and should be rendered.
   cl_DarkGray = "0.250000 0.250000 0.250000 1.000000"
   ImGuiKey_F = 551
   ImGuiKey_E = 550
+  ImGuiKey_F7 = 578
+  ImGuiWindowFlags_NoResize = 2
   ImGuiKey_F3 = 574
-  ImGuiKey_Space = 524
-  ImGuiTableFlags_Sortable = 8
+  MAGENTA = "255 0 255 255"
+  ImGuiKey_F2 = 573
+  BLANK = "0 0 0 0"
+  WHITE = "255 255 255 255"
+  ImGuiTableFlags_ContextMenuInBody = 32
+  SDL_FLIP_HORIZONTAL_AND_VERTICAL = 3
+  ImGuiKey_2 = 538
   ImGuiKey_G = 552
   MAROON = "190 33 55 255"
+  SDL_FLIP_HORIZONTAL = 1
+  ImGuiKey_9 = 545
   RED = "230 41 55 255"
-  cl_Glass = "1.000000 1.000000 1.000000 0.250000"
-  ImGuiTableFlags_None = 0
-  ImGuiWindowFlags_NoInputs = 197120
-  ORANGE = "255 161 0 255"
-  ImGuiMod_Alt = 16384
-  ImGuiWindowFlags_AlwaysAutoResize = 64
-  ImGuiKey_5 = 541
+  MAG_MAX = 10000
+  SDL_SCALEMODE_NEAREST = 0
+  GREEN = "0 228 48 255"
+  ImGuiTableFlags_RowBg = 64
+  ImGuiWindowFlags_NoScrollbar = 8
+  SLATEGRAY = "45 45 45 255"
+  ImGuiTableFlags_BordersOuterV = 1024
+  SDL_FLIP_NONE = 0
   ImGuiWindowFlags_UnsavedDocument = 262144
   ImGuiKey_M = 558
   ImGuiWindowFlags_NoScrollWithMouse = 16
   ImGuiKey_P = 561
   SEABLUE = "20 20 50 255"
   ImGuiKey_6 = 542
+  SDL_SCALEMODE_LINEAR = 1
   GRAY = "130 130 130 255"
   ImGuiKey_Insert = 521
   ImGuiWindowFlags_None = 0
   cl_Yellow = "1.000000 1.000000 0.000000 1.000000"
+  SDL_SCALEMODE_PIXELART = 2
   BLUE = "0 121 241 255"
   ImGuiWindowFlags_NoDecoration = 43
-  DARKGREEN = "0 117 44 255"
-  ImGuiMod_Shift = 8192
   cl_Blue = "0.000000 0.000000 1.000000 1.000000"
   ImGuiWindowFlags_NoMouseInputs = 512
-  ImGuiKey_F9 = 580
-  ImGuiWindowFlags_NoNavFocus = 131072
-  ImGuiTableColumnFlags_None = 0
-  LIGHTGRAY = "200 200 200 255"
   ImGuiKey_7 = 543
   ImGuiTableFlags_BordersInnerH = 128
+  ORANGE = "255 161 0 255"
+  ImGuiMod_Alt = 16384
+  ImGuiWindowFlags_AlwaysAutoResize = 64
+  ImGuiKey_5 = 541
+  BLACK = "0 0 0 255"
+  BROWN = "127 106 79 255"
+  ImGuiMod_Shift = 8192
+  DARKGREEN = "0 117 44 255"
+  ImGuiMod_None = 0
+  DARKBLUE = "0 82 172 255"
   ImGuiWindowFlags_NoFocusOnAppearing = 4096
   ImGuiKey_N = 559
   ImGuiKey_K = 556
@@ -3521,17 +3558,11 @@ Returns true if the column is visible and should be rendered.
   ImGuiKey_0 = 536
   DARKPURPLE = "112 31 126 255"
   PURPLE = "200 122 255 255"
-  GREEN = "0 228 48 255"
-  ImGuiTableFlags_RowBg = 64
-  ImGuiWindowFlags_NoScrollbar = 8
-  SLATEGRAY = "45 45 45 255"
-  ImGuiTableFlags_BordersOuterV = 1024
-  BLACK = "0 0 0 255"
-  BROWN = "127 106 79 255"
-  ImGuiKey_Tab = 512
   ImGuiWindowFlags_NoTitleBar = 1
   ImGuiKey_S = 564
   ImGuiKey_W = 568
+  ImGuiKey_Delete = 522
+  SDL_SCALEMODE_INVALID = -1
   VIOLET = "135 60 190 255"
   DARKGRAY = "80 80 80 255"
   ImGuiTableFlags_ScrollX = 16777216
@@ -3540,14 +3571,17 @@ Returns true if the column is visible and should be rendered.
   ImGuiKey_Q = 562
   cl_Kelp = "0.130000 0.290000 0.130000 1.000000"
   BEIGE = "211 176 131 255"
+  cl_Glass = "1.000000 1.000000 1.000000 0.250000"
+  ImGuiWindowFlags_NoInputs = 197120
+  ImGuiTableFlags_None = 0
+  ImGuiWindowFlags_NoNavFocus = 131072
+  LIGHTGRAY = "200 200 200 255"
+  ImGuiTableColumnFlags_None = 0
   BORDER = 60
   PINK = "255 109 194 255"
   ImGuiTableFlags_Resizable = 1
-  MAGENTA = "255 0 255 255"
-  ImGuiKey_F2 = 573
-  ImGuiMod_None = 0
-  DARKBLUE = "0 82 172 255"
-  BLANK = "0 0 0 0"
+  ImGuiKey_Space = 524
+  ImGuiTableFlags_Sortable = 8
   RAYWHITE = "245 245 245 255"
   FLT_MIN = 1.17549e-38
   ImGuiTableFlags_BordersOuterH = 256
@@ -3581,7 +3615,6 @@ Returns true if the column is visible and should be rendered.
   ImGuiKey_T = 565
   ImGuiKey_U = 566
   ImGuiKey_1 = 537
-  ImGuiKey_2 = 538
   ImGuiKey_3 = 539
   ImGuiTableColumnFlags_Disabled = 1
   ImGuiKey_I = 554
@@ -3589,17 +3622,8 @@ Returns true if the column is visible and should be rendered.
   ImGuiKey_Z = 571
   ImGuiKey_F5 = 576
   ImGuiKey_8 = 544
-  ImGuiKey_9 = 545
   ImGuiKey_F4 = 575
   ImGuiKey_V = 567
   ImGuiKey_F6 = 577
-  ImGuiWindowFlags_NoResize = 2
-  ImGuiKey_F7 = 578
-  ImGuiWindowFlags_HorizontalScrollbar = 2048
-  ImGuiKey_F8 = 579
-  ImGuiKey_F10 = 581
-  ImGuiKey_F11 = 582
-  ImGuiKey_F12 = 583
-  ImGuiKey_LeftArrow = 513
---- End of Dump (191 items) ---
+--- End of Dump (194 items) ---
 */
