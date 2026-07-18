@@ -27,6 +27,9 @@
 BaseFlux::Main app;
 ImConsole gConsole;
 SDL_Point gMousePos = {0,0};
+
+bool gShowConsole = false;
+
 extern void InitBindings_SDL();
 extern void ShutdownBindings_SDL();
 extern void InitBindings_ImGui();
@@ -119,9 +122,9 @@ int main(int argc, char* argv[]) {
 
        if (doRenderCall) Con::executef("OnRender");
 
-        static bool showConsole = true;
-        if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) showConsole = !showConsole;
-        gConsole.Draw("Console",&showConsole);
+
+        if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) gShowConsole = !gShowConsole;
+        gConsole.Draw("Console",&gShowConsole);
     };
 
     // -------------------------------------------------------------------------

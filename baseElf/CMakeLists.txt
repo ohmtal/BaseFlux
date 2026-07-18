@@ -110,16 +110,17 @@ if (EMSCRIPTEN)
         "-sALLOW_MEMORY_GROWTH=1"
     )
 
-    set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
+
+    set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${PROJECT_NAME}_web" SUFFIX ".html")
     target_link_options(${PROJECT_NAME} PUBLIC --sUSE_SDL=3 PUBLIC --preload-file ${ASSET_PATH} PRIVATE "-lidbfs.js")
 
 
     set(TARGET_NAME ${PROJECT_NAME})
-    # FIXME other shell file
-    # set(CUSTOM_SHELL_FILE "${RAYLIB_DIR}/src/minshell.html")
-    # if(EXISTS "${CUSTOM_SHELL_FILE}")
-    #     target_link_options(${TARGET_NAME} PRIVATE "--shell-file" "${CUSTOM_SHELL_FILE}")
-    #     set_target_properties(${TARGET_NAME} PROPERTIES LINK_DEPENDS "${CUSTOM_SHELL_FILE}")
-    # endif()
+
+    set(CUSTOM_SHELL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/res/minshell.html")
+    if(EXISTS "${CUSTOM_SHELL_FILE}")
+        target_link_options(${TARGET_NAME} PRIVATE "--shell-file" "${CUSTOM_SHELL_FILE}")
+        set_target_properties(${TARGET_NAME} PROPERTIES LINK_DEPENDS "${CUSTOM_SHELL_FILE}")
+    endif()
 
 endif()
