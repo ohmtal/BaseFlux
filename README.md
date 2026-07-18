@@ -77,5 +77,9 @@ cmake --build build
 
 ![BaseFlux Demo Screenshot](Screenshot_2026-03-15_08-03-58.png)
 
+---
 
+## baseElf Demo 
+
+view at [baseElf](https://thunderous.de/files/baseelf/)
 
