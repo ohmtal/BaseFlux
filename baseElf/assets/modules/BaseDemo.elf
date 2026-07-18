@@ -39,7 +39,7 @@ function BaseDemo::OnUpdate(%this, %dt) {
 
 //----------------------------------------------------------------------
 function BaseDemo::Render(%this) {
-
+    %borders = GetWindowSize();
    if ($showBla) {
         %y = 20;
         %x = 10;
@@ -77,8 +77,13 @@ function BaseDemo::Render(%this) {
         // %y+= 20;DrawText(%x,%y,"[ ] load assets/main.elf from current folder.", 1.5, WHITE, true, SLATEGRAY);
         %y+= 20;DrawText(%x,%y,"[X] create web build", 1.5, GREEN, true, SLATEGRAY);
         %y+= 20;DrawText(%x,%y,"[X] primitives Draw color ignore alpha! << BeginBlendMode/EndBlendMode", 1.5, GREEN, true, SLATEGRAY);
-        %y+= 20;DrawText(%x,%y,"[ ] add source editor with example", 1.5, GRAY, true, SLATEGRAY);
+        BeginBlendMode();
+        DrawRect(%x, %y - 5, %borders.x - 2 * %x, 20, "20 20 20 80");
+        EndBlendMode();
+        DrawRect(%x, %y - 5, %borders.x - 2 * %x, 20, "160 160 160", false);
         %y+= 20;DrawText(%x,%y,"[X] Texture rotate", 1.5, GREEN, true, SLATEGRAY);
+        %y+= 20;DrawText(%x,%y,"[ ] atlas font script", 1.5, WHITE, true, SLATEGRAY);
+        %y+= 20;DrawText(%x,%y,"[ ] add source editor with example", 1.5, DARKGRAY, true, SLATEGRAY);
 
         // if (isObject(IconTexture)){
         //     IconTexture.DrawRotatedSrcDstRect( "0 0 32 32",250 SPC %y SPC "32 32", 45, "0 0");
@@ -91,7 +96,7 @@ function BaseDemo::Render(%this) {
     } else {
 
         // physic playground -----------------
-        %borders = GetWindowSize();
+
         %dt = GetFrameTime();
         // echo("FRAMETIME=" SPC %dt);
         %cnt = LogoList.getCount();
