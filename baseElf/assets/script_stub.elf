@@ -444,7 +444,7 @@ class  TextureObject : public SimObject {
    /** --- bool DrawRotatedSrcDstRect ---
     * Draw a rotated and optional flipped texture with source and destination rect.@flip: see also SDL_FLIP_ constants
     * @return bool
-    */
+    *
       function DrawRotatedSrcDstRect( RectF srcRect, RectF dstRect, float angle, Point2F centerPoint, int sdl_flip=0, Color color=WHITE );
    /** --- bool DrawRect ---
     * Draw a texture with source and destination rect
