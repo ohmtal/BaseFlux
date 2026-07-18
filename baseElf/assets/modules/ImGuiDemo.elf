@@ -173,5 +173,6 @@ function ImGuiDemo::Render(%this) {
 
 }
 //----------------------------------------------------------------------
-function ImGuiDemo::onInputEvent( %this, %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
-}
+function ImGuiDemo::onSDLKeyBoardEvent(%this,%scancode, %modifiers, %isDown, %isRepeat) {}
+function ImGuiDemo::onSDLMouseButtonEvent(%this,%button, %isDown, %x, %y) {}
+function ImGuiDemo::onSDLMouseWheelEvent(%this,%wheelX, %wheelY){}

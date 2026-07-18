@@ -12,6 +12,7 @@
 #include "console/engineAPI.h"
 #include "console/script.h"
 #include "core/strings/stringUnit.h"
+#include "addons/SDL3/SDL3_input.h"
 
 // ----  BaseFlux
 #include <SDL3/SDL.h>
@@ -85,6 +86,8 @@ int main(int argc, char* argv[]) {
     engineGlue::init(MyLogger, (BaseFlux::Tools::getBasePath()+"/assets").c_str());
     InitBindings_SDL();
     InitBindings_ImGui();
+    ElfSDL3::InitKeyCodes();
+
     Con::executeFile("main.elf");
 
     bool doUpdateCall = Con::isFunction("OnUpdate");
@@ -109,6 +112,9 @@ int main(int argc, char* argv[]) {
     // -------------------------------------------------------------------------
     if (Con::isFunction("OnInit")) Con::executef("OnInit");
     // -------------------------------------------------------------------------
+    app.OnLoopBegin = []() {
+        ElfSDL3::ClearInputFrameTicks();
+    };
     app.OnRender = [&](SDL_Renderer* renderer) {
 
        if (doRenderCall) Con::executef("OnRender");
@@ -133,40 +139,48 @@ int main(int argc, char* argv[]) {
                 }
         }
 
-
+        ElfSDL3::onEvent(event);
         switch (event.type) {
             case SDL_EVENT_MOUSE_MOTION:
+
                 gMousePos.x = event.motion.x;
                 gMousePos.y = event.motion.y;
                 break;
 
             case SDL_EVENT_KEY_UP:
-            case SDL_EVENT_KEY_DOWN:  if ( Con::isFunction( "onInputEvent" ) ) {
-                const char* keyName = SDL_GetKeyName(event.key.key);
-
-                // onInputEvent_callback(
-                 Con::executef("onInputEvent"
-                    , "keyboard"
-                    , keyName
-                    , gMousePos.x
-                    , gMousePos.y
-                    , (event.type == SDL_EVENT_KEY_DOWN ) ? "1" : "0"
-                );
+            case SDL_EVENT_KEY_DOWN:
+            {
+                // if ( Con::isFunction( "onInputEvent" ) ) {
+                //     const char* keyName = SDL_GetKeyName(event.key.key);
+                //
+                //     // onInputEvent_callback(
+                //     Con::executef("onInputEvent"
+                //     , "keyboard"
+                //     , keyName
+                //     , gMousePos.x
+                //     , gMousePos.y
+                //     , (event.type == SDL_EVENT_KEY_DOWN ) ? "1" : "0"
+                //     );
+                // }
             }
             break;
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            case SDL_EVENT_MOUSE_BUTTON_UP:   if ( Con::isFunction( "onInputEvent" ) ) {
-                char buttonNameBuf[32];
-                dSprintf( buttonNameBuf, sizeof(buttonNameBuf), "button%d", event.button.button );
-                // onInputEvent_callback(
-                Con::executef("onInputEvent"
-                    , "mouse"
-                    , buttonNameBuf
-                    , gMousePos.x
-                    , gMousePos.y
-                    , (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ) ? "1" : "0"
-                );
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+            {
 
+                // if ( Con::isFunction( "onInputEvent" ) ) {
+                //     char buttonNameBuf[32];
+                //     dSprintf( buttonNameBuf, sizeof(buttonNameBuf), "button%d", event.button.button );
+                //     // onInputEvent_callback(
+                //     Con::executef("onInputEvent"
+                //     , "mouse"
+                //     , buttonNameBuf
+                //     , gMousePos.x
+                //     , gMousePos.y
+                //     , (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ) ? "1" : "0"
+                //     );
+                //
+                // }
             }
             break;
 

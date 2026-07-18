@@ -654,7 +654,7 @@ DefineEngineFunction(DrawLine, void, (F32 x1, F32 y1,F32 x2, F32 y2, Color color
     BaseFlux::DrawLine(app.getRenderer(), Point2F(x1,y1),Point2F(x2,y2), color);
 }
 
-DefineEngineFunction(DrawLineRect, void, (RectF points, Color color)
+DefineEngineFunction(DrawLineRec, void, (RectF points, Color color)
 ,(WHITE),"Draw a Line using rect w=x2 h=y2 as parameter") {
     BaseFlux::DrawLine(app.getRenderer(), Point2F(points.x,points.y),Point2F(points.w,points.h), color);
 }

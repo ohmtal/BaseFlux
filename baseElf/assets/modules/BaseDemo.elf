@@ -142,9 +142,10 @@ function BaseDemo::Render(%this) {
 
         // -----------------
 
+        DrawText(80,0, %cnt SPC "magdir:" SPC $magDirection SPC "mag:" SPC $magnetism ,2, "100 100 150");
     }
 
-    DrawFPS(0,0); DrawText(80,0, %cnt SPC "magdir:" SPC $magDirection SPC "mag:" SPC $magnetism ,2, "100 100 150");
+    DrawFPS(0,0);
 }
 //----------------------------------------------------------------------
 function BaseDemo::impulse(%this) {
@@ -170,21 +171,33 @@ function BaseDemo::addLogo(%this,%x,%y) {
     // echo("added logo:" SPC %logo);
 }
 //----------------------------------------------------------------------
-/*
- * onInputEvent - basic keyboard and mouse supported
- */
-function BaseDemo::onInputEvent( %this, %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
-
-    if (%deviceString $= "mouse" ) {
-        if (%keyValue == 1) {
-            // echo("MOUSE! val:" SPC %keyValue SPC %actionString);
-            if (%actionString $= "button1") {
-                %this.impulse();
-            }
-            if (%actionString $= "button3") {
-                $showBla = 0;
-                for (%i = 0; %i < LOGO_SPAWN_RATE; %i++) %this.addLogo(%mouseX, %mouseY);
-            }
+function BaseDemo::onSDLKeyBoardEvent(%this,%scancode, %modifiers, %isDown, %isRepeat) {}
+function BaseDemo::onSDLMouseButtonEvent(%this,%button, %isDown, %x, %y) {
+    if (%isDown == 1) {
+        if (%button == SDL_BUTTON_RIGHT) {
+            $showBla = 0;
+            for (%i = 0; %i < LOGO_SPAWN_RATE; %i++) %this.addLogo(%x, %y);
+        } else  if (%button == SDL_BUTTON_LEFT) {
+            %this.impulse();
         }
     }
 }
+function BaseDemo::onSDLMouseWheelEvent(%this,%wheelX, %wheelY){}
+/*
+ * onInputEvent - basic keyboard and mouse supported
+ */
+// function BaseDemo::onInputEvent( %this, %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
+//
+//     if (%deviceString $= "mouse" ) {
+//         if (%keyValue == 1) {
+//             // echo("MOUSE! val:" SPC %keyValue SPC %actionString);
+//             if (%actionString $= "button1") {
+//                 %this.impulse();
+//             }
+//             if (%actionString $= "button3") {
+//                 $showBla = 0;
+//                 for (%i = 0; %i < LOGO_SPAWN_RATE; %i++) %this.addLogo(%mouseX, %mouseY);
+//             }
+//         }
+//     }
+// }

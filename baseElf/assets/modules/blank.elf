@@ -20,5 +20,6 @@ function Blank::OnUpdate(%this, %dt) {
 function Blank::Render(%this) {
 }
 //----------------------------------------------------------------------
-function Blank::onInputEvent( %this, %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
-}
+function Blank::onSDLKeyBoardEvent(%this,%scancode, %modifiers, %isDown, %isRepeat) {}
+function Blank::onSDLMouseButtonEvent(%this,%button, %isDown, %x, %y) {}
+function Blank::onSDLMouseWheelEvent(%this,%wheelX, %wheelY){}

@@ -55,12 +55,21 @@ function Main::loop(%this) {
     }
     DrawText (5, $ScreenSize.y - 50,"CTRL + UP or DOWN to load an other module. FPS:" SPC GetFPS(), 1.5,  "200 200 180", true, SLATEGRAY);
 
+    DrawText($ScreenSize.x - 500, $ScreenSize.y - 30
+        , "Mouse:" SPC strFormat("%.2f",SDL_GetMouseX()) SPC strFormat("%.2f",SDL_GetMouseY())
+          SPC "BUTTONS:"
+                SPC SDL_IsMouseButtonDown(SDL_BUTTON_LEFT)
+                SPC SDL_IsMouseButtonDown(SDL_BUTTON_MIDDLE)
+                SPC SDL_IsMouseButtonDown(SDL_BUTTON_RIGHT)
+          SPC "ESCAPE:" SPC SDL_IsKeyDown(SDL_SCANCODE_ESCAPE)
+        , 1.2, "0 255 200");
+
 }
 
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 /*
- * OnLoadis called BEFORE window is open
+ * OnLoad is called BEFORE window is open
  */
 function onLoad() {
     //NOTE: only used onLoad - they do not automatically change anything after load
@@ -112,53 +121,96 @@ function onUpdate(%dt) {
 function onRender() {
 
     // using imgui input handling :) why not
-    if (ImShortcut(ImGuiMod_Ctrl | ImGuiKey_R)) {
-        echo("Shortcut detected! Reload");
-        rl();
-    }
-    if (ImShortcut(ImGuiMod_Ctrl | ImGuiKey_UpArrow)) {
-        $Main.moduleIndex--;
-        $Main.loadModule();
-    }
-    if (ImShortcut(ImGuiMod_Ctrl | ImGuiKey_DownArrow)) {
-        $Main.moduleIndex++;
-        $Main.loadModule();
-    }
+    // if (ImShortcut(ImGuiMod_Ctrl | ImGuiKey_R)) {
+    // if (SDL_IsShortcutPressed(SDL_KMOD_CTRL, SDL_SCANCODE_R)) {
+    //     echo("Shortcut detected! Reload");
+    //     rl();
+    // }
+    // if (ImShortcut(ImGuiMod_Ctrl | ImGuiKey_UpArrow)) {
+    // // if (SDL_IsShortcutPressed(SDL_KMOD_CTRL, SDL_SCANCODE_UP)) {
+    //     $Main.moduleIndex--;
+    //     $Main.loadModule();
+    // }
+    // if (ImShortcut(ImGuiMod_Ctrl | ImGuiKey_DownArrow)) {
+    // // if (SDL_IsShortcutPressed(SDL_KMOD_CTRL, SDL_SCANCODE_DOWN)) {
+    //     $Main.moduleIndex++;
+    //     $Main.loadModule();
+    // }
 
-    if (ImIsKeyPressed(ImGuiKey_Escape)) quit();
+    // if (ImIsKeyPressed(ImGuiKey_Escape)) quit();
+    // if (SDL_IsKeyPressed(SDL_SCANCODE_ESCAPE)) quit();
 
     // -------
     $Main.loop();
 }
 // -----------------------------------------------------------------------------
+function onSDLMouseWheelEvent(%wheelX, %wheelY) {
+    // echo("onSDLMouseWheelEvent" SPC %wheelX SPC %wheelY );
+    if (isObject($Main.module)) $Main.module.onSDLMouseWheelEvent(%wheelX, %wheelY);
+}
+// -----------------------------------------------------------------------------
+function onSDLMouseButtonEvent(%button, %isDown, %x, %y) {
+    echo("onSDLMouseButtonEvent" SPC %button SPC %isDown SPC %x SPC %y);
+    if (isObject($Main.module)) $Main.module.onSDLMouseButtonEvent(%button, %isDown, %x, %y);
+
+}
+
+// -----------------------------------------------------------------------------
+function onSDLKeyBoardEvent(%scancode, %modifiers, %isDown, %isRepeat) {
+    // echo("onSDLKeyBoardEvent" SPC %scancode SPC %modifiers SPC  %isDown SPC  %isRepeat);
+    %ctrl =  (%modifiers & SDL_KMOD_CTRL);
+    %alt  = (%modifiers & SDL_KMOD_ALT);
+    %shift =  (%modifiers & SDL_KMOD_SHIFT);
+
+    if (%isDown) {
+        if (%scancode == SDL_SCANCODE_R && %ctrl) {
+            echo("Shortcut detected! Reload");
+            rl();
+        }
+        if (%scancode == SDL_SCANCODE_UP && %ctrl) {
+            $Main.moduleIndex--;
+            $Main.loadModule();
+        }
+        if (%scancode == SDL_SCANCODE_DOWN && %ctrl) {
+            $Main.moduleIndex++;
+            $Main.loadModule();
+        }
+
+        if (%scancode == SDL_SCANCODE_ESCAPE) quit();
+    }
+
+        if (isObject($Main.module)) $Main.module.onSDLKeyBoardEvent(%scancode, %modifiers, %isDown, %isRepeat);
+}
+// -----------------------------------------------------------------------------
+// REMOVED USE the onSDL... event ...
 /*
  * onInputEvent - basic keyboard and mouse supported
  */
-function onInputEvent( %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
-    // echo("onInputEvent Device:" SPC %deviceString SPC "action:" SPC %actionString SPC "mx/my:" SPC %mouseX SPC %mouseY SPC "DOWN:" SPC %keyValue);
-    // if (%deviceString $= "keyboard") {
-    //     invaderGame.Keys[%actionString] = %keyValue;
-    //     if (!%keyValue) {//keyup
-    //         if (%actionString $= "escape") {
-    //             quit();
-    //         }
-    //     }
-    // }
-    // // else if (%deviceString $= "mouse" ) {
-    // //     if (%keyValue == 1) {
-    // //     echo("MOUSE! val:" SPC %keyValue SPC %actionString);
-    // //         if (%actionString $= "button3") {
-    // //             %logo = new SimObject();
-    // //             %logo.x = %mouseX;
-    // //             %logo.y = %mouseY;
-    // //             LogoList.add(%logo);
-    // //             echo("added logo:" SPC %logo);
-    // //         }
-    // //     }
-    // // }
-
-    if (isObject($Main.module)) $Main.module.onInputEvent(%deviceString, %actionString, %mouseX, %mouseY, %keyValue);
-}
+// function onInputEvent( %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
+//     // echo("onInputEvent Device:" SPC %deviceString SPC "action:" SPC %actionString SPC "mx/my:" SPC %mouseX SPC %mouseY SPC "DOWN:" SPC %keyValue);
+//     // if (%deviceString $= "keyboard") {
+//     //     invaderGame.Keys[%actionString] = %keyValue;
+//     //     if (!%keyValue) {//keyup
+//     //         if (%actionString $= "escape") {
+//     //             quit();
+//     //         }
+//     //     }
+//     // }
+//     // // else if (%deviceString $= "mouse" ) {
+//     // //     if (%keyValue == 1) {
+//     // //     echo("MOUSE! val:" SPC %keyValue SPC %actionString);
+//     // //         if (%actionString $= "button3") {
+//     // //             %logo = new SimObject();
+//     // //             %logo.x = %mouseX;
+//     // //             %logo.y = %mouseY;
+//     // //             LogoList.add(%logo);
+//     // //             echo("added logo:" SPC %logo);
+//     // //         }
+//     // //     }
+//     // // }
+//
+//     if (isObject($Main.module)) $Main.module.onInputEvent(%deviceString, %actionString, %mouseX, %mouseY, %keyValue);
+// }
 
 
 // -----------------------------------------------------------------------------

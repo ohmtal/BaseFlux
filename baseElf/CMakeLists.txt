@@ -74,7 +74,8 @@ else()
   list(APPEND ELFSCRIPT_SRC ${ELF_MODULE}/addons/console/consoleDocExporter.cpp)
   # ImGui Bindings
   list(APPEND ELFSCRIPT_SRC ${ELF_MODULE}/addons/ImGui/bindings_imgui.cpp)
-
+  # SDL3Elf
+  list(APPEND ELFSCRIPT_SRC ${ELF_MODULE}/addons/SDL3/SDL3_input.cpp)
 endif()
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<< ElfScript ========================
 

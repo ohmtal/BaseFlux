@@ -15,7 +15,7 @@ function Collision::spawnPlayer(%this, %position) {
     %this.player = new GameObject() {
         x = %position.x;
         y = %position.y;
-        veloX = 0;
+        veloX = $shift ? getRandom(-5, 5): 0;
         veloY = 10;
         color = getRandom(0,255) SPC getRandom(0,255) SPC getRandom(0,255) SPC getRandom(32,255);
         size = PLAYER_SIZE;
@@ -74,7 +74,7 @@ function Collision::Render(%this) {
     %collided = false;
     for (%i = 0; %i < %cnt; %i++) {
         %line = %this.line[%i];
-        DrawLineRect(%line, BLUE);
+        DrawLineRec(%line, BLUE);
         if (%playerSpawned && %p.solveCollideLine(%line, 0.5)) {
             %collided = true;
         }
@@ -189,11 +189,12 @@ function Collision::Render(%this) {
 //
 // }
 //----------------------------------------------------------------------
-function Collision::onInputEvent( %this, %deviceString, %actionString, %mouseX, %mouseY, %keyValue ) {
-    if (%deviceString $= "keyboard" && %actionString $= "Left Shift") $Shift = %keyValue;
-    if (%deviceString $= "mouse" && %actionString $= "button1") {
-        $LeftButton = %keyValue;
-
-        if (%keyValue) %this.spawnPlayer(%mouseX SPC %mouseY);
+function Collision::onSDLKeyBoardEvent(%this,%scancode, %modifiers, %isDown, %isRepeat) {
+   $Shift =  (%modifiers & SDL_KMOD_SHIFT);
+}
+function Collision::onSDLMouseButtonEvent(%this,%button, %isDown, %x, %y) {
+    if (%isDown && %button == SDL_BUTTON_LEFT)  {
+        %this.spawnPlayer(%x SPC %y);
     }
 }
+function Collision::onSDLMouseWheelEvent(%this,%wheelX, %wheelY){}

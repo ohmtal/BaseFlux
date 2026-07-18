@@ -147,6 +147,9 @@ namespace BaseFlux {
     }
     //--------------------------------------------------------------------------
     void Main::IterateFrame() {
+        if (OnLoopBegin) OnLoopBegin();
+
+
         bool usingImGui = mImGuiIO != nullptr;
 
         mTickCount = SDL_GetPerformanceCounter();
