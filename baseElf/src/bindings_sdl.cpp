@@ -131,6 +131,7 @@ public:
 
 
     static void initPersistFields() {
+          Parent::initPersistFields();
         addField("ScreenSize", TypePoint2I, Offset(mSettings.ScreenSize,SettingsObject));
         addField("FpsLimit", TypeS32, Offset(mSettings.FpsLimit,SettingsObject));
         addField("WindowMaximized", TypeBool, Offset(mSettings.WindowMaximized,SettingsObject));
@@ -188,6 +189,7 @@ public:
 
     SDL_Texture* get() { return mTexture; };
     static void initPersistFields() {
+        Parent::initPersistFields();
         addField("fileName", TypeString, Offset(mFileName,TextureObject));
     }
 
@@ -263,7 +265,7 @@ public:
 };
 IMPLEMENT_CONOBJECT(TextureObject);
 
-DefineEngineMethod(TextureObject, getSize,Point2I, (RectF dstRect),
+DefineEngineMethod(TextureObject, getSize,Point2I, (),
                    ,"get the width and height of the loaded texture" ) {
     SDL_Texture* tex = object->get();
     if (!tex) return {0,0};
@@ -282,6 +284,17 @@ DefineEngineMethod(TextureObject, DrawRect,bool, (RectF dstRect, Color color), (
                    ,"Draw a texture with source and destination rect" ) {
      return object->DrawRect( dstRect, color);
 }
+
+DefineEngineMethod(TextureObject, DrawSrcDstRect,bool,
+                   (RectF srcRect, RectF dstRect,  Color color),
+                   (WHITE)
+                   ,"Draw a the texture from srcRect to dstRect") {
+    return object->DrawSrcDstRect(srcRect, dstRect, color);
+
+}
+
+
+
 DefineEngineMethod(TextureObject, DrawCentered,bool, (F32 x, F32 y, Color color), (WHITE)
                    ,"Draw the texture centered at the position" ) {
     return object->DrawCentered(x,y,color);
@@ -315,6 +328,7 @@ public:
 
 
     static void initPersistFields() {
+          Parent::initPersistFields();
         addField("position", TypePoint3F, Offset(mPoint,GameObject));
         addField("x", TypeF32, Offset(mPoint.x,GameObject));
         addField("y", TypeF32, Offset(mPoint.y,GameObject));
@@ -535,6 +549,7 @@ public:
 
     BaseFlux::WavData* get() { return mWaveData; };
     static void initPersistFields() {
+          Parent::initPersistFields();
         addField("fileName", TypeString, Offset(mFileName,SoundObject));
         addField("gain", TypeF32, Offset(mGain,SoundObject));
         addField("loop", TypeBool, Offset(mLoop,SoundObject));

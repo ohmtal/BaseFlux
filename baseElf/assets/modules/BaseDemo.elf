@@ -1,3 +1,5 @@
+include("includes/AtlasFont.elf");
+
 #define BORDER 60
 #define LOGO_SPAWN_RATE 50
 #define LOGO_START_SPEED 100
@@ -23,12 +25,20 @@ function BaseDemo::onAdd(%this) {
 
     $magDirection = MAG_DIR_VALUE;
     $showBla =1;
+
+
+    $f = new TextureObject(FontTexture) {
+        class = "AtlasFont";
+        fileName = "texture/source_code_32x60.png";
+    };
+
     return true;
 }
 //----------------------------------------------------------------------
 function BaseDemo::OnRemove(%this) {
     IconTexture.delete();
     GrayTexture.delete();
+    FontTexture.delete();
 
     LogoList.deleteObjects();
     LogoList.delete();
@@ -93,6 +103,8 @@ function BaseDemo::Render(%this) {
 
 
         %y+= 60;DrawText(%x,%y,"right click for fun ;)", 1.5, ORANGE, true, SLATEGRAY);
+
+        %y +=20; FontTexture.drawText(%x, %y, "Hello World","20 20 200 254");
     } else {
 
         // physic playground -----------------
