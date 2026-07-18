@@ -193,6 +193,26 @@ public:
         addField("fileName", TypeString, Offset(mFileName,TextureObject));
     }
 
+
+    RectF getAtlasRect(S32 rowCount, S32 colCount, S32 index) {
+        RectF result = {0.f,0.f,0.f,0.f};
+        if (!mTexture || colCount < 1 || rowCount < 1 ) return result;
+        F32 texW = (F32)mTexture->w;
+        F32 texH = (F32)mTexture->h;
+
+        result.w = texW / colCount;
+        result.h = texH / rowCount;
+
+        S32 cellX = index % colCount;
+        S32 cellY = index / colCount;
+
+        result.x = cellX * result.w;
+        result.y = cellY * result.h;
+
+        return result;
+    }
+
+
 //     bool SDL_RenderTextureRotated(SDL_Renderer *renderer, SDL_Texture *texture,
 //                                   const SDL_FRect *srcrect, const SDL_FRect *dstrect,
 //                                   double angle, const SDL_FPoint *center,
@@ -271,6 +291,12 @@ DefineEngineMethod(TextureObject, getSize,Point2I, (),
     if (!tex) return {0,0};
     return {tex->w,tex->h};
 }
+
+DefineEngineMethod(TextureObject, getAtlasRect,RectF, (S32 colCount, S32 rowCount, S32 index),
+                   ,"get the rectangle on a atlas texture for a given index" ) {
+    return object->getAtlasRect(colCount, rowCount, index);
+}
+
 
 DefineEngineMethod(TextureObject, DrawRotatedSrcDstRect,bool,
         (RectF srcRect, RectF dstRect,F32 angle, Point2F centerPoint, S32 sdl_flip,  Color color),

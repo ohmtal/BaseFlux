@@ -92,7 +92,7 @@ function BaseDemo::Render(%this) {
         EndBlendMode();
         DrawRect(%x, %y - 5, %borders.x - 2 * %x, 20, "160 160 160", false);
         %y+= 20;DrawText(%x,%y,"[X] Texture rotate", 1.5, GREEN, true, SLATEGRAY);
-        %y+= 20;DrawText(%x,%y,"[ ] atlas font script", 1.5, WHITE, true, SLATEGRAY);
+        %y+= 20;DrawText(%x,%y,"[X] atlas font script", 1.5, GREEN, true, SLATEGRAY);
         %y+= 20;DrawText(%x,%y,"[ ] add source editor with example", 1.5, DARKGRAY, true, SLATEGRAY);
 
         // if (isObject(IconTexture)){
@@ -104,7 +104,7 @@ function BaseDemo::Render(%this) {
 
         %y+= 60;DrawText(%x,%y,"right click for fun ;)", 1.5, ORANGE, true, SLATEGRAY);
 
-        %y +=20; FontTexture.drawText(%x, %y, "Hello World","20 20 200 254");
+        %y +=20; FontTexture.drawText(%x, %y, "Hello AtlasFont...","20 200 200 254");
     } else {
 
         // physic playground -----------------

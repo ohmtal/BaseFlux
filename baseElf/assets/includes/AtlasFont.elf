@@ -15,8 +15,10 @@ function AtlasFont::onAdd(%this) {
 
 }
 
+
+// now in c++ ==>  function getAtlasRect( int colCount, int rowCount, int index );
+// OBSOLETE use getAtlasRect
 function AtlasFont::getSrcRect(%this, %index) {
-    // if (%index < %this.StartChar || %index > %this.EndChar) return false;
     %col = %index % (%this.rowCount);
     %row = mFloor(%index / %this.colCount) ;
 
@@ -30,26 +32,31 @@ function AtlasFont::getSrcRect(%this, %index) {
     %srcRect.z = %w;
     %srcRect.w = %h;
 
-    echo("index:" SPC %index SPC "gridpos: " SPC %col SPC %row SPC "result:" SPC %srcRect);
+    // echo("index:" SPC %index SPC "gridpos: " SPC %col SPC %row SPC "result:" SPC %srcRect);
     return %srcRect;
 }
 
+
+// this is the most boring way to handle the single chars ;)
+
 function AtlasFont::DrawText(%this, %x, %y, %text, %color) {
- // strasc
+
     %len = strlen(%text);
     %cw = %this.CharWidth;
     %ch = %this.CharHeight;
+    %cols = %this.rowCount;
+    %rows = %this.colCount;
+    %start = %this.StartChar;
+    %end = %this.EndChar;
     if (%len == 0) return;
     for (%i = 0; %i < %len; %i++) {
         %c = getSubStr(%text, %i, 1);
         %asc = strasc(%c);
-        if (%asc >= %this.StartChar && %asc <= %this.EndChar) {
-            %index = %asc - %this.StartChar;
-            %srcRect = %this.getSrcRect(%index);
+        if (%asc >= %start && %asc <= %end) {
+            %index = %asc - %start;
+            %srcRect = %this.getAtlasRect(%cols, %rows, %index);
             %dstRect = %x + %i * %cw SPC %y SPC %cw SPC %ch;
             %this.DrawSrcDstRect(%srcRect, %dstRect, %color);
         }
     }
 }
-
-echo("* AtlasFont loaded.");
