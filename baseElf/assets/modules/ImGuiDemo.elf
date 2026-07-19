@@ -60,8 +60,11 @@ function ImGuiDemo::Render(%this) {
 
     // WARNING we have 2 different color systems !!! cl_White is Color4F and WHITE is Color(U8)
 
-    ImSetNextWindowPos("10 10");
-    ImSetNextWindowSize("600 400");
+    // if (!%this.windowSet) {
+        ImSetNextWindowPos("10 10", ImGuiCond_FirstUseEver);
+        ImSetNextWindowSize("600 400", ImGuiCond_FirstUseEver);
+        // %this.windowSet = true;
+    // }
 
     if (ImBegin("ImGui ElfScript") && ImBeginTabBar("ImGui ElfScript TABS")) {
         if (ImBeginTabItem("Main")) {
