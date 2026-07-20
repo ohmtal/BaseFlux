@@ -112,7 +112,7 @@ function BaseDemo::Render(%this) {
 
         %dt = GetFrameTime();
         // echo("FRAMETIME=" SPC %dt);
-        %cnt = LogoList.getCount();
+         %cnt = LogoList.getCount();
 
 
 
@@ -144,8 +144,9 @@ function BaseDemo::Render(%this) {
         if ($magDirection > 0) DrawLine(BORDER, %by, %bx, %by , ORANGE);
         else  DrawLine(BORDER, BORDER, %bx, BORDER, ORANGE);
 
-        for (%i = 0; %i < %cnt; %i++) {
-            %logo = LogoList.getObject(%i);
+        // for (%i = 0; %i < %cnt; %i++) {
+        //     %logo = LogoList.getObject(%i);
+        foreach(%logo in LogoList) { //much faster than for/getObject
             %logo.moveLinear();
             %logo.moveGravity(0, 4 * $magDirection);
             %logo.moveOrbital2D(%cp, $magnetism, 5, LOGO_START_SPEED);
@@ -167,9 +168,10 @@ function BaseDemo::Render(%this) {
 }
 //----------------------------------------------------------------------
 function BaseDemo::impulse(%this) {
-    %cnt = LogoList.getCount();
-    for (%i = 0; %i < %cnt; %i++) {
-        %logo = LogoList.getObject(%i);
+    // %cnt = LogoList.getCount();
+    // for (%i = 0; %i < %cnt; %i++) {
+        // %logo = LogoList.getObject(%i);
+    foreach(%logo in LogoList) {
         %logo.veloX = getRandom(-LOGO_START_SPEED * 5,LOGO_START_SPEED * 5);
         %logo.veloY = getRandom(-LOGO_START_SPEED * 5,LOGO_START_SPEED * 5);
     }
