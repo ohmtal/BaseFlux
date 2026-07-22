@@ -158,6 +158,9 @@ namespace BaseFlux {
 
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
+            // when using SDL_SetRenderLogicalPresentation (scaling)
+            SDL_ConvertEventToRenderCoordinates(getRenderer(), &event);
+
             if (usingImGui)  ImGui_ImplSDL3_ProcessEvent(&event);
             switch (event.type) {
                 case SDL_EVENT_QUIT: mRunning = false; break;
