@@ -190,13 +190,15 @@ namespace BaseFlux {
 
         }
 
-        SDL_SetRenderDrawColor(mRenderer
-        , mSettings.clearColor.r
-        , mSettings.clearColor.g
-        , mSettings.clearColor.b
-        , mSettings.clearColor.a
-        );
-        SDL_RenderClear(mRenderer);
+        if (mSettings.clearColor.a > 0) {
+            SDL_SetRenderDrawColor(mRenderer
+            , mSettings.clearColor.r
+            , mSettings.clearColor.g
+            , mSettings.clearColor.b
+            , mSettings.clearColor.a
+            );
+            SDL_RenderClear(mRenderer);
+        }
 
         if (OnRender) OnRender(mRenderer);
 
