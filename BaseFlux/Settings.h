@@ -47,9 +47,12 @@ namespace BaseFlux {
         // the color when nothing is on screen
         SDL_Color clearColor = {45, 45, 45, 255};
 
+
+
         std::string getPrefsPath();
         std::string getSafeCompany();
         std::string getSafeCaption();
+
     };
 
 }; //namespace

@@ -32,7 +32,8 @@ namespace BaseFlux {
             path = Tools::string_replace_all(path, "texture:/", getSettings().AssetPath + getSettings().TexturePathAppend);
         }
         if (path.find("base:/", 0) != std::string::npos) {
-            path = Tools::string_replace_all(path, "base:/", Tools::getBasePath());
+            // path = Tools::string_replace_all(path, "base:/", Tools::getBasePath());
+            path = Tools::string_replace_all(path, "base:/",mBasePath);
         }
         if (path.find("pref:/", 0) != std::string::npos) {
             path = Tools::string_replace_all(path, "pref:/", getSettings().getPrefsPath());

@@ -47,6 +47,7 @@ namespace BaseFlux {
 
 
     public:
+        std::string mBasePath = "";
         Settings& getSettings() { return mSettings; }
 
         BaseFlux::TextureManager& getTextureManager() const {
@@ -56,7 +57,9 @@ namespace BaseFlux {
             return *mAudioManager;
         }
 
-        Main() = default;
+        Main() {
+            mBasePath = Tools::getBasePath();
+        }
         ~Main()  = default;
         //----------------------------------------------------------------------
         SDL_Window*     getWindow()      const { return mWindow; };
