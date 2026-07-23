@@ -13,12 +13,48 @@
 
 namespace BaseFlux {
 
+    SDL_FColor SDL_ColorToFColor(SDL_Color color) {
+        SDL_FColor fcolor;
+        fcolor.r = color.r / 255.0f;
+        fcolor.g = color.g / 255.0f;
+        fcolor.b = color.b / 255.0f;
+        fcolor.a = color.a / 255.0f;
+        return fcolor;
+    }
+
     void DrawLine(SDL_Renderer *renderer, SDL_FPoint p1,SDL_FPoint p2 , SDL_Color color) {
         SDL_Color oldColor;
         SDL_SetRenderDrawColor(renderer, color.r,color.g,color.b,color.a);
         SDL_RenderLine(renderer, p1.x, p1.y, p2.x , p2.y);
         SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
     }
+
+
+    void DrawLineThick(SDL_Renderer *renderer, float x1, float y1, float x2, float y2, float thickness, SDL_Color color) {
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float length = sqrtf(dx * dx + dy * dy);
+
+        if (length == 0.0f) return;
+
+        float nx = -dy / length * (thickness * 0.5f);
+        float ny =  dx / length * (thickness * 0.5f);
+
+        SDL_FColor colorF = SDL_ColorToFColor(color);
+
+        SDL_Vertex vertices[4] = {
+            { { x1 + nx, y1 + ny }, colorF, { 0 } },
+            { { x1 - nx, y1 - ny }, colorF, { 0 } },
+            { { x2 + nx, y2 + ny }, colorF, { 0 } },
+            { { x2 - nx, y2 - ny }, colorF, { 0 } }
+        };
+
+        int indices[6] = { 0, 1, 2, 1, 2, 3 };
+
+        SDL_RenderGeometry(renderer, NULL, vertices, 4, indices, 6);
+    }
+
+
 
     void DrawRect(SDL_Renderer *renderer, SDL_FRect rect , SDL_Color color, bool fill) {
         SDL_Color oldColor;

@@ -19,6 +19,10 @@
 
 namespace BaseFlux {
     void DrawLine(SDL_Renderer *renderer, SDL_FPoint p1,SDL_FPoint p2 , SDL_Color color);
+    void DrawLineThick(SDL_Renderer *renderer, float x1, float y1, float x2, float y2, float thickness, SDL_Color color);
+    void DrawLineThick(SDL_Renderer *renderer, SDL_FPoint p1,SDL_FPoint p2 , float thickness, SDL_Color color) {
+        DrawLineThick(renderer, p1.x, p1.y, p2.x, p2.y, thickness, color);
+    }
     void DrawRect(SDL_Renderer *renderer, SDL_FRect rect , SDL_Color color, bool fill);
 
     void DrawDebugText( SDL_Renderer *renderer,
