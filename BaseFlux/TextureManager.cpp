@@ -7,7 +7,8 @@ namespace BaseFlux {
         if (!mMain) return false;
         if (!mMain->getRenderer()) return false;
 
-        fileName = "texture:/" + fileName;
+        if (fileName.find(":/") == std::string::npos) fileName = "texture:/" + fileName;
+
         mMain->setFullPath(fileName);
         // SDL_Log("[info] Loading image: %s", fileName.c_str());
         SDL_Surface* surface = SDL_LoadSurface(fileName.c_str());

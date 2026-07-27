@@ -21,6 +21,8 @@
 #include <functional>
 
 namespace BaseFlux {
+    inline std::array<std::string, SDL_FOLDER_COUNT> globFolderCache;
+
     double getFrameTime();// { return gFrameTime;}
     double getGameTime(); //) { return gGameTime;}
     Uint32 getFPS(); // { return gFPS;}
@@ -89,6 +91,26 @@ namespace BaseFlux {
          */
         void setFullPath(std::string  &path);
 
+        std::string getUserFolder(SDL_Folder folder) {
+            // Return cached value if already fetched
+            if (!globFolderCache[folder].empty()) {
+                return globFolderCache[folder];
+            }
+            // SDL_GetUserFolder returns a pointer to internal memory; DO NOT free it
+            const char* rawPath = SDL_GetUserFolder(folder);
+            if (rawPath) {
+                globFolderCache[folder] = rawPath;
+                return globFolderCache[folder];
+            }
+            return "";
+        }
+        inline std::string getHomePath()      { return getUserFolder( SDL_FOLDER_HOME ) ; }
+        inline std::string getDesktopPath()   { return getUserFolder( SDL_FOLDER_DESKTOP ) ; }
+        inline std::string getDocumentsPath() { return getUserFolder( SDL_FOLDER_DOCUMENTS ) ; }
+        inline std::string getDownloadPath()  { return getUserFolder( SDL_FOLDER_DOWNLOADS ) ; }
+        inline std::string getMusicPath()     { return getUserFolder( SDL_FOLDER_MUSIC ) ; }
+        inline std::string getPicturesPath()  { return getUserFolder( SDL_FOLDER_PICTURES ) ; }
+        inline std::string getVideosPath()    { return getUserFolder( SDL_FOLDER_VIDEOS ) ; }
 
         // Set the window icon relative to AssetPath
         bool setWindowIcon(SDL_Window* window, std::string fileName);

@@ -38,6 +38,41 @@ namespace BaseFlux {
         if (path.find("pref:/", 0) != std::string::npos) {
             path = Tools::string_replace_all(path, "pref:/", getSettings().getPrefsPath());
         }
+
+        // other global directories:
+        // home:/ || desktop:/ || documents:/ || download:/
+
+        // inline std::string getHomePath()      { return getUserFolder( SDL_FOLDER_HOME ) ; }
+        if (path.find("home:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "home:/", getHomePath());
+        }
+        // inline std::string getDesktopPath()   { return getUserFolder( SDL_FOLDER_DESKTOP ) ; }
+        if (path.find("desktop:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "desktop:/", getDesktopPath());
+        }
+        // inline std::string getDocumentsPath() { return getUserFolder( SDL_FOLDER_DOCUMENTS ) ; }
+        if (path.find("documents:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "documents:/", getDocumentsPath());
+        }
+        // inline std::string getDownloadPath()  { return getUserFolder( SDL_FOLDER_DOWNLOADS ) ; }
+        if (path.find("download:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "download:/", getDocumentsPath());
+        }
+
+        // || music:/ || pictures || videos
+
+        // inline std::string getMusicPath()     { return getUserFolder( SDL_FOLDER_MUSIC ) ; }
+        if (path.find("music:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "music:/", getMusicPath());
+        }
+        // inline std::string getPicturesPath()  { return getUserFolder( SDL_FOLDER_PICTURES ) ; }
+        if (path.find("pictures:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "pictures:/", getPicturesPath());
+        }
+        // inline std::string getVideosPath()    { return getUserFolder( SDL_FOLDER_VIDEOS ) ; }
+        if (path.find("videos:/", 0) != std::string::npos) {
+            path = Tools::string_replace_all(path, "videos:/", getVideosPath());
+        }
     }
     //--------------------------------------------------------------------------
 

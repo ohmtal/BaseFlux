@@ -170,7 +170,11 @@ namespace BaseFlux {
             return false;
         }
 
-        std::string lFileName =  "sound:/" + fileName;
+        std::string lFileName = "";
+        if (fileName.find(":/") == std::string::npos)
+            lFileName = "sound:/" + fileName;
+            else lFileName = fileName;
+
         mMain->setFullPath(lFileName);
 
 
