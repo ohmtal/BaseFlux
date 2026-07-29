@@ -15,6 +15,9 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+
+#include "spice/gui/ImFileDialog.h"
+
 // not compatible with my non threading emscripten
 // #include <thread>
 // #include <chrono>
@@ -22,7 +25,7 @@
 
 namespace BaseFluxDemo {
 
-
+    ImFileDialog gFileDialog;
 
     class Demo {
     private:
@@ -68,6 +71,8 @@ namespace BaseFluxDemo {
             }
             ImGui::End();
 
+
+            if (gFileDialog.Draw()) {}
         }
 
         void OnEvent(const SDL_Event& event) {
@@ -153,9 +158,12 @@ namespace BaseFluxDemo {
             // lazy loading and using main wrapper
              mBaseFlux.playSound("sound1.wav");
 
+
+            gFileDialog.init(mBaseFlux.mBasePath, { ".wav", ".bmp" });
+
             return true;
 
-        }
+        } //init
         void Execute() {
             mBaseFlux.Execute();
         }
