@@ -35,7 +35,9 @@ namespace BaseFlux {
 
     // Lights
     SDL_Texture* CreatePointLightTexture(SDL_Renderer* renderer, int radius, SDL_Color color, bool diffuse = true);
-    SDL_Texture* CreateSpotlightTexture(SDL_Renderer* renderer, int radius, float coneAngleDegrees, SDL_Color color, bool diffuse = true);
+    SDL_Texture* CreateRayLightTexture(SDL_Renderer* renderer, int width,int height,  SDL_Color color, bool diffuse = true);
+    SDL_Texture* CreateSpotlightTexture(SDL_Renderer* renderer, int radius, float coneAngleDegrees, SDL_Color color
+                , bool diffuse = true, bool damping = false);
 
 
 }; //namespace
