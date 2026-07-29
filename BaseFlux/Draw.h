@@ -32,4 +32,10 @@ namespace BaseFlux {
     void DrawCircle(SDL_Renderer *renderer, float radius, SDL_FPoint pos, SDL_Color color, bool fill);
     void DrawArc(SDL_Renderer *renderer, float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill);
     void DrawDonut(SDL_Renderer *renderer, float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill);
+
+    // Lights
+    SDL_Texture* CreatePointLightTexture(SDL_Renderer* renderer, int radius, SDL_Color color, bool diffuse = true);
+    SDL_Texture* CreateSpotlightTexture(SDL_Renderer* renderer, int radius, float coneAngleDegrees, SDL_Color color, bool diffuse = true);
+
+
 }; //namespace

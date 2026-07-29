@@ -206,7 +206,126 @@ namespace BaseFlux {
         }
     }
 
+    // ------------------ Lights helper --------------------
+    SDL_Texture* CreatePointLightTexture(SDL_Renderer* renderer, int radius, SDL_Color color, bool diffuse) {
+        int size = radius * 2;
+        SDL_Surface* surface = SDL_CreateSurface(size, size, SDL_PIXELFORMAT_RGBA32);
+        if (!surface) return nullptr;
 
+        SDL_LockSurface(surface);
+        Uint32* pixels = (Uint32*)surface->pixels;
+        int pitchPixels = surface->pitch / 4;
+
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                float dx = x - radius;
+                float dy = y - radius;
+                float distance = SDL_sqrtf(dx * dx + dy * dy);
+
+                Uint32 pixelColor = 0x00000000;
+
+                if (distance < radius) {
+                    float intensity = 0.0f;
+
+                    if (diffuse) {
+                        // Normalize distance between 0.0 (center) and 1.0 (edge)
+                        float distanceRatio = distance / radius;
+
+                        // Cosine creates a smooth S-curve (soft flat peak at center, gentle fade to edge)
+                        intensity = SDL_cosf(distanceRatio * (3.14159265f / 2.0f));
+                    } else {
+                        // linear falloff (1.0 at center, 0.0 at edge)
+                        intensity = 1.0f - (distance / radius);
+                    }
+
+                    Uint8 r = (Uint8)(color.r * intensity);
+                    Uint8 g = (Uint8)(color.g * intensity);
+                    Uint8 b = (Uint8)(color.b * intensity);
+                    Uint8 a = (Uint8)(color.a * intensity);
+
+                    pixelColor = (r << 24) | (g << 16) | (b << 8) | a;
+                }
+
+                pixels[y * pitchPixels + x] = pixelColor;
+            }
+        }
+
+        SDL_UnlockSurface(surface);
+
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_DestroySurface(surface);
+
+        return texture;
+    }
+
+    SDL_Texture* CreateSpotlightTexture(SDL_Renderer* renderer, int radius, float coneAngleDegrees, SDL_Color color, bool diffuse ) {
+        int size = radius * 2;
+        SDL_Surface* surface = SDL_CreateSurface(size, size, SDL_PIXELFORMAT_RGBA32);
+        if (!surface) return nullptr;
+
+        SDL_LockSurface(surface);
+        Uint32* pixels = (Uint32*)surface->pixels;
+        int pitchPixels = surface->pitch / 4;
+
+        float halfConeRad = (coneAngleDegrees * (3.14159265f / 180.0f)) / 2.0f;
+
+        for (int y = 0; y < size; y++) {
+            for (int x = 0; x < size; x++) {
+                float dx = x - radius;
+                float dy = y - radius;
+                float distance = SDL_sqrtf(dx * dx + dy * dy);
+
+                Uint32 pixelColor = 0x00000000;
+
+                if (distance < radius && distance > 0) {
+                    float pixelAngle = SDL_atan2f(dx, dy);
+                    float angleDiff = SDL_fabsf(pixelAngle);
+                    float finalIntensity = 0.f;
+                    if (angleDiff <= halfConeRad) {
+                        if (diffuse) {
+                            // Smooth Cosine Diffusion:
+                            // This normalizes the angle between 0.0 (center) and 1.0 (edge)
+                            float angleRatio = angleDiff / halfConeRad;
+
+                            // Cosine creates a smooth "S-curve" profile (soft peak, soft edge)
+                            float angularIntensity = SDL_cosf(angleRatio * (3.14159265f / 2.0f));
+
+                            // --- Combine intensities (you can also smooth out the distance falloff here) ---
+                            float distanceRatio = distance / radius;
+                            float distanceIntensity = SDL_cosf(distanceRatio * (3.14159265f / 2.0f));
+
+                            // Final combined soft intensity
+                            finalIntensity = distanceIntensity * angularIntensity;
+                        } else {
+                            // make a hard ray ...
+                            // Distance falloff (center to edge)
+                            float distanceIntensity = 1.0f - (distance / radius);
+
+                            // Angular falloff (cone center to cone edge smoothing)
+                            float angularIntensity = 1.0f - (angleDiff / halfConeRad);
+
+                            // Combine intensities
+                            finalIntensity = distanceIntensity * angularIntensity;
+                        }
+
+                        Uint8 r = (Uint8)(color.r * finalIntensity);
+                        Uint8 g = (Uint8)(color.g * finalIntensity);
+                        Uint8 b = (Uint8)(color.b * finalIntensity);
+                        Uint8 a = (Uint8)(color.a * finalIntensity);
+
+                        pixelColor = (r << 24) | (g << 16) | (b << 8) | a;
+                    }
+                }
+                pixels[y * pitchPixels + x] = pixelColor;
+            }
+        }
+
+        SDL_UnlockSurface(surface);
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_DestroySurface(surface);
+
+        return texture;
+    }
 
 
 }; //namespace
