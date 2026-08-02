@@ -28,9 +28,10 @@ namespace BaseFlux {
 
     void DrawLine(SDL_Renderer *renderer, SDL_FPoint p1,SDL_FPoint p2 , SDL_Color color) {
         SDL_Color oldColor;
+        SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
         SDL_SetRenderDrawColor(renderer, color.r,color.g,color.b,color.a);
         SDL_RenderLine(renderer, p1.x, p1.y, p2.x , p2.y);
-        SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
+        SDL_SetRenderDrawColor(renderer, oldColor.r,oldColor.g,oldColor.b,oldColor.a);
     }
 
 
@@ -62,10 +63,11 @@ namespace BaseFlux {
 
     void DrawRect(SDL_Renderer *renderer, SDL_FRect rect , SDL_Color color, bool fill) {
         SDL_Color oldColor;
+        SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
         SDL_SetRenderDrawColor(renderer, color.r,color.g,color.b,color.a);
         if (fill) SDL_RenderFillRect(renderer, &rect);
         else SDL_RenderRect(renderer, &rect);
-        SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
+        SDL_SetRenderDrawColor(renderer, oldColor.r,oldColor.g,oldColor.b,oldColor.a);
     }
 
 
