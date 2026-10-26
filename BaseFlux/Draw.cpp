@@ -17,7 +17,7 @@
 
 namespace BaseFlux {
 
-    SDL_FColor SDL_ColorToFColor(SDL_Color color) {
+    SDL_FColor SDL_ColorToFColor(const SDL_Color& color) {
         SDL_FColor fcolor;
         fcolor.r = color.r / 255.0f;
         fcolor.g = color.g / 255.0f;
@@ -26,7 +26,7 @@ namespace BaseFlux {
         return fcolor;
     }
 
-    void DrawLine(SDL_Renderer *renderer, SDL_FPoint p1,SDL_FPoint p2 , SDL_Color color) {
+    void DrawLine(SDL_Renderer *renderer, const SDL_FPoint& p1,const SDL_FPoint& p2 , const SDL_Color& color) {
         SDL_Color oldColor;
         SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
         SDL_SetRenderDrawColor(renderer, color.r,color.g,color.b,color.a);
@@ -35,7 +35,7 @@ namespace BaseFlux {
     }
 
 
-    void DrawLineThick(SDL_Renderer *renderer, float x1, float y1, float x2, float y2, float thickness, SDL_Color color) {
+    void DrawLineThick(SDL_Renderer *renderer, float x1, float y1, float x2, float y2, float thickness, const SDL_Color& color) {
         float dx = x2 - x1;
         float dy = y2 - y1;
         float length = sqrtf(dx * dx + dy * dy);
@@ -61,7 +61,7 @@ namespace BaseFlux {
 
 
 
-    void DrawRect(SDL_Renderer *renderer, SDL_FRect rect , SDL_Color color, bool fill) {
+    void DrawRect(SDL_Renderer *renderer,const  SDL_FRect& rect , const SDL_Color& color, bool fill) {
         SDL_Color oldColor;
         SDL_GetRenderDrawColor(renderer,&oldColor.r, &oldColor.g, & oldColor.b, &oldColor.a);
         SDL_SetRenderDrawColor(renderer, color.r,color.g,color.b,color.a);
@@ -73,8 +73,8 @@ namespace BaseFlux {
 
     void DrawDebugText( SDL_Renderer *renderer,
                         float x, float y, const char* text,
-                       float scale /*= 1.f*/, SDL_Color color /*= {100,100,100,255}*/,
-                        bool doShadow /*= false*/, SDL_Color shadowColor /*= { 60,60,60,255}*/)
+                       float scale /*= 1.f*/, const SDL_Color& color /*= {100,100,100,255}*/,
+                        bool doShadow /*= false*/, const SDL_Color& shadowColor /*= { 60,60,60,255}*/)
     {
         SDL_Color oldColor;
         float oldScaleX, oldScaleY;
@@ -95,7 +95,7 @@ namespace BaseFlux {
 
     }
 
-    void DrawCircle(SDL_Renderer *renderer, float radius, SDL_FPoint pos, SDL_Color color, bool fill) {
+    void DrawCircle(SDL_Renderer *renderer, float radius, const SDL_FPoint& pos, const SDL_Color& color, bool fill) {
         if (!renderer || radius <= 0) return;
 
         int segments = (int)(M_2PI * sqrtf(radius) * 2.0f);
@@ -131,7 +131,7 @@ namespace BaseFlux {
         }
     }
 
-    void DrawArc(SDL_Renderer *renderer, float radius, float startRad, float endRad, SDL_FPoint pos, SDL_Color color, bool fill) {
+    void DrawArc(SDL_Renderer *renderer, float radius, float startRad, float endRad, const SDL_FPoint& pos, const SDL_Color& color, bool fill) {
         if (!renderer || radius <= 0) return;
 
         float delta = endRad - startRad;
@@ -170,7 +170,7 @@ namespace BaseFlux {
     }
 
 
-    void DrawDonut(SDL_Renderer *renderer, float innerRadius, float outerRadius, SDL_FPoint pos, SDL_Color color, bool fill) {
+    void DrawDonut(SDL_Renderer *renderer, float innerRadius, float outerRadius, const SDL_FPoint& pos, const SDL_Color& color, bool fill) {
         if (!renderer || outerRadius <= 0) return;
 
         int segments = (int)(M_2PI * sqrtf(outerRadius) * 2.0f);
@@ -213,7 +213,7 @@ namespace BaseFlux {
     }
 
     // ------------------ Lights helper --------------------
-    SDL_Texture* CreatePointLightTexture(SDL_Renderer* renderer, int radius, SDL_Color color, bool diffuse) {
+    SDL_Texture* CreatePointLightTexture(SDL_Renderer* renderer, int radius, const SDL_Color& color, bool diffuse) {
         int size = radius * 2;
         SDL_Surface* surface = SDL_CreateSurface(size, size, SDL_PIXELFORMAT_RGBA32);
         if (!surface) return nullptr;
@@ -265,7 +265,7 @@ namespace BaseFlux {
     }
 
 
-    SDL_Texture* CreateRayLightTexture(SDL_Renderer* renderer, int width, int height,  SDL_Color color, bool diffuse) {
+    SDL_Texture* CreateRayLightTexture(SDL_Renderer* renderer, int width, int height, const SDL_Color& color, bool diffuse) {
             SDL_Surface* surface = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_RGBA32);
             if (!surface) return nullptr;
 
@@ -314,7 +314,7 @@ namespace BaseFlux {
 
 
     SDL_Texture* CreateSpotlightTexture(SDL_Renderer* renderer, int radius, float coneAngleDegrees
-            , SDL_Color color, bool diffuse , bool damping) {
+            , const SDL_Color& color, bool diffuse , bool damping) {
         int size = radius * 2;
         SDL_Surface* surface = SDL_CreateSurface(size, size, SDL_PIXELFORMAT_RGBA32);
         if (!surface) return nullptr;

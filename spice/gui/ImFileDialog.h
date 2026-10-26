@@ -46,7 +46,6 @@
 #include <string>
 #include <algorithm>
 #include <imgui_internal.h>
-#include <format>
 #include <map>
 
 #ifdef FLUX_ENGINE
@@ -210,18 +209,32 @@ private:
                 uintmax_t size = entry.is_regular_file() ? fs::file_size(entry, ec) : 0;
                 if (!ec)
                 {
+                    // if (size < 1024) {
+                    //     lc.fileSize = std::format("{} B", size);
+                    // }
+                    // else if (size < 1024 * 1024) {
+                    //     lc.fileSize = std::format("{:.1f} KB", size / 1024.0f);
+                    // }
+                    // else if (size < 1024LL * 1024 * 1024) {
+                    //     lc.fileSize = std::format("{:.1f} MB", size / (1024.0f * 1024.0f));
+                    // }
+                    // else {
+                    //     lc.fileSize = std::format("{:.2f} GB", size / (1024.0f * 1024.0f * 1024.0f));
+                    // }
+                    char buf[32];
                     if (size < 1024) {
-                        lc.fileSize = std::format("{} B", size);
+                        std::snprintf(buf, sizeof(buf), "%lld B", static_cast<long long>(size));
                     }
                     else if (size < 1024 * 1024) {
-                        lc.fileSize = std::format("{:.1f} KB", size / 1024.0f);
+                        std::snprintf(buf, sizeof(buf), "%.1f KB", size / 1024.0f);
                     }
                     else if (size < 1024LL * 1024 * 1024) {
-                        lc.fileSize = std::format("{:.1f} MB", size / (1024.0f * 1024.0f));
+                        std::snprintf(buf, sizeof(buf), "%.1f MB", size / (1024.0f * 1024.0f));
                     }
                     else {
-                        lc.fileSize = std::format("{:.2f} GB", size / (1024.0f * 1024.0f * 1024.0f));
+                        std::snprintf(buf, sizeof(buf), "%.2f GB", size / (1024.0f * 1024.0f * 1024.0f));
                     }
+                    lc.fileSize = buf;
                     lc.rawSize = size;
                 } else {
                     lc.rawSize = 0;
