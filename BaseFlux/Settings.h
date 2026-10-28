@@ -17,7 +17,7 @@ namespace BaseFlux {
     struct Settings {
         SDL_Point ScreenSize = { 1152, 648};
         // not the exact fps since i use integer and round it.
-        uint16_t  FpsLimit = 0;
+        double  FpsLimit = 0.0;
         bool WindowMaximized  = false;
         bool FullScreen  = false;
         // you also can set FpsLimit
