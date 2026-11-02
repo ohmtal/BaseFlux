@@ -29,21 +29,31 @@ else()
 endif()
 
 
-# TEST FETCH DLS!
-  FetchContent_Declare(
-    dls
-    # --- directly from github:
-    GIT_REPOSITORY https://github.com/ohmtal/DirtyLittleScript.git
-    GIT_TAG        main
-  )
-  FetchContent_MakeAvailable(dls)
 
-# NOTE since it's header only i need to add the include path
+# TEST FETCH DLS or use local if available !
+set (DLS_INCLUDE "")
+set(DLS_DIR "/opt/DirtyLittleScript" CACHE PATH "Path to DLS")
+if(NOT EXISTS "${DLS_DIR}/dls/DirtyLittleScript.h")
+  # message(FATAL_ERROR "The directory DLS_DIR='${DLS_DIR}' does not contain DirtyLittleScript.h file!")
+  FetchContent_Declare(
+      dls
+      # --- directly from github:
+      GIT_REPOSITORY https://github.com/ohmtal/DirtyLittleScript.git
+      GIT_TAG        main
+    )
+    FetchContent_MakeAvailable(dls)
+    set (DLS_INCLUDE "${FETCHCONTENT_BASE_DIR}/dls-src/dls/")
+else()
+    set (DLS_INCLUDE "${DLS_DIR}/dls/")
+endif()
 
 
 # ------------- Main
 add_executable(${PROJECT_NAME}
     ${PROJECT_SRC}
+    ${DLS_DIR}/dls/functions/MathFunctions.cpp
+    ${DLS_DIR}/dls/functions/StringFunctions.cpp
+
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE
   SOL_ALL_SAFETIES_ON=1
@@ -57,7 +67,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_include_directories(${PROJECT_NAME} BEFORE PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
   # NOTE  include path here:
-  "${FETCHCONTENT_BASE_DIR}/dls-src/dls/"
+  "${DLS_INCLUDE}"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

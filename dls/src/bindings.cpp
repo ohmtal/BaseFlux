@@ -9,11 +9,34 @@ extern BaseFlux::Main app;
 extern SDL_Point gMousePos;
 typedef SDL_Color Color;
 
+namespace DLS {
+    extern void RegisterMathFunctions();
+    extern void RegisterStringFunctions();
+}
+
 namespace DLSFlux {
 
     // =========================================================================
     DLS::VM vm; // let the tape grow ?!
     size_t TapePos = 0;
+
+    DLS::S64 renderEventVarRegister = -1;
+
+    void RegisterEvents() {
+        renderEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnRender" ));
+    }
+
+    void OnRender() {
+        // example:
+        // OnRender = function; flux::DrawFPS 50 50 5;;
+
+        if (renderEventVarRegister < 0) return;
+        DLS::Value& funcVar = vm.Variables.getGlobal(renderEventVarRegister);
+        vm.PlaceTapeAtScriptFunction(funcVar);
+        vm.run();
+    }
+
+
     // =========================================================================
     // NOTE: Test external access to global variables:
     void printVar(std::string varName) {
@@ -30,30 +53,30 @@ namespace DLSFlux {
     // -----------------------------------------------------------------------------
     size_t getTapePos() { return TapePos;}
     //  -----------------------------------------------------------------------------
-    // // bool MapVectorFRect(const Value& value, SDL_FRect& rect) {
-    // //     VectorValueObject* vec = GetVectorObject(value, 4);
-    // //     if (vec) {
-    // //         rect.x = vec->mElements[0].getFloat();
-    // //         rect.y = vec->mElements[1].getFloat();
-    // //         rect.w = vec->mElements[2].getFloat();
-    // //         rect.h = vec->mElements[3].getFloat();
-    // //         if (rect.w == 0.f || rect.h == 0.f) return false;
-    // //         return true;
-    // //     }
-    // //     return false;
-    // // }
-    // // // -----------------------------------------------------------------------------
-    // // bool MapVectorColor(const Value& value, SDL_Color& color) {
-    // //     VectorValueObject* vec = GetVectorObject(value, 4);
-    // //     if (vec) {
-    // //         color.r =  vec->mElements[0].getU8();
-    // //         color.g =  vec->mElements[1].getU8();
-    // //         color.b =  vec->mElements[2].getU8();
-    // //         color.a =  vec->mElements[3].getU8();
-    // //         return true;
-    // //     }
-    // //     return false;
-    // // }
+    bool MapArrayFRect( DLS::Value& value, SDL_FRect& rect) {
+        if (value.type != DLS::ValueType::Array) return false;
+        auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
+        if (arr.size() < 4) return false;
+        rect.x = arr[0].getFloat();
+        rect.y = arr[1].getFloat();
+        rect.w = arr[2].getFloat();
+        rect.h = arr[3].getFloat();
+        if (rect.w == 0.f || rect.h == 0.f) return false;
+        return true;
+    }
+    // -----------------------------------------------------------------------------
+    bool MapArrrayColor( DLS::Value& value, SDL_Color& color) {
+        if (value.type != DLS::ValueType::Array) return false;
+        auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
+        if (arr.size() < 3) return false;
+        color.r = arr[0].getU8();
+        color.g = arr[1].getU8();
+        color.b = arr[2].getU8();
+        if (arr.size() > 3) color.a = arr[3].getU8();
+        else color.a = 255;
+        return true;
+
+    }
 
     void RegisterFluxFunctions() {
         using namespace DLS;
@@ -151,21 +174,21 @@ namespace DLSFlux {
         //
         //
         // // ---------------------------------
-        // FunctionMap::RegisterFunction("flux::DrawRect", [](std::span<Value> args, Value& ret) -> bool {
-        //     if (args.size() < 3 || !args[0].isObjectPointer() || !args[1].isObjectPointer()) {
-        //         Tools::PrintRuntimeError("flux::DrawRect: Missing Parameter");
-        //         return false;
-        //     }
-        //     SDL_FRect rect;
-        //     if (!MapVectorFRect(args[0], rect)) return false;
-        //     SDL_Color color;
-        //     if  (!MapVectorColor(args[1], color)) return false;
-        //
-        //     bool fill = args[2].getBool();
-        //
-        //     BaseFlux::DrawRect(app.getRenderer(),rect, color, fill);
-        //     return true;
-        // }, "Draw Rectangle Vector 4 floats, Vector 4 int, bool fill");
+        FunctionMap::RegisterFunction("flux::DrawRect", [](std::span<Value> args, Value& ret) -> bool {
+            if (args.size() < 3 || !args[0].isArray() || !args[1].isArray()) {
+                Tools::errorf("flux::DrawRect: Missing Parameter");
+                return false;
+            }
+            SDL_FRect rect;
+            if (!MapArrayFRect(args[0], rect)) return false;
+            SDL_Color color;
+            if  (!MapArrrayColor(args[1], color)) return false;
+
+            bool fill = args[2].getBool();
+
+            BaseFlux::DrawRect(app.getRenderer(),rect, color, fill);
+            return true;
+        }, "Draw Rectangle Vector 4 floats, Vector 4 int, bool fill");
         // ---------------------------------
         FunctionMap::RegisterFunction("flux::DrawFPS", [](std::span<Value> args, Value& ret) -> bool {
             if (args.size() < 2) return false;
@@ -214,12 +237,14 @@ namespace DLSFlux {
     void Init () {
         DLS::Tools::LogHandler = DLSFlux::DLS_Logger;
         DLS::Init();
+        DLS::RegisterMathFunctions();
+        DLS::RegisterStringFunctions( );
+
         RegisterFluxFunctions();
+        RegisterEvents();
+
+
     }
-
-
-
-
 
 
     bool Run (const std::string& command) {
@@ -238,5 +263,12 @@ namespace DLSFlux {
         return true;
     }
 
+    bool RunFile(const std::string& fileName, bool ResetTape ) {
+        if (ResetTape) {
+            vm.tape.clear();
+            vm.pc = 0;
+        }
+        return Run(DLS::loadScript(fileName));
+    }
 
 }

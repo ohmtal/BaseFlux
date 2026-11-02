@@ -16,7 +16,6 @@
 #include <vector>
 
 
-
 namespace fs = std::filesystem;
 
 BaseFlux::Main app;
@@ -28,6 +27,8 @@ namespace DLSFlux {
     extern void Init();
     extern bool Run(const std::string& command);
     extern size_t getTapePos();
+    extern void OnRender();
+    bool RunFile(const std::string& fileName, bool ResetTape );
 }
 
 #define Log(...) SDL_Log(__VA_ARGS__)
@@ -86,24 +87,23 @@ void onDraw(SDL_Renderer* renderer) {
         }
         // ImGui::Text(std::format("TAPE:%zu", DLSFlux::vm.tell()).c_str());
         ImGui::Text("[TAPE: %06zu]", DLSFlux::getTapePos());
-        //FIXME
-        // // if (ImGui::BeginMenu("Scripts")) {
-        // //     if (ImGui::MenuItem(std::format("Hot Reload {}", LuaState.getScript()).c_str(),"CTRL+R")) {
-        // //         LuaState.LoadScript();
-        // //     }
-        // //
-        // //     ImGui::SeparatorText("Files");
-        // //     bool selected = false;
-        // //     for (const auto& f : dlsFiles) {
-        // //         selected = LuaState.getScript() == f.string();
-        // //         if (ImGui::MenuItem(f.string().c_str(), nullptr, selected)) {
-        // //             LuaState.setScript(f.string());
-        // //         }
-        // //
-        // //     }
-        // //
-        // //     ImGui::EndMenu();
-        // // }
+        if (ImGui::BeginMenu("Scripts")) {
+            // if (ImGui::MenuItem(std::format("Hot Reload {}", LuaState.getScript()).c_str(),"CTRL+R")) {
+            //     LuaState.LoadScript();
+            // }
+
+            ImGui::SeparatorText("Files");
+            bool selected = false;
+            for (const auto& f : dlsFiles) {
+                // selected = LuaState.getScript() == f.string();
+                // if (ImGui::MenuItem(f.string().c_str(), nullptr, selected)) {
+                //     LuaState.setScript(f.string());
+                // }
+
+            }
+
+            ImGui::EndMenu();
+        }
 
         ImGui::EndMainMenuBar();
     }
@@ -122,16 +122,12 @@ void shutDown() {
 //-----------------------------------------------------------------------------
 bool initApp() {
 
-    //FIXME  onetime   sol::protected_function traceback_handler = lua["debug"]["traceback"];
-    // need to reorganize calls so initLua is before the event calls =!
     if ( !app.InitSDL() ) return false;
     app.initImGui();
 
     app.OnRender = [&](SDL_Renderer* renderer) {
         onDraw(renderer);
-        // // LuaState.OnRender(renderer);
-
-
+        DLSFlux::OnRender();
     };
 
     app.OnUpdate = [&](const float deltaTime) {
@@ -179,6 +175,7 @@ int main(int argc, char* argv[]) {
     fetchDLSFiles();
     initConsole();
     SDL_Log("[info] Welcome to BaseFlux DLS Console!");
+    DLSFlux::RunFile("assets/main.dls", false);
     app.Execute();
     shutDown();
 
