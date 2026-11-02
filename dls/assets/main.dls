@@ -1,23 +1,36 @@
 print "-------- DLS Flux Main --------"
+# NOTE this is not what DLS is made for
 
-# need curly constructor !!!
-color[0] =  50;
-color[1] = 150;
-color[2] = 150;
-color[3] = 255;
-
-rect[0] = 120;
-rect[1] = 150;
-rect[2] = 30;
-rect[3] = 30;
-
-OnRender = function
+InitRects = function
+    rect[2] = 30; rect[3] = 30
+    color[3]= 255
     i = 0;
     while i < 100
         rect[0] = math::random 0 500
         rect[1] = math::random 0 500
-        flux::DrawRect rect color true
+        # THIS SET THE REFERENCE TO THE ARRAY!!!!
+        Rects[i] = rect;
+
+        color[0]= math::random 0 255
+        color[1]= math::random 0 255
+        color[2]= math::random 0 255
+        Colors[i] = color;
+
+        Filled[i] = math::random 0 1
+        i = i + 1
+    end
+end
+
+InitRects
+
+caption = "DLS Baseflux"
+
+OnRender = function
+    i = 0;
+    while i < 100
+        flux::DrawRect Rects[i] Colors[i] Filled[i]
         i = i + 1;
     end
-    flux::DrawFPS 50 50 5
+    flux::DrawFPS 50 50 4
+    flux::Text 50 100 caption 5
 end

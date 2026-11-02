@@ -21,6 +21,7 @@ namespace DLSFlux {
     size_t TapePos = 0;
 
     DLS::S64 renderEventVarRegister = -1;
+    DLS::S64 EventVarRegister = -1;
 
     void RegisterEvents() {
         renderEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnRender" ));
@@ -65,7 +66,7 @@ namespace DLSFlux {
         return true;
     }
     // -----------------------------------------------------------------------------
-    bool MapArrrayColor( DLS::Value& value, SDL_Color& color) {
+    bool MapArrayColor( DLS::Value& value, SDL_Color& color) {
         if (value.type != DLS::ValueType::Array) return false;
         auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
         if (arr.size() < 3) return false;
@@ -141,36 +142,36 @@ namespace DLSFlux {
         // //                         float scale = 1.f, const SDL_Color& color = {100,100,100,255},
         // //                         bool doShadow = false, const SDL_Color& shadowColor = { 60,60,60,255});
         // //
-        // FunctionMap::RegisterFunction("flux::Text", [](std::span<Value> args, Value& ret) -> bool {
-        //     if (args.size() < 3 || !args[2].isString()) {
-        //         Tools::PrintRuntimeError("flux::Text: Missing Parameter");
-        //         return false;
-        //     }
-        //     float x = args[0].getFloat();
-        //     float y = args[1].getFloat();
-        //     const char* text = args[2].getStringChars();
-        //
-        //     float scale = 1.f;
-        //     SDL_Color color = {200,200,200,255};
-        //     bool doShadow = false;
-        //     SDL_Color shadowcolor = {60,60,60,255};
-        //
-        //     if (args.size() > 3)
-        //         scale = args[3].getFloat();
-        //
-        //     if (args.size() > 4)
-        //         MapVectorColor(args[4], color);
-        //
-        //     if (args.size() > 5)
-        //         doShadow = args[5].getBool();
-        //
-        //     if (args.size() > 6)
-        //         MapVectorColor(args[6], shadowcolor);
-        //
-        //     BaseFlux::DrawDebugText(app.getRenderer(),x,y,text, scale, color, doShadow, shadowcolor);
-        //
-        //     return true;
-        // }, "Draw a Text on the Screen. x,y,text optional: scale,color,doShadow,shadowColor");
+        FunctionMap::RegisterFunction("flux::Text", [](std::span<Value> args, Value& ret) -> bool {
+            if (args.size() < 3 || !args[2].isString()) {
+                Tools::errorf("flux::Text: Missing Parameter");
+                return false;
+            }
+            float x = args[0].getFloat();
+            float y = args[1].getFloat();
+            const char* text = args[2].getString().c_str();
+
+            float scale = 1.f;
+            SDL_Color color = {200,200,200,255};
+            bool doShadow = true;
+            SDL_Color shadowcolor = {60,60,60,255};
+
+            if (args.size() > 3)
+                scale = args[3].getFloat();
+
+            if (args.size() > 4)
+                MapArrayColor(args[4], color);
+
+            if (args.size() > 5)
+                doShadow = args[5].getBool();
+
+            if (args.size() > 6)
+                MapArrayColor(args[6], shadowcolor);
+
+            BaseFlux::DrawDebugText(app.getRenderer(),x,y,text, scale, color, doShadow, shadowcolor);
+
+            return true;
+        }, "Draw a Text on the Screen. x,y,text optional: scale,color,doShadow,shadowColor");
         //
         //
         // // ---------------------------------
@@ -182,7 +183,7 @@ namespace DLSFlux {
             SDL_FRect rect;
             if (!MapArrayFRect(args[0], rect)) return false;
             SDL_Color color;
-            if  (!MapArrrayColor(args[1], color)) return false;
+            if  (!MapArrayColor(args[1], color)) return false;
 
             bool fill = args[2].getBool();
 
