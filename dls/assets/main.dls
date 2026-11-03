@@ -11,7 +11,7 @@ end
 
 
 MoveRects = function
-    # copy and copy .. VERY slow and bug in Assign counter  :/
+    # copy and copy ..
     forRange i 100
         r = Rects[i]
         r[0] = r[0] + 0.1

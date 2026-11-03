@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <vector>
 
+#include "DirtyLittleScript.h"
 
 namespace fs = std::filesystem;
 
