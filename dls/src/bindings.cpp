@@ -19,6 +19,7 @@ namespace DLSFlux {
     // =========================================================================
     DLS::VM vm; // let the tape grow ?!
     size_t TapePos = 0;
+    size_t ArrayCount = 0;
 
     DLS::S64 renderEventVarRegister = -1;
     DLS::S64 EventVarRegister = -1;
@@ -35,6 +36,8 @@ namespace DLSFlux {
         DLS::Value& funcVar = vm.Variables.getGlobal(renderEventVarRegister);
         vm.PlaceTapeAtScriptFunction(funcVar);
         vm.run();
+
+        ArrayCount = vm.Variables.mArrays.size();
     }
 
 
@@ -53,6 +56,7 @@ namespace DLSFlux {
 
     // -----------------------------------------------------------------------------
     size_t getTapePos() { return TapePos;}
+    size_t getArrayCount() { return ArrayCount;}
     //  -----------------------------------------------------------------------------
     bool MapArrayFRect( DLS::Value& value, SDL_FRect& rect) {
         if (value.type != DLS::ValueType::Array) return false;

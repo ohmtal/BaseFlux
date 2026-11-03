@@ -27,6 +27,7 @@ namespace DLSFlux {
     extern void Init();
     extern bool Run(const std::string& command);
     extern size_t getTapePos();
+    extern size_t getArrayCount();
     extern void OnRender();
     bool RunFile(const std::string& fileName, bool ResetTape );
 }
@@ -87,6 +88,7 @@ void onDraw(SDL_Renderer* renderer) {
         }
         // ImGui::Text(std::format("TAPE:%zu", DLSFlux::vm.tell()).c_str());
         ImGui::Text("[TAPE: %06zu]", DLSFlux::getTapePos());
+        ImGui::Text("[ARR: %06zu]", DLSFlux::getArrayCount());
         if (ImGui::BeginMenu("Scripts")) {
             // if (ImGui::MenuItem(std::format("Hot Reload {}", LuaState.getScript()).c_str(),"CTRL+R")) {
             //     LuaState.LoadScript();
