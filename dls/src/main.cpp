@@ -31,6 +31,10 @@ namespace DLSFlux {
     extern size_t getArrayCount();
     extern void OnRender();
     bool RunFile(const std::string& fileName, bool ResetTape );
+
+    void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod);
+    void OnMouse( DLS::U8 button,  DLS::U32 EventType);
+    void OnMouseMotion(const SDL_MouseMotionEvent& mmev);
 }
 
 #define Log(...) SDL_Log(__VA_ARGS__)
@@ -146,15 +150,50 @@ bool initApp() {
     };
 
     app.OnEvent = [&](const SDL_Event& event) {
+        if (app.getImGuiIO())  {
+            if (app.getImGuiIO()->WantTextInput) {
+                if (event.type == SDL_EVENT_KEY_DOWN ||
+                    event.type == SDL_EVENT_KEY_UP ||
+                    event.type == SDL_EVENT_TEXT_INPUT) {
+                    return;
+                    }
+            }
+            if (app.getImGuiIO()-> WantCaptureMouse) {
+                if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+                    event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
+                    event.type == SDL_EVENT_MOUSE_WHEEL
+                ) {
+                    return;
+                }
 
-        if (app.getImGuiIO() && app.getImGuiIO()->WantTextInput) {
-            if (event.type == SDL_EVENT_KEY_DOWN ||
-                event.type == SDL_EVENT_KEY_UP ||
-                event.type == SDL_EVENT_TEXT_INPUT) {
-                return;
             }
         }
-        // // LuaState.OnEvent(event);
+
+        // FIXME
+        // ElfSDL3::onEvent(event);
+        switch (event.type) {
+            case SDL_EVENT_MOUSE_MOTION:
+                DLSFlux::OnMouseMotion(event.motion);
+                break;
+
+            case SDL_EVENT_KEY_UP:
+            case SDL_EVENT_KEY_DOWN:
+            {
+
+                DLSFlux::OnKey(event.key.key, event.type, event.key.mod);
+
+            }
+            break;
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+            {
+
+                DLSFlux::OnMouse(event.button.button, event.type);
+            }
+            break;
+
+        } //switch
+
     };
 
 
@@ -164,9 +203,12 @@ bool initApp() {
 int main(int argc, char* argv[]) {
 
     app.getSettings() = {
+        .ScreenSize = { 800, 450},
+        .FpsLimit = 60,
+        .EnableVSync = false,
         .Company = "BaseFlux",
         .Caption = "DLSFlux",
-        .Version = "0.261102.01",
+        .Version = "0.261105.01",
         .SoundPathAppend = "sound/",
         .TexturePathAppend = "texture/"
     };

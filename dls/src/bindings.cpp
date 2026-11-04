@@ -23,10 +23,26 @@ namespace DLSFlux {
     size_t ArrayCount = 0;
 
     DLS::S64 renderEventVarRegister = -1;
+    DLS::S64 keyEventVarRegister = -1;
+    DLS::S64 var_mouseX, var_mouseY, var_eventType,var_mod, var_key, var_button;
+
+    DLS::S64 mouseEventVarRegister = -1;
+
     DLS::S64 EventVarRegister = -1;
 
     void RegisterEvents() {
         renderEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnRender" ));
+        keyEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnKey" ));
+        var_mouseX      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::mx" ));
+        var_mouseY      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::my" ));
+        var_eventType   = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::type" ));
+        var_key         = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::key" ));
+        var_mod         = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::mod" ));
+        var_button      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::button" ));
+
+
+
+        mouseEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnMouse" ));
     }
 
     void OnRender() {
@@ -38,9 +54,37 @@ namespace DLSFlux {
         vm.PlaceTapeAtScriptFunction(funcVar);
         vm.run();
 
-        ArrayCount = vm.Variables.mArrays.size();
+        ArrayCount = vm.Variables.mArrays.size(); //NOTE debug/stats
     }
 
+    void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod) {
+        if (keyEventVarRegister < 0) return;
+
+        vm.Variables.saveGlobal(var_key, DLS::Value(key));
+        vm.Variables.saveGlobal(var_eventType, DLS::Value(EventType));
+        vm.Variables.saveGlobal(var_mod, DLS::Value(mod));
+
+        DLS::Value& funcVar = vm.Variables.getGlobal(keyEventVarRegister);
+        vm.PlaceTapeAtScriptFunction(funcVar);
+        vm.run();
+    }
+
+    // only set the var no event
+    void OnMouseMotion(const SDL_MouseMotionEvent& mmev) {
+        vm.Variables.saveGlobal(var_mouseX, DLS::Value(mmev.x));
+        vm.Variables.saveGlobal(var_mouseY, DLS::Value(mmev.y));
+    }
+
+    void OnMouse(DLS::U8 button,  DLS::U32 EventType) {
+        vm.Variables.saveGlobal(var_button, DLS::Value(button));
+        vm.Variables.saveGlobal(var_eventType, DLS::Value(EventType));
+
+
+        if (mouseEventVarRegister < 0) return;
+        DLS::Value& funcVar = vm.Variables.getGlobal(mouseEventVarRegister);
+        vm.PlaceTapeAtScriptFunction(funcVar);
+        vm.run();
+    }
 
     // =========================================================================
     // NOTE: Test external access to global variables:
@@ -94,53 +138,57 @@ namespace DLSFlux {
         }, "print a global by string varname");
 
 
-        // TODO copied from BaseFlux13
-        // FunctionMap::RegisterFunction("flux::size", [](std::span<Value> args, Value& ret) -> bool {
-        //     int logiX = 0;
-        //     int logiY = 0;
-        //
-        //     if (args.size() >= 2) {
-        //         SDL_Point oldSize = app.getSettings().ScreenSize;
-        //         app.getSettings().ScreenSize.x = args[0].getInt();
-        //         app.getSettings().ScreenSize.y = args[1].getInt();
-        //         if (oldSize.x != app.getSettings().ScreenSize.x
-        //             || oldSize.y != app.getSettings().ScreenSize.y) {
-        //             SDL_SetWindowSize(app.getWindow(), app.getSettings().ScreenSize.x , app.getSettings().ScreenSize.y);
-        //             }
-        //
-        //             if (args.size() >= 4) {
-        //                 logiX = args[2].getInt();
-        //                 logiY = args[3].getInt();
-        //                 SDL_SetRenderLogicalPresentation(app.getRenderer(), logiX, logiY ,
-        //                                                  SDL_LOGICAL_PRESENTATION_STRETCH);
-        //                 // SDL_LOGICAL_PRESENTATION_LETTERBOX);
-        //             }
-        //
-        //     }
-        //     SDL_RendererLogicalPresentation mode;
-        //     SDL_GetRenderLogicalPresentation(app.getRenderer(),&logiX, &logiY, &mode);
-        //     auto obj = new VectorValueObject();
-        //     obj->mElements.push_back(Value(app.getSettings().ScreenSize.x));
-        //     obj->mElements.push_back(Value(app.getSettings().ScreenSize.y));
-        //     obj->mElements.push_back(Value(logiX));
-        //     obj->mElements.push_back(Value(logiY));
-        //     ret = Value (obj);
-        //
-        //     return true;
-        // }, "set / get the screen size and logical size");
+        // ---------------------------------------------------------------------
+        FunctionMap::RegisterFunction("flux::size", [](std::span<Value> args, Value& ret) -> bool {
+            int logiX = 0;
+            int logiY = 0;
+
+            if (args.size() >= 2) {
+                SDL_Point oldSize = app.getSettings().ScreenSize;
+                app.getSettings().ScreenSize.x = args[0].getInt();
+                app.getSettings().ScreenSize.y = args[1].getInt();
+                if (oldSize.x != app.getSettings().ScreenSize.x
+                    || oldSize.y != app.getSettings().ScreenSize.y) {
+                    SDL_SetWindowSize(app.getWindow(), app.getSettings().ScreenSize.x , app.getSettings().ScreenSize.y);
+                    }
+
+                    if (args.size() >= 4) {
+                        logiX = args[2].getInt();
+                        logiY = args[3].getInt();
+                        SDL_SetRenderLogicalPresentation(app.getRenderer(), logiX, logiY ,
+                                                         SDL_LOGICAL_PRESENTATION_STRETCH);
+                        // SDL_LOGICAL_PRESENTATION_LETTERBOX);
+                    }
+
+            }
+            SDL_RendererLogicalPresentation mode;
+            SDL_GetRenderLogicalPresentation(app.getRenderer(),&logiX, &logiY, &mode);
+
+
+            std::vector<Value> arr;
+            arr.push_back(Value(app.getSettings().ScreenSize.x));
+            arr.push_back(Value(app.getSettings().ScreenSize.y));
+            arr.push_back(Value(logiX));
+            arr.push_back(Value(logiY));
+
+            ret = Globals::CurrentVM->Variables.createArray(arr);
+
+
+            return true;
+        }, "set / get the screen size and logical size");
         // // ---------------------------------
-        // FunctionMap::RegisterFunction("flux::maxfps", [](std::span<Value> args, Value& ret) -> bool {
-        //     DirectVariableAccessor vsyncer(&app.getSettings().FpsLimit);
-        //     if (args.size() == 1) {
-        //         vsyncer.toCpp(args[0]);
-        //     }
-        //     vsyncer.toValue(ret);
-        //     return true;
-        // }, "set / get the max fps");
+        FunctionMap::RegisterFunction("flux::maxfps", [](std::span<Value> args, Value& ret) -> bool {
+            double& l = app.getSettings().FpsLimit;
+            if (args.size() == 1) {
+                l = args[0].getDouble();
+            }
+            ret = Value(l);
+            return true;
+        }, "set / get the max fps");
         // // ---------------------------------
-        // FunctionMap::RegisterFunction("flux::Close", [](std::span<Value> args, Value& ret) -> bool {
-        //     app.TerminateApplication(); return true;
-        // }, "Close the Application");
+        FunctionMap::RegisterFunction("flux::Close", [](std::span<Value> args, Value& ret) -> bool {
+            app.TerminateApplication(); return true;
+        }, "Close the Application");
         // // ---------------------------------
         // //     void DrawDebugText( SDL_Renderer *renderer,
         // //                         float x, float y, const char* text,
