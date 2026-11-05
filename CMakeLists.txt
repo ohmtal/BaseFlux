@@ -15,7 +15,8 @@ include(FetchContent)
 
 FetchContent_Declare(
   SDL3
-  URL "${CMAKE_CURRENT_LIST_DIR}/lib/SDL-release-3.4.14.tar.gz"
+  URL "${CMAKE_CURRENT_LIST_DIR}/lib/SDL3-3.4.20.tar.gz"
+  # URL "${CMAKE_CURRENT_LIST_DIR}/lib/SDL-release-3.4.14.tar.gz"
   DOWNLOAD_EXTRACT_TIMESTAMP FALSE
 )
 
