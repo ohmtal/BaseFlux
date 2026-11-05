@@ -20,7 +20,26 @@ flux::size WIDTH HEIGTH WIDTH HEIGTH
 
 
 InitRects = function
+#     a = 255
     forRange i COUNT
+#         # 0 1 2 3
+#         w = (5 + math::randomf * 30)
+#         h = (5 + math::randomf * 20)
+#         x = (math::random 0 WIDTH - w)
+#         y = (math::random 0 HEIGTH - h )
+#         # 4 5 6 7
+#         r = (math::random 0 255)
+#         g = (math::random 0 255)
+#         b = (math::random 0 255)
+#         # [a] set before
+#         # 8
+#         filled =  math::random 0 1
+#         # 9 10
+#         vx = (math::randomf * 2.0 - 1.0)
+#         vy = (math::randomf * 2.0 - 1.0)
+#
+#         Data[i] = { x y w h r g b a filled vx vy}
+
         w = (5 + math::randomf * 30)
         h = (5 + math::randomf * 20)
         Rects[i]  = { (math::random 0 WIDTH - w) (math::random 0 HEIGTH - h ) w h }
@@ -34,17 +53,27 @@ InitRects
 # -----------------------------------------------------------------------------
 
 processRects = function
+#       !!! VERY SLOW !!!
+#     forRange i COUNT
+#         d = Data[i]
+#         r = { d[0] d[1] d[2] d[3] }
+#         c = { d[4] d[5] d[6] d[7] }
+#         flux::DrawRect  r c d[8]
+#         Data[i][0] = d[0] + d[9]
+#         if d[0] + d[2] >= HEIGTH || d[0] <= 0 ;  Data[i][9] =  d[9] * -1.0;;
+#
+#         Data[i][1] = d[1] + d[10]
+#         if d[1] + d[3] >= HEIGTH || d[1] <= 0 ;  Data[i][10] =  d[10] * -1.0;;
+#     end
     forRange i COUNT
         flux::DrawRect Rects[i] Colors[i] Filled[i]
         Rects[i][0] = Rects[i][0] + Vec[i][0]
-        if Rects[i][0] + Rects[i][2] >= WIDTH;  Vec[i][0] =  Vec[i][0] * -1.0;;
-        if Rects[i][0] <= 0.0;  Vec[i][0] =  Vec[i][0] * -1.0;;
+        if Rects[i][0] + Rects[i][2] >= WIDTH || Rects[i][0] <= 0.0;  Vec[i][0] =  Vec[i][0] * -1.0;;
 
         Rects[i][1] = Rects[i][1] + Vec[i][1]
-        if Rects[i][1] + Rects[i][3] >= HEIGTH || Rects[i][1] <= 0 ;  Vec[i][1] =  Vec[i][1] * -1.0;;
+        if Rects[i][1] + Rects[i][3] >= HEIGTH || Rects[i][1] <= 0;  Vec[i][1] =  Vec[i][1] * -1.0;;
     end
 end
-# -----------------------------------------------------------------------------
 
 OnRender = function
     processRects
@@ -52,6 +81,7 @@ OnRender = function
     flux::Text 10 60 caption 4
 end
 
+# -----------------------------------------------------------------------------
 
 OnKey = function
     if event::type == SDL_EVENT_KEY_DOWN

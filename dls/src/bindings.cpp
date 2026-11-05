@@ -21,6 +21,9 @@ namespace DLSFlux {
     DLS::VM vm; // let the tape grow ?!
     size_t TapePos = 0;
     size_t ArrayCount = 0;
+    size_t GlobalsCount = 0;
+
+    std::string currentFileName = "";
 
     DLS::S64 renderEventVarRegister = -1;
     DLS::S64 keyEventVarRegister = -1;
@@ -30,7 +33,7 @@ namespace DLSFlux {
 
     DLS::S64 EventVarRegister = -1;
 
-    void RegisterEvents() {
+    void RegisterGlobals() {
         renderEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnRender" ));
         keyEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnKey" ));
         var_mouseX      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::mx" ));
@@ -55,6 +58,7 @@ namespace DLSFlux {
         vm.run();
 
         ArrayCount = vm.Variables.mArrays.size(); //NOTE debug/stats
+        GlobalsCount = vm.Variables.mGlobalsRegister.size(); //NOTE debug/stats
     }
 
     void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod) {
@@ -102,6 +106,7 @@ namespace DLSFlux {
     // -----------------------------------------------------------------------------
     size_t getTapePos() { return TapePos;}
     size_t getArrayCount() { return ArrayCount;}
+    size_t getGlobalCount() { return GlobalsCount;}
     //  -----------------------------------------------------------------------------
     bool MapArrayFRect( DLS::Value& value, SDL_FRect& rect) {
         if (value.type != DLS::ValueType::Array) return false;
@@ -295,7 +300,7 @@ namespace DLSFlux {
         DLS::RegisterStringFunctions( );
 
         RegisterFluxFunctions();
-        RegisterEvents();
+        RegisterGlobals();
 
 
     }
@@ -317,10 +322,15 @@ namespace DLSFlux {
         return true;
     }
 
+    const std::string& getScriptFile()  { return currentFileName; }
+
     bool RunFile(const std::string& fileName, bool ResetTape ) {
+        currentFileName = fileName;
         if (ResetTape) {
             vm.tape.clear();
             vm.pc = 0;
+            vm.Variables.reset();
+            RegisterGlobals();
         }
         return Run(DLS::loadScript(fileName));
     }

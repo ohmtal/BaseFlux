@@ -29,12 +29,13 @@ namespace DLSFlux {
     extern bool Run(const std::string& command);
     extern size_t getTapePos();
     extern size_t getArrayCount();
+    extern size_t getGlobalCount();
     extern void OnRender();
-    bool RunFile(const std::string& fileName, bool ResetTape );
-
-    void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod);
-    void OnMouse( DLS::U8 button,  DLS::U32 EventType);
-    void OnMouseMotion(const SDL_MouseMotionEvent& mmev);
+    extern bool RunFile(const std::string& fileName, bool ResetTape );
+    extern void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod);
+    extern void OnMouse( DLS::U8 button,  DLS::U32 EventType);
+    extern void OnMouseMotion(const SDL_MouseMotionEvent& mmev);
+    extern const std::string& getScriptFile();
 }
 
 #define Log(...) SDL_Log(__VA_ARGS__)
@@ -91,33 +92,33 @@ void onDraw(SDL_Renderer* renderer) {
             ImGui::MenuItem("Console", "GraveAccent", &showConsole);
             ImGui::EndMenu();
         }
-        // ImGui::Text(std::format("TAPE:%zu", DLSFlux::vm.tell()).c_str());
-        ImGui::Text("[TAPE: %06zu]", DLSFlux::getTapePos());
-        ImGui::Text("[ARR: %06zu]", DLSFlux::getArrayCount());
         if (ImGui::BeginMenu("Scripts")) {
-            // if (ImGui::MenuItem(std::format("Hot Reload {}", LuaState.getScript()).c_str(),"CTRL+R")) {
-            //     LuaState.LoadScript();
-            // }
+            if (ImGui::MenuItem(("Reload " + DLSFlux::getScriptFile()).c_str(),"CTRL-R")) {
+                DLSFlux::RunFile(DLSFlux::getScriptFile(), true);
+            }
 
             ImGui::SeparatorText("Files");
             bool selected = false;
             for (const auto& f : dlsFiles) {
-                // selected = LuaState.getScript() == f.string();
-                // if (ImGui::MenuItem(f.string().c_str(), nullptr, selected)) {
-                //     LuaState.setScript(f.string());
-                // }
+                selected = "assets/" + f.string() ==  DLSFlux::getScriptFile();
+                if (ImGui::MenuItem(f.string().c_str(), nullptr, selected)) {
+                    DLSFlux::RunFile("assets/" + f.string(), true);
+                }
 
             }
 
             ImGui::EndMenu();
         }
 
+        ImGui::Text("[TAPE: %06zu]", DLSFlux::getTapePos());
+        ImGui::Text("[ARR: %06zu]", DLSFlux::getArrayCount());
+        ImGui::Text("[GLOB: %06zu]", DLSFlux::getGlobalCount());
         ImGui::EndMainMenuBar();
     }
     if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) showConsole = !showConsole;
-    // // if (app.getImGuiIO()->KeyCtrl) {
-    // //     if (ImGui::IsKeyPressed(ImGuiKey_R)) LuaState.LoadScript();
-    // // }
+    if (app.getImGuiIO()->KeyCtrl) {
+        if (ImGui::IsKeyPressed(ImGuiKey_R))  DLSFlux::RunFile(DLSFlux::getScriptFile(), true);
+    }
 
 
     gConsole.Draw("DLS Console",&showConsole);
@@ -137,17 +138,17 @@ bool initApp() {
         DLSFlux::OnRender();
     };
 
-    app.OnUpdate = [&](const float deltaTime) {
-        const float fixedStep = 1.0f / 60.0f;
-        static float accumulator = 0.0f;
-
-        accumulator += deltaTime;
-        while (accumulator >= fixedStep) {
-            // // LuaState.OnUpdate(fixedStep);
-
-            accumulator -= fixedStep;
-        }
-    };
+    // // app.OnUpdate = [&](const float deltaTime) {
+    // //     const float fixedStep = 1.0f / 60.0f;
+    // //     static float accumulator = 0.0f;
+    // //
+    // //     accumulator += deltaTime;
+    // //     while (accumulator >= fixedStep) {
+    // //         // // LuaState.OnUpdate(fixedStep);
+    // //
+    // //         accumulator -= fixedStep;
+    // //     }
+    // // };
 
     app.OnEvent = [&](const SDL_Event& event) {
         if (app.getImGuiIO())  {
