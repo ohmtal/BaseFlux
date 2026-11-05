@@ -51,8 +51,6 @@ endif()
 # ------------- Main
 add_executable(${PROJECT_NAME}
     ${PROJECT_SRC}
-    ${DLS_DIR}/dls/functions/MathFunctions.cpp
-    ${DLS_DIR}/dls/functions/StringFunctions.cpp
 
 )
 target_compile_definitions(${PROJECT_NAME} PRIVATE
