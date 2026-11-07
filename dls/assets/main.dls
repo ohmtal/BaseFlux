@@ -37,10 +37,10 @@ InitRects
 processRects = function
     forRange i COUNT
         flux::DrawRect Rects[i] Colors[i] Filled[i]
-        Rects[i][0] = Rects[i][0] + Vec[i][0]
+        Rects[i][0] = Rects[i][0] + Vec[i][0] * flux::ft
         if Rects[i][0] + Rects[i][2] >= WIDTH || Rects[i][0] <= 0.0;  Vec[i][0] =  Vec[i][0] * -1.0;;
 
-        Rects[i][1] = Rects[i][1] + Vec[i][1]
+        Rects[i][1] = Rects[i][1] + Vec[i][1] * flux::ft
         if Rects[i][1] + Rects[i][3] >= HEIGTH || Rects[i][1] <= 0;  Vec[i][1] =  Vec[i][1] * -1.0;;
     end
 end

@@ -187,10 +187,10 @@ namespace BaseFlux {
 
         bool usingImGui = mImGuiIO != nullptr;
 
-        Uint64 currentStartTick = SDL_GetPerformanceCounter();
-        gFrameTime = (double)(currentStartTick - mLastTick) / (double)mPerformanceFrequency;
+        Uint64 startTick = SDL_GetPerformanceCounter();
+        // gFrameTime = (double)(currentStartTick - mLastTick) / (double)mPerformanceFrequency;
 
-        if (gFrameTime > 0.25) gFrameTime = 0.016;
+        // if (gFrameTime > 0.25) gFrameTime = 0.016;
 
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -230,25 +230,26 @@ namespace BaseFlux {
 
         SDL_RenderPresent(mRenderer);
 
+
+
         if (getSettings().FpsLimit > 0.0) {
             double frameLimit = 1.0 / getSettings().FpsLimit;
 
-            double timeElapsedSoFar = (double)(SDL_GetPerformanceCounter() - mLastTick) / (double)mPerformanceFrequency;
+            mLastTick = SDL_GetPerformanceCounter();
+            gFrameTime = (double)(mLastTick - startTick) / (double)mPerformanceFrequency;
 
-            if (timeElapsedSoFar < frameLimit) {
-                double sleepTimeMs = ((frameLimit - timeElapsedSoFar) * 1000.0);
+            if (gFrameTime < frameLimit) {
+                double sleepTimeMs = ((frameLimit - gFrameTime) * 1000.0);
                 if (sleepTimeMs > 0.0) {
                     SDL_Delay((Uint32)sleepTimeMs);
                 }
             }
         }
 
-        Uint64 frameEndTick = SDL_GetPerformanceCounter();
-        gFrameTime = (double)(frameEndTick - mLastTick) / (double)mPerformanceFrequency;
+        mLastTick = SDL_GetPerformanceCounter();
+        gFrameTime = (double)(mLastTick - startTick) / (double)mPerformanceFrequency;
+
         gGameTime += gFrameTime;
-
-        mLastTick = frameEndTick;
-
 
         static double accumulator = 0.f;
         accumulator += gFrameTime;

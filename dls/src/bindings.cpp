@@ -28,7 +28,7 @@ namespace DLSFlux {
 
     DLS::S64 renderEventVarRegister = -1;
     DLS::S64 keyEventVarRegister = -1;
-    DLS::S64 var_mouseX, var_mouseY, var_eventType,var_mod, var_key, var_button;
+    DLS::S64 var_mouseX, var_mouseY, var_eventType,var_mod, var_key, var_button, var_frametime;
 
     DLS::S64 mouseEventVarRegister = -1;
 
@@ -37,6 +37,7 @@ namespace DLSFlux {
     void RegisterGlobals() {
         renderEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnRender" ));
         keyEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnKey" ));
+        mouseEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnMouse" ));
         var_mouseX      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::mx" ));
         var_mouseY      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::my" ));
         var_eventType   = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::type" ));
@@ -44,9 +45,10 @@ namespace DLSFlux {
         var_mod         = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::mod" ));
         var_button      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::button" ));
 
+        var_frametime   = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "flux::ft" ));
 
 
-        mouseEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnMouse" ));
+
     }
 
     void OnRender() {
@@ -54,12 +56,16 @@ namespace DLSFlux {
         // OnRender = function; flux::DrawFPS 50 50 5;;
 
         if (renderEventVarRegister < 0) return;
+
+        vm.Variables.saveGlobal(var_frametime, DLS::Value(BaseFlux::getFrameTime() * 100.0));
+
         DLS::Value& funcVar = vm.Variables.getGlobal(renderEventVarRegister);
         vm.PlaceTapeAtScriptFunction(funcVar);
         vm.run();
 
-        ArrayCount = vm.Variables.mArrays.size(); //NOTE debug/stats
-        GlobalsCount = vm.Variables.mGlobalsRegister.size(); //NOTE debug/stats
+        //NOTE debug/stats:
+        ArrayCount = vm.Variables.mArrays.size();
+        GlobalsCount = vm.Variables.mGlobalsRegister.size();
         StackCount = vm.STACK_SIZE();
     }
 

@@ -113,8 +113,8 @@ void onDraw(SDL_Renderer* renderer) {
 
         ImGui::Text("[TAPE: %06zu]", DLSFlux::getTapePos());
         ImGui::Text("[ARR: %06zu]", DLSFlux::getArrayCount());
-        ImGui::Text("[GLOB: %06zu]", DLSFlux::getGlobalCount());
-        ImGui::Text("[STK: %06zu]", DLSFlux::getStackCount());
+        ImGui::Text("[GLOB: %04zu]", DLSFlux::getGlobalCount());
+        ImGui::Text("[STK: %03zu]", DLSFlux::getStackCount());
         ImGui::EndMainMenuBar();
     }
     if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) showConsole = !showConsole;
