@@ -30,6 +30,7 @@ namespace DLSFlux {
     extern size_t getTapePos();
     extern size_t getArrayCount();
     extern size_t getGlobalCount();
+    extern size_t getStackCount();
     extern void OnRender();
     extern bool RunFile(const std::string& fileName, bool ResetTape );
     extern void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod);
@@ -113,6 +114,7 @@ void onDraw(SDL_Renderer* renderer) {
         ImGui::Text("[TAPE: %06zu]", DLSFlux::getTapePos());
         ImGui::Text("[ARR: %06zu]", DLSFlux::getArrayCount());
         ImGui::Text("[GLOB: %06zu]", DLSFlux::getGlobalCount());
+        ImGui::Text("[STK: %06zu]", DLSFlux::getStackCount());
         ImGui::EndMainMenuBar();
     }
     if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) showConsole = !showConsole;

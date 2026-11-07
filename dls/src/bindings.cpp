@@ -22,6 +22,7 @@ namespace DLSFlux {
     size_t TapePos = 0;
     size_t ArrayCount = 0;
     size_t GlobalsCount = 0;
+    size_t StackCount = 0;
 
     std::string currentFileName = "";
 
@@ -59,6 +60,7 @@ namespace DLSFlux {
 
         ArrayCount = vm.Variables.mArrays.size(); //NOTE debug/stats
         GlobalsCount = vm.Variables.mGlobalsRegister.size(); //NOTE debug/stats
+        StackCount = vm.STACK_SIZE();
     }
 
     void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod) {
@@ -107,6 +109,7 @@ namespace DLSFlux {
     size_t getTapePos() { return TapePos;}
     size_t getArrayCount() { return ArrayCount;}
     size_t getGlobalCount() { return GlobalsCount;}
+    size_t getStackCount() { return StackCount;}
     //  -----------------------------------------------------------------------------
     bool MapArrayFRect( DLS::Value& value, SDL_FRect& rect) {
         if (value.type != DLS::ValueType::Array) return false;

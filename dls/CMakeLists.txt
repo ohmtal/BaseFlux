@@ -48,6 +48,10 @@ else()
 endif()
 
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(DLS_DEBUG)
+endif()
+
 # ------------- Main
 add_executable(${PROJECT_NAME}
     ${PROJECT_SRC}

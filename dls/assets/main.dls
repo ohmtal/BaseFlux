@@ -47,7 +47,8 @@ end
 
 OnRender = function
     processRects
-    flux::DrawFPS 10 30 2; flux::Text 120 30 (str::format "mouse: %d %d" event::mx event::my) 2
+    flux::DrawFPS 10 30 2;
+    flux::Text 120 30 (str::format "mouse: %d %d" event::mx event::my) 2
     flux::Text 10 60 caption 4
 end
 
