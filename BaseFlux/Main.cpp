@@ -12,9 +12,11 @@
 #endif
 
 namespace BaseFlux {
-    double gFrameTime = 0.f; // Global for timming
-    double gGameTime  = 0.f;
+    double gFrameTime = 0.0; // Global for timming
+    double gGameTime  = 0.0;
     Uint32 gFPS = 60;
+
+    const  double UpdateAccuValue = 0.0155; //1.0 / 60.0;
 
     double getFrameTime() { return gFrameTime;}
     double getGameTime() { return gGameTime;}
@@ -188,7 +190,7 @@ namespace BaseFlux {
         bool usingImGui = mImGuiIO != nullptr;
 
         Uint64 startTick = SDL_GetPerformanceCounter();
-        // gFrameTime = (double)(currentStartTick - mLastTick) / (double)mPerformanceFrequency;
+        // gFrameTime = (double)(startTick - mLastTick) / (double)mPerformanceFrequency;
 
         // if (gFrameTime > 0.25) gFrameTime = 0.016;
 
@@ -251,11 +253,13 @@ namespace BaseFlux {
 
         gGameTime += gFrameTime;
 
-        static double accumulator = 0.f;
+        // still jitter!
+        static double accumulator = 0.0;
         accumulator += gFrameTime;
-        if (accumulator >= 0.016) {
+        if (accumulator >= UpdateAccuValue) {
             if (OnUpdate) OnUpdate(accumulator);
-            accumulator = 0.f;
+            accumulator = 0.0;
+            // accumulator -= UpdateAccuValue;
         }
 
         static double lFpsTimer = 0;
@@ -263,10 +267,10 @@ namespace BaseFlux {
         lFpsTimer += gFrameTime;
         lFrameCounter++;
 
-        if (lFpsTimer >= 1.0f) {
+        if (lFpsTimer >= 1.0) {
             gFPS = lFrameCounter;
             lFrameCounter = 0;
-            lFpsTimer -= 1.0f;
+            lFpsTimer -= 1.0;
         }
     }
 
