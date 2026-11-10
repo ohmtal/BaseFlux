@@ -26,7 +26,7 @@ namespace BaseFlux::Tools {
         return str;
     }
     //--------------------------------------------------------------------------
-    std::string getBasePath() {
+    const std::string& getBasePath() {
         static std::string cachedPath = "";
         if (!cachedPath.empty()) return cachedPath;
 

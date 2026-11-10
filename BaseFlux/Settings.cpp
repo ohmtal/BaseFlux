@@ -2,8 +2,9 @@
 
 
 namespace BaseFlux {
+
     //--------------------------------------------------------------------------
-    std::string Settings::getPrefsPath(){
+    const std::string& Settings::getPrefsPath(){
         static std::string cachedPath = "";
         if (!cachedPath.empty()) return cachedPath;
         char* rawPath = SDL_GetPrefPath(getSafeCompany().c_str(), getSafeCaption().c_str());

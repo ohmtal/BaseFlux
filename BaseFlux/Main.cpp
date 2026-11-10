@@ -16,7 +16,7 @@ namespace BaseFlux {
     double gGameTime  = 0.0;
     Uint32 gFPS = 60;
 
-    const  double UpdateAccuValue = 0.0155; //1.0 / 60.0;
+    const  double UpdateAccuValue = 1.0 / 120.0;
 
     double getFrameTime() { return gFrameTime;}
     double getGameTime() { return gGameTime;}
@@ -432,15 +432,6 @@ namespace BaseFlux {
             return false;
         }
 
-
-
-
-        //changed to performanceCounter
-        // Uint32 frameStart, frameTime;
-        // uint16_t frameLimit = 0;
-
-        //FIXME if (getSettings().FpsLimit > 0) frameLimit = static_cast<uint16_t>(1000 / getSettings().FpsLimit);
-
         mPerformanceFrequency = SDL_GetPerformanceFrequency();
         // INITIALIZE time once here before the loop starts
         mLastTick = SDL_GetPerformanceCounter();
@@ -473,22 +464,32 @@ namespace BaseFlux {
     }
     //--------------------------------------------------------------------------
     // Sound Wrapper
-    bool Main::playSound(std::string fileName , float gain , bool loop )  {
+    bool Main::playSound(const std::string& fileName , float gain , bool loop )  {
         return getAudioManager().play(fileName, gain, loop);
     }
-    bool Main::stopSound(std::string fileName  ) {
+    bool Main::stopSound(const std::string& fileName  ) {
         return getAudioManager().stop(fileName);
     }
-    WavData* Main::getSound(std::string fileName, bool noAutoLoad) {
+    bool Main::playSound(WavData* data , float gain , bool loop )  {
+        return getAudioManager().play(data, gain, loop);
+    }
+    bool Main::stopSound(WavData* data  ) {
+        return getAudioManager().stop(data);
+    }
+    WavData* Main::getSound(const std::string& fileName, bool noAutoLoad) {
         return getAudioManager().get(fileName, noAutoLoad);
     }
     //--------------------------------------------------------------------------
     // Texture Wrapper
-    bool Main::renderTexture(std::string fileName, const SDL_FRect* srcrect, const SDL_FRect* dstrect) {
+    bool Main::renderTexture(const std::string& fileName, const SDL_FRect* srcrect, const SDL_FRect* dstrect) {
         return getTextureManager().render(fileName,srcrect, dstrect);
 
     }
-    SDL_Texture* Main::getTexture(std::string fileName, bool noAutoLoad) {
+    bool Main::renderTexture(SDL_Texture* texture, const SDL_FRect* srcrect, const SDL_FRect* dstrect) {
+        return getTextureManager().render(texture,srcrect, dstrect);
+
+    }
+    SDL_Texture* Main::getTexture(const std::string& fileName, bool noAutoLoad) {
         return getTextureManager().get(fileName, noAutoLoad);
     }
 };

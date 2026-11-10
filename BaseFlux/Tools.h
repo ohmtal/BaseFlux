@@ -18,6 +18,6 @@ namespace BaseFlux::Tools {
     std::string string_replace_all(std::string str, const std::string& from, const std::string& to);
 
     // getBasePath wrapper
-    std::string getBasePath();
+    const std::string& getBasePath();
 
 }; //namespace

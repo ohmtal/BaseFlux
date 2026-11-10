@@ -49,7 +49,7 @@ namespace BaseFlux {
 
 
 
-        std::string getPrefsPath();
+        const std::string& getPrefsPath();
         std::string getSafeCompany();
         std::string getSafeCaption();
 

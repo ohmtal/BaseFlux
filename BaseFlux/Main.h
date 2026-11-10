@@ -6,7 +6,6 @@
 //-----------------------------------------------------------------------------
 #pragma once
 #include <SDL3/SDL.h>
-// #include <SDL3/SDL_main.h>
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
@@ -77,12 +76,16 @@ namespace BaseFlux {
         std::function<void()> OnShutDown = nullptr;
         //----------------------------------------------------------------------
         // wraper for getAudioManager().play and getTextureManager.render:
-        bool playSound(std::string fileName, float gain = 1.0f, bool loop = false);
-        bool stopSound(std::string fileName  );
-        WavData* getSound(std::string fileName, bool noAutoLoad = false);
+        bool playSound(const std::string& fileName, float gain = 1.0f, bool loop = false);
+        bool stopSound(const std::string& fileName  );
 
-        bool renderTexture(std::string fileName , const SDL_FRect *srcrect, const SDL_FRect *dstrect);
-        SDL_Texture* getTexture(std::string fileName, bool noAutoLoad = false);
+        bool playSound(WavData* data , float gain , bool loop );
+        bool stopSound(WavData* data  );
+        WavData* getSound(const std::string& fileName, bool noAutoLoad = false);
+
+        bool renderTexture(const std::string& fileName, const SDL_FRect *srcrect, const SDL_FRect *dstrect);
+        bool renderTexture(SDL_Texture* texture , const SDL_FRect *srcrect, const SDL_FRect *dstrect);
+        SDL_Texture* getTexture(const std::string& fileName, bool noAutoLoad = false);
         //----------------------------------------------------------------------
         /**
          * replace a path with full path
@@ -91,7 +94,7 @@ namespace BaseFlux {
          */
         void setFullPath(std::string  &path);
 
-        std::string getUserFolder(SDL_Folder folder) {
+        const std::string& getUserFolder(SDL_Folder folder) {
             // Return cached value if already fetched
             if (!globFolderCache[folder].empty()) {
                 return globFolderCache[folder];
@@ -102,15 +105,16 @@ namespace BaseFlux {
                 globFolderCache[folder] = rawPath;
                 return globFolderCache[folder];
             }
-            return "";
+            static std::string emptyStr = "";
+            return emptyStr;
         }
-        inline std::string getHomePath()      { return getUserFolder( SDL_FOLDER_HOME ) ; }
-        inline std::string getDesktopPath()   { return getUserFolder( SDL_FOLDER_DESKTOP ) ; }
-        inline std::string getDocumentsPath() { return getUserFolder( SDL_FOLDER_DOCUMENTS ) ; }
-        inline std::string getDownloadPath()  { return getUserFolder( SDL_FOLDER_DOWNLOADS ) ; }
-        inline std::string getMusicPath()     { return getUserFolder( SDL_FOLDER_MUSIC ) ; }
-        inline std::string getPicturesPath()  { return getUserFolder( SDL_FOLDER_PICTURES ) ; }
-        inline std::string getVideosPath()    { return getUserFolder( SDL_FOLDER_VIDEOS ) ; }
+        inline const std::string& getHomePath()      { return getUserFolder( SDL_FOLDER_HOME ) ; }
+        inline const std::string& getDesktopPath()   { return getUserFolder( SDL_FOLDER_DESKTOP ) ; }
+        inline const std::string& getDocumentsPath() { return getUserFolder( SDL_FOLDER_DOCUMENTS ) ; }
+        inline const std::string& getDownloadPath()  { return getUserFolder( SDL_FOLDER_DOWNLOADS ) ; }
+        inline const std::string& getMusicPath()     { return getUserFolder( SDL_FOLDER_MUSIC ) ; }
+        inline const std::string& getPicturesPath()  { return getUserFolder( SDL_FOLDER_PICTURES ) ; }
+        inline const std::string& getVideosPath()    { return getUserFolder( SDL_FOLDER_VIDEOS ) ; }
 
         // Set the window icon relative to AssetPath
         bool setWindowIcon(SDL_Window* window, std::string fileName);

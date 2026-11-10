@@ -105,7 +105,7 @@ namespace BaseFlux {
         SDL_ResumeAudioStreamDevice(data->stream);
         return true;
     }
-    bool AudioManager::play(std::string fileName, float gain, bool loop) {
+    bool AudioManager::play(const std::string& fileName, float gain, bool loop) {
         if (!isInitialized()) return false;
         WavData* data = get(fileName);
 
@@ -123,14 +123,14 @@ namespace BaseFlux {
         SDL_ClearAudioStream(data->stream);
         return true;
     }
-    bool AudioManager::stop(std::string fileName) {
+    bool AudioManager::stop(const std::string& fileName) {
         if (!isInitialized()) return false;
         WavData* data = get(fileName, false); // no autoload on stop!
         // if (!data || !data->stream) return false;
         return stop(data);
     }
     //--------------------------------------------------------------------------
-    WavData* AudioManager::get(std::string fileName, bool noAutoLoad) {
+    WavData* AudioManager::get(const std::string& fileName, bool noAutoLoad) {
         auto it = mWavMap.find(fileName);
 
         if (it != mWavMap.end()) {
@@ -155,7 +155,7 @@ namespace BaseFlux {
         return nullptr;
     }
     //--------------------------------------------------------------------------
-    bool AudioManager::add(std::string fileName)
+    bool AudioManager::add(const std::string& fileName)
     {
         if (!isInitialized()) return false;
         if (!mMain) return false;
