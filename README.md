@@ -1,4 +1,4 @@
-# BaseFlux - Minimalist SDL3 and ImGui base library
+# BaseFlux - SDL3 and ImGui base library
 
 Base to build an cross platform Application or Prototype with SDL3 and ImGui. 
 
@@ -14,7 +14,7 @@ Base to build an cross platform Application or Prototype with SDL3 and ImGui.
 - Managers (since 2026-04-23)
     - TexturesManager save textures in a map for rendering and garbage collection
     - AudioManager save Wave-Files in a map for loading, playing and garbage collection
-    
+        - since 2026-11-13: support of mp3 and ogg audio 
 
 ## Prepare Example
 - create a new folder with a sub folder src
@@ -25,6 +25,11 @@ Base to build an cross platform Application or Prototype with SDL3 and ImGui.
 - demo: cmake example with setting a path to BaseFlux
 - demo2: cmake with fetch content BaseFlux
 
+## Used in:
+- [BaseElf](https://github.com/ohmtal/ElfScript/tree/main/BaseElf) with ElfScript 
+- [BaseFlux13](https://github.com/ohmtal/DreiZehnScript/tree/main/BaseFlux13) with DreiZehnScript
+- [baseFlux](https://github.com/ohmtal/DirtyLittleScript/tree/main/baseFlux) with Dirty Little Script
+- Some other private Projects
 
 ## Implement
 
