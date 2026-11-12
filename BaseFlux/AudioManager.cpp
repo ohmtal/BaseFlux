@@ -1,7 +1,58 @@
 #include "AudioManager.h"
 #include "Main.h"
+
+#define BASEFLUX_USE_MA
+
+#ifdef BASEFLUX_USE_MA
+    #undef STB_VORBIS_HEADER_ONLY
+    #include "lib/stb/stb_vorbis.c"
+
+    #define MA_NO_DEVICE_IO
+    #define MINIAUDIO_IMPLEMENTATION
+    #include "lib/miniaudio/miniaudio.h"
+#endif
+
+
 namespace BaseFlux {
     //--------------------------------------------------------------------------
+    void freeBuffer(Uint8*& mem ) {
+        if (!mem) return;
+        #ifdef BASEFLUX_USE_MA
+            ma_free(mem, nullptr);
+        #else
+            SDL_free(mem);
+        #endif
+    }
+
+    bool loadWavData(const char* filepath, WavData& outData) {
+        #ifdef BASEFLUX_USE_MA
+        ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
+        ma_uint64 frameCount = 0;
+        void* pAudioData = nullptr;
+
+        ma_result result = ma_decode_file(filepath, &config, &frameCount, &pAudioData);
+        if (result != MA_SUCCESS) {
+            SDL_SetError("miniaudio error: %s", ma_result_description(result));
+            return false;
+        }
+
+        outData.buffer = static_cast<Uint8*>(pAudioData);
+        outData.len = static_cast<Uint32>(frameCount * ma_get_bytes_per_frame(config.format, config.channels));
+        outData.spec.format = SDL_AUDIO_F32;
+        outData.spec.channels = static_cast<int>(config.channels);
+        outData.spec.freq = static_cast<int>(config.sampleRate);
+
+        return true;
+        #else
+        return SDL_LoadWAV(filepath, &outData.spec, &outData.buffer, &outData.len);
+        #endif
+    }
+
+
+
+    //--------------------------------------------------------------------------
+
+
     bool AudioManager::init() {
         // if (!mMain) {
         //     SDL_Log("[error] Init failed! Main object not set.");
@@ -38,7 +89,7 @@ namespace BaseFlux {
                 val.stream = nullptr;
             }
             if (val.buffer) {
-                SDL_free(val.buffer);
+                freeBuffer(val.buffer);
                 val.buffer = nullptr;
             }
         }
@@ -179,12 +230,11 @@ namespace BaseFlux {
 
 
         WavData wav_data;
-        if (!SDL_LoadWAV(lFileName.c_str(), &wav_data.spec, &wav_data.buffer, &wav_data.len)) {
+        if (!loadWavData(lFileName.c_str(), wav_data)) {
             SDL_Log("[error]Couldn't load Wavefile:%s file: %s", fileName.c_str(), SDL_GetError());
             blacklist(fileName);
             return false;
         }
-
 
 
         wav_data.stream = SDL_CreateAudioStream(&wav_data.spec, nullptr);
@@ -197,7 +247,7 @@ namespace BaseFlux {
         if (!bindStream(wav_data.stream )) {
             SDL_Log("Failed to bind '%s' stream to device: %s", fileName.c_str(), SDL_GetError());
             SDL_DestroyAudioStream(wav_data.stream);
-            SDL_free(wav_data.buffer);
+            freeBuffer(wav_data.buffer);
             blacklist(fileName);
             return false;
         }

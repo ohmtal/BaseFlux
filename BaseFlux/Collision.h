@@ -15,7 +15,7 @@ namespace BaseFlux::Collision {
         SDL_FPoint mNormal = {0.0f, 0.0f};  // the direction where the collision come from
     };
     // -----------------------------------------------------------------------------
-    bool getInfoRectF(const SDL_FRect& a, const SDL_FRect& b, Info& collisionInfo) {
+    inline bool getInfoRectF(const SDL_FRect& a, const SDL_FRect& b, Info& collisionInfo) {
         if (!SDL_HasRectIntersectionFloat(&a,&b)) {
             return false;
         }
@@ -47,7 +47,7 @@ namespace BaseFlux::Collision {
     /*
      * set a at new position by collisionInfo
      */
-    void solveOberlap( SDL_FRect& a,  const Info& collisionInfo) {
+    inline void solveOberlap( SDL_FRect& a,  const Info& collisionInfo) {
         a.x += collisionInfo.mNormal.x * collisionInfo.mOverlap;
         a.y += collisionInfo.mNormal.y * collisionInfo.mOverlap;
     }
@@ -60,7 +60,7 @@ namespace BaseFlux::Collision {
      * @return true if collided and solved, false otherwise.
      * @param result Fills collision info
      */
-    bool getInfoRectLine(const SDL_FRect& rect, float x1, float y1, float x2, float y2, Info& result) {
+    inline bool getInfoRectLine(const SDL_FRect& rect, float x1, float y1, float x2, float y2, Info& result) {
         float ix1 = x1, iy1 = y1, ix2 = x2, iy2 = y2;
         if (!SDL_GetRectAndLineIntersectionFloat(&rect, &ix1, &iy1, &ix2, &iy2)) {
             return false;
@@ -111,7 +111,7 @@ namespace BaseFlux::Collision {
      * @return true if collided and solved, false otherwise.
      * @param result Fills the top-left corner (x, y) of the corrected position.
      */
-    bool solveLineCollision(const SDL_FRect& rect, float x1, float y1, float x2, float y2, SDL_FPoint& result) {
+    inline bool solveLineCollision(const SDL_FRect& rect, float x1, float y1, float x2, float y2, SDL_FPoint& result) {
 
         Info info;
         if (!getInfoRectLine(rect, x1, y1, x2, y2, info)) return false;
