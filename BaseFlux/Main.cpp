@@ -16,7 +16,7 @@ namespace BaseFlux {
     double gGameTime  = 0.0;
     Uint32 gFPS = 60;
 
-    const  double UpdateAccuValue = 1.0 / 30.0;
+    const  double UpdateAccuValue = 0.015; // 1.0 / 30.0;
 
     double getFrameTime() { return gFrameTime;}
     double getGameTime() { return gGameTime;}
@@ -256,9 +256,10 @@ namespace BaseFlux {
         static double accumulator = 0.0;
         accumulator += gFrameTime;
         if (accumulator >= UpdateAccuValue) {
-            if (OnUpdate) OnUpdate(UpdateAccuValue);
-            // accumulator = 0.0;
-            accumulator -= UpdateAccuValue;
+            if (OnUpdate) OnUpdate(accumulator);
+            accumulator = 0.0;
+            // if (OnUpdate) OnUpdate(UpdateAccuValue);
+            // accumulator -= UpdateAccuValue;
         }
 
         static double lFpsTimer = 0;
