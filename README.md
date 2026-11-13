@@ -16,6 +16,12 @@ Base to build an cross platform Application or Prototype with SDL3 and ImGui.
     - AudioManager save Wave-Files in a map for loading, playing and garbage collection
         - since 2026-11-13: support of mp3 and ogg audio 
 
+## Used in:
+- [BaseElf](https://github.com/ohmtal/ElfScript/tree/main/BaseElf) with ElfScript 
+- [BaseFlux13](https://github.com/ohmtal/DreiZehnScript/tree/main/BaseFlux13) with DreiZehnScript
+- [baseFlux](https://github.com/ohmtal/DirtyLittleScript/tree/main/baseFlux) with Dirty Little Script
+- Some other private Projects
+
 ## Prepare Example
 - create a new folder with a sub folder src
 - copy CMakeLists.txt from demo to you new folder
@@ -25,11 +31,6 @@ Base to build an cross platform Application or Prototype with SDL3 and ImGui.
 - demo: cmake example with setting a path to BaseFlux
 - demo2: cmake with fetch content BaseFlux
 
-## Used in:
-- [BaseElf](https://github.com/ohmtal/ElfScript/tree/main/BaseElf) with ElfScript 
-- [BaseFlux13](https://github.com/ohmtal/DreiZehnScript/tree/main/BaseFlux13) with DreiZehnScript
-- [baseFlux](https://github.com/ohmtal/DirtyLittleScript/tree/main/baseFlux) with Dirty Little Script
-- Some other private Projects
 
 ## Implement
 

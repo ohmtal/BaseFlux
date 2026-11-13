@@ -16,7 +16,7 @@ namespace BaseFlux {
     double gGameTime  = 0.0;
     Uint32 gFPS = 60;
 
-    const  double UpdateAccuValue = 1.0 / 120.0;
+    const  double UpdateAccuValue = 1.0 / 30.0;
 
     double getFrameTime() { return gFrameTime;}
     double getGameTime() { return gGameTime;}
@@ -191,7 +191,6 @@ namespace BaseFlux {
 
         Uint64 startTick = SDL_GetPerformanceCounter();
         // gFrameTime = (double)(startTick - mLastTick) / (double)mPerformanceFrequency;
-
         // if (gFrameTime > 0.25) gFrameTime = 0.016;
 
         SDL_Event event;
@@ -257,9 +256,9 @@ namespace BaseFlux {
         static double accumulator = 0.0;
         accumulator += gFrameTime;
         if (accumulator >= UpdateAccuValue) {
-            if (OnUpdate) OnUpdate(accumulator);
-            accumulator = 0.0;
-            // accumulator -= UpdateAccuValue;
+            if (OnUpdate) OnUpdate(UpdateAccuValue);
+            // accumulator = 0.0;
+            accumulator -= UpdateAccuValue;
         }
 
         static double lFpsTimer = 0;
